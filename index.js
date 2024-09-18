@@ -5,6 +5,7 @@ const userRoutes = require('./userRoutes');
 const paymentRoutes = require('./paymentRoutes');
 const companyRoutes = require('./companyRoutes');
 const voucherRoutes = require('./voucherRoutes');
+const { shortenUrl, getOriginalUrl } = require('./urlShortener');
 
 const app = express();
 const port = 8000;
@@ -29,6 +30,27 @@ app.use(cors({
 // Home route
 app.get('/', (req, res) => {
     res.send('Welcome to the Home Page of our Node.js Application!');
+});
+
+// Route to shorten a URL
+app.post('/shorten', (req, res) => {
+    const { originalUrl } = req.body;
+    if (!originalUrl) return res.status(400).send('Original URL is required');
+
+    shortenUrl(originalUrl, (err, shortUrl) => {
+        if (err) return res.status(500).send('Error shortening URL');
+        res.json({ shortUrl });
+    });
+});
+
+// Route to redirect to the original URL using the short code
+app.get('/:shortCode', (req, res) => {
+    const { shortCode } = req.params;
+
+    getOriginalUrl(shortCode, (err, originalUrl) => {
+        if (err) return res.status(404).send('URL not found');
+        res.redirect(originalUrl);
+    });
 });
 
 // Start the server
