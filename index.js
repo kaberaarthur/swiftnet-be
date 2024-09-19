@@ -5,6 +5,7 @@ const userRoutes = require('./userRoutes');
 const paymentRoutes = require('./paymentRoutes');
 const companyRoutes = require('./companyRoutes');
 const voucherRoutes = require('./voucherRoutes');
+const routerRoutes = require('./routerRoutes');
 const { shortenUrl, getOriginalUrl } = require('./urlShortener');
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(userRoutes);
 app.use(paymentRoutes)
 app.use(companyRoutes)
 app.use(voucherRoutes)
+app.use(routerRoutes)
 
 // Allow requests from any origin
 app.use(cors({
