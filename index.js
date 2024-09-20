@@ -6,6 +6,9 @@ const paymentRoutes = require('./paymentRoutes');
 const companyRoutes = require('./companyRoutes');
 const voucherRoutes = require('./voucherRoutes');
 const routerRoutes = require('./routerRoutes');
+const ipPoolRoutes = require('./ipPoolRoutes');
+const logsRoutes = require('./mikrotik_logs/logsRoutes');
+const localLogRoutes = require('./localLogRoutes');
 const { shortenUrl, getOriginalUrl } = require('./urlShortener');
 
 const app = express();
@@ -21,6 +24,9 @@ app.use(paymentRoutes)
 app.use(companyRoutes)
 app.use(voucherRoutes)
 app.use(routerRoutes)
+app.use(ipPoolRoutes)
+app.use(logsRoutes);
+app.use(localLogRoutes);
 
 // Allow requests from any origin
 app.use(cors({
