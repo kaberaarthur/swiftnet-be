@@ -8,8 +8,13 @@ const voucherRoutes = require('./voucherRoutes');
 const routerRoutes = require('./routerRoutes');
 const ipPoolRoutes = require('./ipPoolRoutes');
 const logsRoutes = require('./mikrotik_logs/logsRoutes');
+const pppLogsRoutes = require('./mikrotik_logs/pppLogsRoutes');
 const localLogRoutes = require('./localLogRoutes');
 const { shortenUrl, getOriginalUrl } = require('./urlShortener');
+
+// Actual Stuff
+const hotspotPlansRoutes = require('./hotspot/hotspotPlansRoutes');
+
 
 const app = express();
 const port = 8000;
@@ -26,7 +31,12 @@ app.use(voucherRoutes)
 app.use(routerRoutes)
 app.use(ipPoolRoutes)
 app.use(logsRoutes);
+app.use(pppLogsRoutes);
 app.use(localLogRoutes);
+
+// Actual Stuff
+app.use(hotspotPlansRoutes)
+
 
 // Allow requests from any origin
 app.use(cors({
