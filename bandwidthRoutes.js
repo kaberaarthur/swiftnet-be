@@ -94,8 +94,10 @@ router.delete('/bandwidths/:id', (req, res) => {
         if (results.affectedRows === 0) {
             return res.status(404).json({ error: 'Bandwidth not found' });
         }
-        res.status(204).send(); // No content to send back
+        // Send a success message after successful deletion
+        res.status(200).json({ message: 'Bandwidth deleted successfully' });
     });
 });
+
 
 module.exports = router;
