@@ -11,6 +11,8 @@ const logsRoutes = require('./mikrotik_logs/logsRoutes');
 const pppLogsRoutes = require('./mikrotik_logs/pppLogsRoutes');
 const localLogRoutes = require('./localLogRoutes');
 const { shortenUrl, getOriginalUrl } = require('./urlShortener');
+const bandwidthRoutes = require('./bandwidthRoutes');
+
 
 // Actual Stuff
 const hotspotPlansRoutes = require('./hotspot/hotspotPlansRoutes');
@@ -33,6 +35,8 @@ app.use(ipPoolRoutes)
 app.use(logsRoutes);
 app.use(pppLogsRoutes);
 app.use(localLogRoutes);
+app.use(bandwidthRoutes)
+
 
 // Actual Stuff
 app.use(hotspotPlansRoutes)
