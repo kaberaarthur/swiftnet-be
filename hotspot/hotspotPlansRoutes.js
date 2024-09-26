@@ -24,7 +24,7 @@ router.post('/hotspot-plans', async (req, res) => {
     // Format SSH command string
     const sshCommand = `/ip hotspot user profile add name=${plan_validity}hours shared-users=${shared_users} rate-limit=${bandwidth}M/${bandwidth}M`;
 
-    console.log("SSH Command: ", sshCommand);
+    // console.log("SSH Command: ", sshCommand);
 
     try {
         // Run SSH command
@@ -191,15 +191,48 @@ router.put('/hotspot-plans/:id', (req, res) => {
 });
 
 // DELETE a Hotspot Plan by ID
-router.delete('/hotspot-plans/:id', (req, res) => {
+router.delete('/hotspot-plans/:id', async (req, res) => {
     const { id } = req.params;
-    const query = `DELETE FROM hotspot_plans WHERE id = ?`;
 
-    db.query(query, [id], (err, results) => {
+    // Fetch the plan to get the plan_name
+    const selectQuery = `SELECT plan_name FROM hotspot_plans WHERE id = ?`;
+
+    db.query(selectQuery, [id], async (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
-        if (results.affectedRows === 0) return res.status(404).json({ message: 'Hotspot Plan not found' });
-        res.status(200).json({ message: 'Hotspot Plan deleted successfully' });
+        if (results.length === 0) return res.status(404).json({ message: 'Hotspot Plan not found' });
+
+        const planName = results[0].plan_name;
+
+        // Construct the SSH command to delete the profile from MikroTik
+        const sshCommand = `/ip hotspot user profile remove [find name="${planName}"]`;
+
+        try {
+            // Execute the SSH command
+            const sshOutput = await runSSHCommand(sshCommand);
+
+            // If the SSH command fails, stop the process
+            if (sshOutput.includes('failure')) {
+                return res.status(500).json({ error: 'Failed to remove MikroTik profile' });
+            }
+
+            console.log('MikroTik profile deleted successfully.');
+
+            // Proceed to delete the hotspot plan from the database
+            const deleteQuery = `DELETE FROM hotspot_plans WHERE id = ?`;
+
+            db.query(deleteQuery, [id], (err, results) => {
+                if (err) return res.status(500).json({ error: err.message });
+                if (results.affectedRows === 0) return res.status(404).json({ message: 'Hotspot Plan not found' });
+
+                res.status(200).json({ message: 'Hotspot Plan and MikroTik profile deleted successfully' });
+            });
+
+        } catch (err) {
+            // Handle SSH command error
+            return res.status(500).json({ error: `Failed to execute SSH command: ${err.message}` });
+        }
     });
 });
+
 
 module.exports = router;

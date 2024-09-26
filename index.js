@@ -10,6 +10,7 @@ const ipPoolRoutes = require('./ipPoolRoutes');
 const logsRoutes = require('./mikrotik_logs/logsRoutes');
 const pppLogsRoutes = require('./mikrotik_logs/pppLogsRoutes');
 const localLogRoutes = require('./localLogRoutes');
+const myIpRoutes = require('./myIpRoutes');
 const { shortenUrl, getOriginalUrl } = require('./urlShortener');
 const bandwidthRoutes = require('./bandwidthRoutes');
 
@@ -33,6 +34,7 @@ app.use(voucherRoutes)
 app.use(routerRoutes)
 app.use(ipPoolRoutes)
 app.use(logsRoutes);
+app.use(myIpRoutes);
 app.use(pppLogsRoutes);
 app.use(localLogRoutes);
 app.use(bandwidthRoutes)
@@ -74,6 +76,8 @@ app.get('/:shortCode', (req, res) => {
         res.redirect(originalUrl);
     });
 });
+
+
 
 // Start the server
 app.listen(port, () => {
