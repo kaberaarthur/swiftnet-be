@@ -73,6 +73,7 @@ router.put('/ippools/:id', (req, res) => {
 });
 
 // DELETE an IP pool by ID
+// DELETE an IP pool by ID
 router.delete('/ippools/:id', (req, res) => {
     const { id } = req.params;
 
@@ -84,8 +85,10 @@ router.delete('/ippools/:id', (req, res) => {
         if (result.affectedRows === 0) {
             return res.status(404).send('IP pool not found');
         }
-        res.status(204).send();
+        // Send a success response with a message and the deleted ID
+        res.status(200).json({ message: 'IP pool deleted successfully', id: id });
     });
 });
+
 
 module.exports = router;
