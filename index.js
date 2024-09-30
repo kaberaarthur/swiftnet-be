@@ -13,10 +13,12 @@ const localLogRoutes = require('./localLogRoutes');
 const myIpRoutes = require('./myIpRoutes');
 const { shortenUrl, getOriginalUrl } = require('./urlShortener');
 const bandwidthRoutes = require('./bandwidthRoutes');
+const freeIPRoutes = require('./freeIPRoutes');
 
 
 // Actual Stuff
 const hotspotPlansRoutes = require('./hotspot/hotspotPlansRoutes');
+const staticPlansRoutes = require('./staticplans/staticPlansRoutes');
 
 
 const app = express();
@@ -37,11 +39,13 @@ app.use(logsRoutes);
 app.use(myIpRoutes);
 app.use(pppLogsRoutes);
 app.use(localLogRoutes);
-app.use(bandwidthRoutes)
+app.use(bandwidthRoutes);
+app.use(freeIPRoutes);
 
 
 // Actual Stuff
 app.use(hotspotPlansRoutes)
+app.use(staticPlansRoutes)
 
 
 // Allow requests from any origin

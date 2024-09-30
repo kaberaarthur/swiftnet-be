@@ -73,7 +73,6 @@ router.put('/ippools/:id', (req, res) => {
 });
 
 // DELETE an IP pool by ID
-// DELETE an IP pool by ID
 router.delete('/ippools/:id', (req, res) => {
     const { id } = req.params;
 
