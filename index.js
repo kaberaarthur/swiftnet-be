@@ -20,6 +20,11 @@ const freeIPRoutes = require('./freeIPRoutes');
 const hotspotPlansRoutes = require('./hotspot/hotspotPlansRoutes');
 const staticPlansRoutes = require('./staticplans/staticPlansRoutes');
 
+// Client Routes
+const staticClientsRoutes = require('./clients/static/allroutes');
+const pppoeClientsRoutes = require('./clients/pppoe/allroutes');
+
+
 
 const app = express();
 const port = 8000;
@@ -44,8 +49,13 @@ app.use(freeIPRoutes);
 
 
 // Actual Stuff
-app.use(hotspotPlansRoutes)
-app.use(staticPlansRoutes)
+app.use(hotspotPlansRoutes);
+app.use(staticPlansRoutes);
+
+// Clients Routes
+app.use(staticClientsRoutes);
+app.use(pppoeClientsRoutes);
+
 
 
 // Allow requests from any origin
