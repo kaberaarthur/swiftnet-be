@@ -1,0 +1,1 @@
+PPPOE endpoints represent both static and pppoe vouchers
