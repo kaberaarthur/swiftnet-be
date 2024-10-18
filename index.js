@@ -1,6 +1,10 @@
+// Import Dependencies
 const express = require('express');
 const cors = require('cors');
+const db = require('./db');
 const bodyParser = require('body-parser');
+
+// Import Routes
 const userRoutes = require('./userRoutes');
 const paymentRoutes = require('./paymentRoutes');
 const companyRoutes = require('./companyRoutes');
@@ -31,6 +35,9 @@ const hotspotVouchersRoutes = require('./vouchers/hotspot/allroutes');
 
 const app = express();
 const port = 8000;
+
+// Payment Processing
+const axios = require('axios');
 
 // Middleware to parse JSON bodies
 app.use(bodyParser.json());
@@ -95,6 +102,145 @@ app.get('/:shortCode', (req, res) => {
         if (err) return res.status(404).send('URL not found');
         res.redirect(originalUrl);
     });
+});
+
+
+// Handle Payment Requests
+app.use(express.json());
+
+// Middleware for Processing Payment
+// Utility function for delay (10 seconds)
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+// Function to check if CheckoutRequestID exists in the payments table
+const checkForPayment = (CheckoutRequestID, company_id, company_username, router_id, router_name) => {
+    return new Promise((resolve, reject) => {
+        // First, check if the payment exists with the given CheckoutRequestID
+        db.query('SELECT * FROM payments WHERE CheckoutRequestID = ?', [CheckoutRequestID], (err, results) => {
+            if (err) {
+                return reject(err);  // Handle the error if something goes wrong
+            }
+            if (results.length > 0) {
+                // If the payment exists, update the relevant fields
+                const updatePayment = `
+                    UPDATE payments
+                    SET company_id = ?, company_username = ?, router_id = ?, router_name = ?
+                    WHERE CheckoutRequestID = ?
+                `;
+                db.query(updatePayment, [company_id, company_username, router_id, router_name, CheckoutRequestID], (err, updateResult) => {
+                    if (err) {
+                        return reject(err);  // Handle update error
+                    }
+                    resolve(updateResult);  // Resolve the update result
+                });
+            } else {
+                resolve(null);  // Return null if no payment found
+            }
+        });
+    });
+};
+
+
+// POST endpoint: payment-request-pro
+app.post('/payment-request-pro', (req, res) => {
+    const { amount, phone_number, company_id, company_username, router_id, router_name } = req.body;
+
+    // Query the payhero_settings table
+    db.query(
+        'SELECT callback_url, channel_id, payhero_token FROM payhero_settings WHERE company_id = ?',
+        [company_id],
+        async (err, results) => {
+            if (err) {
+                console.error('Database error:', err);
+                return res.status(500).json({ error: 'Error processing payment request.' });
+            }
+
+            if (results.length === 0) {
+                return res.status(400).json({ error: "Error processing payment, cannot find payhero settings" });
+            }
+
+            const { callback_url, channel_id, payhero_token } = results[0];
+
+            const paymentPayload = {
+                amount,
+                phone_number,
+                channel_id: Number(channel_id),
+                provider: "m-pesa",
+                external_reference: "INV-009",
+                callback_url
+            };
+
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `${payhero_token}`
+            };
+
+            try {
+                // Make a POST request to the external payment service
+                const paymentResponse = await axios.post('https://backend.payhero.co.ke/api/v2/payments', paymentPayload, { headers });
+
+                // Extract relevant fields from the response
+                const { success, status, reference, CheckoutRequestID } = paymentResponse.data;
+
+                // SQL query to insert the payment response into the paymentrequests table
+                const insertPaymentRequest = `
+                    INSERT INTO paymentrequests (success, status, reference, CheckoutRequestID, company_id, company_username, router_id, router_name)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+                `;
+
+                // Insert data into the table
+                db.query(insertPaymentRequest, [success, status, reference, CheckoutRequestID, company_id, company_username, router_id, router_name], (err, result) => {
+                    if (err) {
+                        console.error('Failed to insert payment request:', err);
+                        return;
+                    }
+                    console.log('Payment request inserted with ID:', result.insertId);
+                });
+
+                if (success && CheckoutRequestID) {
+                    let paymentData = null;
+                    for (let attempt = 0; attempt < 6; attempt++) {
+                        console.log(`Checking payment for CheckoutRequestID: ${CheckoutRequestID}, Attempt: ${attempt + 1}`);
+
+                        // Check for payment in the 'payments' table
+                        paymentData = await checkForPayment(CheckoutRequestID, company_id, company_username, router_id, router_name);
+
+                        if (paymentData) {
+                            const responseData = {
+                                success: true,
+                                status: paymentData.status,
+                                reference: paymentData.reference,
+                                CheckoutRequestID: paymentData.CheckoutRequestID
+                            };
+
+                            return res.status(200).json({
+                                message: 'Payment request processed successfully',
+                                data: responseData
+                            });
+                        }
+
+                        // Wait for 10 seconds before next attempt
+                        await delay(10000);
+                    }
+
+                    // If no payment record is found after 6 tries, return failure
+                    return res.status(200).json({
+                        status: 'failure',
+                        message: 'Payment not found after multiple attempts.'
+                    });
+                } else {
+                    // Handle case where the initial payment request fails
+                    return res.status(200).json({
+                        status: 'failure',
+                        message: paymentResponse.data.error_message || 'Payment request failed.'
+                    });
+                }
+            } catch (error) {
+                console.error('Error making payment request:', error);
+                return res.status(500).json({ error: 'An error occurred while processing the payment request.' });
+            }
+        }
+    );
 });
 
 

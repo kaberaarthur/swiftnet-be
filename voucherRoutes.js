@@ -43,7 +43,7 @@ const generateVoucherCode = async (connection) => {
   
   // 1. Create a Voucher (POST)
   router.post('/vouchers', async (req, res) => {
-      const { type, routers, plan_name, plan_duration, customer } = req.body;
+      const { routers, plan_name, plan_duration, customer } = req.body;
       let connection;
   
       try {
@@ -60,8 +60,8 @@ const generateVoucherCode = async (connection) => {
           const code_voucher = await generateVoucherCode(connection);
   
           const [result] = await connection.query(
-              'INSERT INTO vouchers (type, routers, plan_name, plan_duration, code_voucher, start_date, end_date, customer) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-              [type, routers, plan_name, plan_duration, code_voucher, start_date, end_date, customer]
+              'INSERT INTO vouchers (routers, plan_name, plan_duration, code_voucher, start_date, end_date, customer) VALUES (?, ?, ?, ?, ?, ?, ?)',
+              [routers, plan_name, plan_duration, code_voucher, start_date, end_date, customer]
           );
   
           await connection.commit();
@@ -69,7 +69,6 @@ const generateVoucherCode = async (connection) => {
           // Create the data object to return
           const data = {
               voucherId: result.insertId,
-              type,
               routers,
               plan_name,
               plan_duration,

@@ -2,25 +2,57 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../dbPromise'); // Change to use `db` instead of `dbPromise`
 
+// Function to generate a voucher code
+const generateVoucherCode = async (connection, index, lastId) => {
+    // Get the current month and day of the week
+    const now = new Date();
+    const months = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+    const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+    const monthLetter = months[now.getMonth()]; // e.g. "S" for September
+    const dayLetter = days[now.getDay()]; // e.g. "M" for Monday
+
+    // Generate a random uppercase letter
+    const randomLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26)); // "A" to "Z"
+
+    // Create the code using the last ID plus the current index
+    const numberPart = String(lastId + index).padStart(4, '0'); // Ensures it has 4 digits, e.g., "0001"
+
+    // Combine everything
+    return `${monthLetter}${dayLetter}${randomLetter}${numberPart}`; // e.g., "SMV0001"
+};
+
 // Create multiple vouchers
 router.post('/hotspot-vouchers', async (req, res) => {
-    const { code_length, company_id, company_username, plan_id, plan_name, plan_validity, router_id, router_name, voucherCodes } = req.body;
+    const { company_id, company_username, plan_id, plan_name, plan_validity, router_id, router_name, voucherCodes } = req.body;
 
+    let connection;
     try {
-        const vouchers = voucherCodes.map(voucherCode => (`
-            (${router_id}, '${router_name}', '${plan_name}', ${plan_id}, '${voucherCode}', '${company_username}', ${company_id}, ${plan_validity}, NOW())
-        `)).join(', ');
+        connection = await db.getConnection(); // Get the database connection
+
+        // Query to get the last used voucher ID from the `hotspot_vouchers` table
+        const [rows] = await connection.query('SELECT MAX(id) AS lastId FROM hotspot_vouchers');
+        const lastId = rows[0].lastId || 0; // Start from 0 if there are no vouchers
+
+        // Generate vouchers dynamically based on the number of voucher codes
+        const vouchers = await Promise.all(voucherCodes.map(async (voucherCode, index) => {
+            // Generate a unique voucher code, incrementing from lastId
+            const generatedCode = await generateVoucherCode(connection, index + 1, lastId);
+            return (`(${router_id}, '${router_name}', '${plan_name}', ${plan_id}, '${generatedCode}', '${company_username}', ${company_id}, ${plan_validity}, NOW())`);
+        }));
 
         const query = `
             INSERT INTO hotspot_vouchers (router_id, router_name, plan_name, plan_id, voucher_code, company_username, company_id, plan_validity, date_created)
-            VALUES ${vouchers}
+            VALUES ${vouchers.join(', ')}
         `;
 
-        await db.execute(query);
+        await connection.execute(query);
+        connection.release(); // Release the connection back to the pool
 
         res.status(201).json({ success: true, message: 'Vouchers created successfully' });
     } catch (error) {
         console.error('Error inserting vouchers:', error);
+        if (connection) connection.release(); // Ensure connection is released even on error
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });

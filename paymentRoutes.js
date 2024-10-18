@@ -27,7 +27,11 @@ function parsePythonLikeDict(str) {
     return obj;
 }
 
+
+
 // Create operation - to store the payment request data
+// To store the response gotten immediately after the stk request has been made
+// NOT the callback response
 router.post('/payment-request', (req, res) => {
     let response;
 
@@ -73,6 +77,8 @@ router.post('/payment-request', (req, res) => {
     }
 });
 
+
+// To Process the callback response
 // Create operation - to store the response data
 router.post('/payment', (req, res) => {
     const { response } = req.body;
@@ -103,6 +109,9 @@ router.post('/payment', (req, res) => {
         }
 
         res.status(201).json({ message: 'Payment data saved successfully' });
+
+        // I need to create a Voucher here
+
     });
 });
 
@@ -127,7 +136,7 @@ router.post('/check-transaction', (req, res) => {
     const { mpesaReceiptNumber } = req.body;
 
     if (!mpesaReceiptNumber) {
-        return res.status(400).json({ error: 'MpesaReceiptNumber is required' });
+        return res.status(200).json({ status: 'failure', message: 'MpesaReceiptNumber is required' });
     }
 
     // SQL query to find the CheckoutRequestID from payments table
@@ -140,11 +149,11 @@ router.post('/check-transaction', (req, res) => {
     db.query(findCheckoutRequestIDQuery, [mpesaReceiptNumber], (err, results) => {
         if (err) {
             console.error('Error finding CheckoutRequestID:', err);
-            return res.status(500).json({ error: 'Failed to retrieve CheckoutRequestID' });
+            return res.status(200).json({ status: 'failure', message: 'Failed to retrieve CheckoutRequestID' });
         }
 
         if (results.length === 0) {
-            return res.status(404).json({ error: 'No matching record found in payments table' });
+            return res.status(200).json({ status: 'failure', message: 'No matching record found in payments table' });
         }
 
         const { CheckoutRequestID } = results[0];
@@ -159,17 +168,18 @@ router.post('/check-transaction', (req, res) => {
         db.query(findReferenceQuery, [CheckoutRequestID], (err, results) => {
             if (err) {
                 console.error('Error finding reference:', err);
-                return res.status(500).json({ error: 'Failed to retrieve reference' });
+                return res.status(200).json({ status: 'failure', message: 'Failed to retrieve reference' });
             }
 
             if (results.length === 0) {
-                return res.status(404).json({ error: 'No matching record found in paymentrequests table' });
+                return res.status(200).json({ status: 'failure', message: 'No matching record found in paymentrequests table' });
             }
 
             const { reference } = results[0];
-            res.status(200).json({ reference });
+            res.status(200).json({ status: 'success', message: 'Transaction found successfully', reference });
         });
     });
 });
+
 
 module.exports = router;
