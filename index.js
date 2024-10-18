@@ -113,7 +113,7 @@ app.use(express.json());
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 // Function to check if CheckoutRequestID exists in the payments table
-const checkForPayment = (CheckoutRequestID, company_id, company_username, router_id, router_name) => {
+const checkForPayment = (CheckoutRequestID, company_id, company_username, router_id, router_name, plan_id, plan_name, plan_validity) => {
     return new Promise((resolve, reject) => {
         // First, check if the payment exists with the given CheckoutRequestID
         db.query('SELECT * FROM payments WHERE CheckoutRequestID = ?', [CheckoutRequestID], (err, results) => {
@@ -124,10 +124,10 @@ const checkForPayment = (CheckoutRequestID, company_id, company_username, router
                 // If the payment exists, update the relevant fields
                 const updatePayment = `
                     UPDATE payments
-                    SET company_id = ?, company_username = ?, router_id = ?, router_name = ?
+                    SET company_id = ?, company_username = ?, router_id = ?, router_name = ?,  plan_id = ?, plan_name = ?, plan_validity = ?
                     WHERE CheckoutRequestID = ?
                 `;
-                db.query(updatePayment, [company_id, company_username, router_id, router_name, CheckoutRequestID], (err, updateResult) => {
+                db.query(updatePayment, [company_id, company_username, router_id, router_name, plan_id, plan_name, plan_validity, CheckoutRequestID], (err, updateResult) => {
                     if (err) {
                         return reject(err);  // Handle update error
                     }
@@ -143,7 +143,7 @@ const checkForPayment = (CheckoutRequestID, company_id, company_username, router
 
 // POST endpoint: payment-request-pro
 app.post('/payment-request-pro', (req, res) => {
-    const { amount, phone_number, company_id, company_username, router_id, router_name } = req.body;
+    const { amount, phone_number, company_id, company_username, router_id, router_name, plan_id, plan_name, plan_validity } = req.body;
 
     // Query the payhero_settings table
     db.query(
@@ -184,12 +184,12 @@ app.post('/payment-request-pro', (req, res) => {
 
                 // SQL query to insert the payment response into the paymentrequests table
                 const insertPaymentRequest = `
-                    INSERT INTO paymentrequests (success, status, reference, CheckoutRequestID, company_id, company_username, router_id, router_name)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+                    INSERT INTO paymentrequests (success, status, reference, CheckoutRequestID, company_id, company_username, router_id, router_name, plan_id, plan_name, plan_validity)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                 `;
 
                 // Insert data into the table
-                db.query(insertPaymentRequest, [success, status, reference, CheckoutRequestID, company_id, company_username, router_id, router_name], (err, result) => {
+                db.query(insertPaymentRequest, [success, status, reference, CheckoutRequestID, company_id, company_username, router_id, router_name,  plan_id, plan_name, plan_validity], (err, result) => {
                     if (err) {
                         console.error('Failed to insert payment request:', err);
                         return;
@@ -203,7 +203,7 @@ app.post('/payment-request-pro', (req, res) => {
                         console.log(`Checking payment for CheckoutRequestID: ${CheckoutRequestID}, Attempt: ${attempt + 1}`);
 
                         // Check for payment in the 'payments' table
-                        paymentData = await checkForPayment(CheckoutRequestID, company_id, company_username, router_id, router_name);
+                        paymentData = await checkForPayment(CheckoutRequestID, company_id, company_username, router_id, router_name, plan_id, plan_name, plan_validity);
 
                         if (paymentData) {
                             const responseData = {

@@ -25,8 +25,7 @@ function parsePythonLikeDict(str) {
         obj[cleanKey] = cleanValue;
     }
     return obj;
-}
-
+};
 
 
 // Create operation - to store the payment request data
