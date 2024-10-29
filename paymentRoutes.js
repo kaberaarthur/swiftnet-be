@@ -27,6 +27,46 @@ function parsePythonLikeDict(str) {
     return obj;
 };
 
+// Generate a Single Voucher
+const generateSingleVoucher = async (company_id, company_username, plan_id, plan_name, plan_validity, router_id, router_name) => {
+    // Get the current month and day of the week
+    const now = new Date();
+    const months = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+    const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+    const monthLetter = months[now.getMonth()]; // e.g. "S" for September
+    const dayLetter = days[now.getDay()]; // e.g. "M" for Monday
+
+    // Query to get the last used voucher ID from the `hotspot_vouchers` table
+    const [rows] = await db.promise().query('SELECT MAX(id) AS lastId FROM hotspot_vouchers');
+    const lastId = rows[0].lastId || 0; // Start from 0 if there are no vouchers
+
+    // Generate a random uppercase letter
+    const randomLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26)); // "A" to "Z"
+
+    // Create the code using the last ID plus 1
+    const numberPart = String(lastId + 1).padStart(4, '0'); // Ensures it has 4 digits, e.g., "0001"
+
+    // Combine everything to create the voucher code
+    const generatedCode = `${monthLetter}${dayLetter}${randomLetter}${numberPart}`; // e.g., "SMV0001"
+
+    // Prepare the INSERT query
+    const query = `
+        INSERT INTO hotspot_vouchers (router_id, router_name, plan_name, plan_id, voucher_code, company_username, company_id, plan_validity)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    // Execute the INSERT query
+    try {
+        await db.promise().execute(query, [router_id, router_name, plan_name, plan_id, generatedCode, company_username, company_id, plan_validity]);
+    } catch (error) {
+        console.error('Error executing query:', error);
+        throw new Error('Error generating voucher'); // Optional: Handle the error further up
+    }
+
+    return generatedCode; // Return the generated voucher code
+};
+
 
 // Create operation - to store the payment request data
 // To store the response gotten immediately after the stk request has been made
@@ -107,7 +147,7 @@ router.post('/payment', (req, res) => {
             return res.status(500).json({ error: 'Failed to save payment data' });
         }
 
-        res.status(201).json({ message: 'Payment data saved successfully' });
+        // res.status(201).json({ message: 'Payment data saved successfully' });
 
         // I need to create a Voucher here
 

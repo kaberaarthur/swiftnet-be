@@ -104,6 +104,26 @@ app.get('/:shortCode', (req, res) => {
     });
 });
 
+// Function for Generating a Voucher Code
+const generateVoucherCode = async (index, lastId) => {
+    // Get the current month and day of the week
+    const now = new Date();
+    const months = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+    const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+    const monthLetter = months[now.getMonth()]; // e.g. "S" for September
+    const dayLetter = days[now.getDay()]; // e.g. "M" for Monday
+
+    // Generate a random uppercase letter
+    const randomLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26)); // "A" to "Z"
+
+    // Create the code using the last ID plus the current index
+    const numberPart = String(lastId + index).padStart(4, '0'); // Ensures it has 4 digits, e.g., "0001"
+
+    // Combine everything
+    return `${monthLetter}${dayLetter}${randomLetter}${numberPart}`; // e.g., "SMV0001"
+};
+
 
 // Handle Payment Requests
 app.use(express.json());
@@ -120,25 +140,83 @@ const checkForPayment = (CheckoutRequestID, company_id, company_username, router
             if (err) {
                 return reject(err);  // Handle the error if something goes wrong
             }
+            
             if (results.length > 0) {
+                // Log the MpesaReceiptNumber field from the first result row
+                const MpesaReceiptNumber = results[0].MpesaReceiptNumber;
+                console.log(`MpesaReceiptNumber: ${results[0].MpesaReceiptNumber}`);
+                
                 // If the payment exists, update the relevant fields
                 const updatePayment = `
                     UPDATE payments
-                    SET company_id = ?, company_username = ?, router_id = ?, router_name = ?,  plan_id = ?, plan_name = ?, plan_validity = ?, mac_address = ?, phone_number = ?
+                    SET company_id = ?, company_username = ?, router_id = ?, router_name = ?, plan_id = ?, plan_name = ?, plan_validity = ?, mac_address = ?, phone_number = ?, usedStatus = ?
                     WHERE CheckoutRequestID = ?
                 `;
-                db.query(updatePayment, [company_id, company_username, router_id, router_name, plan_id, plan_name, plan_validity, mac_address, phone_number, CheckoutRequestID], (err, updateResult) => {
+                db.query(updatePayment, [company_id, company_username, router_id, router_name, plan_id, plan_name, plan_validity, mac_address, phone_number, "used", CheckoutRequestID], (err, updateResult) => {
                     if (err) {
                         return reject(err);  // Handle update error
                     }
-                    resolve(updateResult);  // Resolve the update result
+
+                    // Create Voucher Here
+                    // First, count the total rows in hotspot_vouchers
+                    db.query('SELECT COUNT(*) as total FROM hotspot_vouchers', (err, countResult) => {
+                        if (err) {
+                            return reject(err);  // Handle the error
+                        }
+
+                        const totalRows = countResult[0].total;
+
+                        // Generate the voucher code
+                        generateVoucherCode(1, totalRows).then(voucherCode => {
+                            
+                            // Prepare the insert query, now including mac_address and phone_number
+                            const insertQuery = `
+                                INSERT INTO hotspot_vouchers (router_id, router_name, plan_name, plan_id, plan_validity, company_username, company_id, voucher_code, mpesa_code, mac_address, phone_number)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            `;
+
+                            // Perform the insert into hotspot_vouchers
+                            db.query(insertQuery, [
+                                router_id, 
+                                router_name, 
+                                plan_name, 
+                                plan_id, 
+                                plan_validity, 
+                                company_username, 
+                                company_id, 
+                                voucherCode, 
+                                MpesaReceiptNumber,
+                                mac_address,  // Include mac_address
+                                phone_number   // Include phone_number
+                            ], (err, insertResult) => {
+                                if (err) {
+                                    console.error('Database query error:', err);  // Log the error
+                                    return resolve({  // Return custom message on error
+                                        status: 200,
+                                        message: 'We couldn\'t process your payment. Contact Admin for Help!'
+                                    });
+                                }
+
+                                console.log('Voucher code generated and stored: ', voucherCode);
+                                resolve({ 
+                                    voucherCode,  // Include voucherCode in the resolved object
+                                    status: 'success' // Include a success status
+                                });
+                            });
+                        });
+                    });
                 });
+                
             } else {
-                resolve(null);  // Return null if no payment found
+                return resolve({
+                    status: 200,
+                    message: 'We did not receive your payment on time, Contact Admin for Help.'
+                });
             }
         });
     });
 };
+
 
 
 // POST endpoint: payment-request-pro
@@ -205,17 +283,10 @@ app.post('/payment-request-pro', (req, res) => {
                         // Check for payment in the 'payments' table
                         paymentData = await checkForPayment(CheckoutRequestID, company_id, company_username, router_id, router_name, plan_id, plan_name, plan_validity, mac_address, phone_number);
 
-                        if (paymentData) {
-                            const responseData = {
-                                success: true,
-                                status: paymentData.status,
-                                reference: paymentData.reference,
-                                CheckoutRequestID: paymentData.CheckoutRequestID
-                            };
-
+                        if (paymentData && paymentData.voucherCode) {  // Check if voucherCode exists
                             return res.status(200).json({
                                 message: 'Payment request processed successfully',
-                                data: responseData
+                                voucherCode: paymentData.voucherCode  // Return the voucher code
                             });
                         }
 
