@@ -139,7 +139,7 @@ router.delete('/hotspot-vouchers-delete-all', async (req, res) => {
 
 // Redeem a voucher
 router.post('/hotspot-vouchers-redeem', async (req, res) => {
-    const { router_id, voucherCode } = req.body;
+    const { router_id, voucherCode, macAddress } = req.body;
 
     let connection;
     try {
@@ -163,18 +163,50 @@ router.post('/hotspot-vouchers-redeem', async (req, res) => {
             return res.status(200).json({ success: false, message: 'You are on the wrong router' });
         }
 
-        // Check if the voucher has already been used
-        if (voucherData.status === 'used') {
+        // Check if `current_users` is below `total_users`
+        if (voucherData.current_users >= voucherData.total_users) {
             connection.release();
-            return res.status(200).json({ success: false, message: 'Voucher has already been used' });
+            return res.status(200).json({ success: false, message: 'Voucher user limit reached' });
         }
 
-        // Update voucher status to "used" and set the `voucher_redeemed_at` timestamp
+        // Calculate voucher expiration time based on `voucher_start` and `plan_validity`
+        const now = new Date();
+        if (voucherData.voucher_start) {
+            const voucherExpiration = new Date(voucherData.voucher_start);
+            voucherExpiration.setHours(voucherExpiration.getHours() + voucherData.plan_validity);
+
+            // Check if current time is within the redeemable timeframe
+            if (now < new Date(voucherData.voucher_start) || now > voucherExpiration) {
+                connection.release();
+                return res.status(200).json({ success: false, message: 'Voucher redemption period has ended' });
+            }
+        } else {
+            // Set `voucher_start` to the current timestamp if this is the first redemption
+            await connection.query(
+                `UPDATE hotspot_vouchers
+                 SET voucher_start = NOW()
+                 WHERE voucher_code = ?`,
+                [voucherCode]
+            );
+        }
+
+        // Prepare MAC address and redemption time for storage
+        const newMacAddress = voucherData.mac_address 
+            ? `${voucherData.mac_address},${macAddress}` 
+            : macAddress;
+        const newVoucherRedeemedAt = voucherData.voucher_redeemed_at 
+            ? `${voucherData.voucher_redeemed_at},${new Date().toISOString().slice(0, 19).replace('T', ' ')}`
+            : new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+        // Increment `current_users` for the voucher and update relevant fields
         await connection.query(
             `UPDATE hotspot_vouchers
-             SET status = 'used', voucher_redeemed_at = NOW()
+             SET current_users = current_users + 1,
+                 status = CASE WHEN current_users + 1 >= total_users THEN 'used' ELSE status END,
+                 mac_address = ?, 
+                 voucher_redeemed_at = ?
              WHERE voucher_code = ?`,
-            [voucherCode]
+            [newMacAddress, newVoucherRedeemedAt, voucherCode]
         );
 
         connection.release();
@@ -187,9 +219,7 @@ router.post('/hotspot-vouchers-redeem', async (req, res) => {
 });
 
 
-// Add a function to create a user in Mikrotik and return a password
-
-
+// Add a function to create a user in Mikrotik and generate a password
 
 
 module.exports = router;
