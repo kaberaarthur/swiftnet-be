@@ -137,5 +137,55 @@ router.delete('/hotspot-vouchers-delete-all', async (req, res) => {
     }
 });
 
+// Redeem a voucher
+router.post('/hotspot-vouchers-redeem', async (req, res) => {
+    const { router_id, voucherCode } = req.body;
+
+    let connection;
+    try {
+        connection = await db.getConnection();
+
+        // Check if the voucher exists with the provided voucher_code
+        const [voucher] = await connection.query(
+            `SELECT * FROM hotspot_vouchers WHERE voucher_code = ?`,
+            [voucherCode]
+        );
+
+        if (voucher.length === 0) {
+            connection.release();
+            return res.status(200).json({ success: false, message: 'Voucher not found' });
+        }
+
+        // Check if the router_id matches
+        const voucherData = voucher[0];
+        if (voucherData.router_id !== router_id) {
+            connection.release();
+            return res.status(200).json({ success: false, message: 'You are on the wrong router' });
+        }
+
+        // Check if the voucher has already been used
+        if (voucherData.status === 'used') {
+            connection.release();
+            return res.status(200).json({ success: false, message: 'Voucher has already been used' });
+        }
+
+        // Update voucher status to "used" and set the `voucher_redeemed_at` timestamp
+        await connection.query(
+            `UPDATE hotspot_vouchers
+             SET status = 'used', voucher_redeemed_at = NOW()
+             WHERE voucher_code = ?`,
+            [voucherCode]
+        );
+
+        connection.release();
+        res.status(200).json({ success: true, message: 'Voucher redeemed successfully' });
+    } catch (error) {
+        console.error('Error redeeming voucher:', error);
+        if (connection) connection.release();
+        res.status(200).json({ success: false, message: 'Server error' });
+    }
+});
+
+
 
 module.exports = router;
