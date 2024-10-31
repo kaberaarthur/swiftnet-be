@@ -187,5 +187,9 @@ router.post('/hotspot-vouchers-redeem', async (req, res) => {
 });
 
 
+// Add a function to create a user in Mikrotik and return a password
+
+
+
 
 module.exports = router;

@@ -27,6 +27,7 @@ const staticPlansRoutes = require('./staticplans/staticPlansRoutes');
 // Client Routes
 const staticClientsRoutes = require('./clients/static/allroutes');
 const pppoeClientsRoutes = require('./clients/pppoe/allroutes');
+const hotspotClientsRoutes = require('./clients/hotspot/allroutes');
 
 // Voucher Routes
 const hotspotVouchersRoutes = require('./vouchers/hotspot/allroutes');
@@ -65,6 +66,7 @@ app.use(staticPlansRoutes);
 // Clients Routes
 app.use(staticClientsRoutes);
 app.use(pppoeClientsRoutes);
+app.use(hotspotClientsRoutes);
 
 // Voucher Routes
 app.use(hotspotVouchersRoutes);
