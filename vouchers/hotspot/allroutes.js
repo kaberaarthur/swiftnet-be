@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../dbPromise'); // Change to use `db` instead of `dbPromise`
 const { Client } = require('ssh2');
+const e = require('express');
 
 // Function to generate a voucher code
 const generateVoucherCode = async (connection, index, lastId) => {
@@ -148,6 +149,8 @@ async function redeemVoucher(router_id, voucherCode, macAddress) {
 // Function to fetch router and create user if not already created
 async function createUser(macAddress, routerId, planId, password, targetRow) {
     console.log("Voucher Start Time: ", targetRow.voucher_start)
+    const serviceStart = targetRow.voucher_start;
+    const serviceExpiry = new Date(new Date(serviceStart).getTime() + targetRow.plan_validity);
 
     let connection;
     try {
@@ -166,7 +169,48 @@ async function createUser(macAddress, routerId, planId, password, targetRow) {
         }
 
         const router = routers[0];
-        console.log('Router Details:', router);
+
+        // Check if user with Mac Address Exists inside the DB Table
+        const [rows] = await connection.execute(
+            'SELECT 1 FROM hotspot_clients WHERE mac_address = ? LIMIT 1',
+            [macAddress]
+        );
+
+        if (rows.length > 0) {
+            console.log('User with that Mac Address has been found');
+
+            const updateHotspotUser = await connection.execute(
+                `UPDATE hotspot_clients SET 
+                    service_start = ?, 
+                    service_expiry = ?, 
+                    password = ? 
+                WHERE mac_address = ?`,
+                [serviceStart, serviceExpiry, password, macAddress]
+            );
+        } else {
+            console.log("No Mac User Found, creating one")
+
+            const newHotspotUser = await connection.execute(
+                `INSERT INTO hotspot_clients (
+                    mac_address, plan_id, plan_name, plan_validity, 
+                    service_start, service_expiry, router_name, router_id, 
+                    company_username, company_id, password
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    macAddress,
+                    targetRow.plan_id,
+                    targetRow.plan_name,
+                    targetRow.plan_validity,
+                    serviceStart,
+                    serviceExpiry,
+                    targetRow.router_name,
+                    targetRow.router_id,
+                    targetRow.company_username,
+                    targetRow.company_id,
+                    password
+                ]
+            );
+        }
 
         // Check if user already exists on the MikroTik router
         const conn = new Client();
@@ -223,7 +267,6 @@ async function createUser(macAddress, routerId, planId, password, targetRow) {
 
 // Check Hotspot User with MacAddress
 async function checkMacAddressExists(mac_address) {
-    const connection = await mysql.createConnection(dbConfig);
     
     try {
       const [rows] = await connection.execute(
@@ -244,7 +287,7 @@ async function updateOrCreateUser(connection, userExists, macAddress, password, 
     const serviceStart = targetRow.voucher_start;
     const serviceExpiry = new Date(new Date(serviceStart).getTime() + targetRow.plan_validity); // Adding plan validity in hours
 
-    const macExists = await checkMacAddressExists(macAddress);
+    // const macExists = await checkMacAddressExists(macAddress);
 
     if (macExists) {
         // Update existing user in `hotspot_clients` table
