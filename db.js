@@ -3,8 +3,8 @@ const mysql = require('mysql2');
 // MySQL connection setup
 const db = mysql.createConnection({
     host: 'localhost',
-    user: 'root',
-    password: '',
+    user: 'swiftnet',
+    password: 'nOIqSz3aGgYM9z7J',
     database: 'swiftnet'
 });
 
