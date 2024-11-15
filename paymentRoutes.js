@@ -151,7 +151,7 @@ router.post('/payment', (req, res) => {
         .catch(err => {
             console.error('Error saving payment:', err);
             // Send detailed error response
-            res.status(400).json({ error: 'Failed to save payment data', details: err.message || err });
+            res.status(200).json({ error: 'Failed to save payment data', details: err.message || err });
         });
 });
 
