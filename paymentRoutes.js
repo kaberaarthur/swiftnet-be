@@ -146,10 +146,8 @@ router.post('/payment', (req, res) => {
     // Use promise-based query handling
     db.query(query, [Amount, CheckoutRequestID, ExternalReference, MerchantRequestID, MpesaReceiptNumber, Phone, ResultCode, ResultDesc, Status])
         .then(result => {
-            // Assuming the voucher creation logic goes here
-            // Example: createVoucherFunction()
-
-            res.status(201).json({ message: 'Payment data saved successfully and voucher created' });
+            // Send detailed error response
+            res.status(500).json({ error: 'Failed to save payment data', details: err.message || err });
         })
         .catch(err => {
             console.error('Error saving payment:', err);
