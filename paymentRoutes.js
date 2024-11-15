@@ -102,19 +102,21 @@ router.post('/payment-request', (req, res) => {
             VALUES (?, ?, ?, ?)
         `;
 
-        db.query(query, [successValue, status, reference, CheckoutRequestID], (err, result) => {
-            if (err) {
+        // Use promise-based query handling
+        db.query(query, [successValue, status, reference, CheckoutRequestID])
+            .then(result => {
+                res.status(201).json({ message: 'Payment request data saved successfully' });
+            })
+            .catch(err => {
                 console.error('Error saving payment request:', err);
-                return res.status(500).json({ error: 'Failed to save payment request data' });
-            }
-
-            res.status(201).json({ message: 'Payment request data saved successfully' });
-        });
+                res.status(500).json({ error: 'Failed to save payment request data' });
+            });
     } catch (error) {
         console.error('Error processing request:', error);
         res.status(400).json({ error: 'Invalid request format' });
     }
 });
+
 
 
 // To Process the callback response
@@ -141,35 +143,41 @@ router.post('/payment', (req, res) => {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    db.query(query, [Amount, CheckoutRequestID, ExternalReference, MerchantRequestID, MpesaReceiptNumber, Phone, ResultCode, ResultDesc, Status], (err, result) => {
-        if (err) {
+    // Use promise-based query handling
+    db.query(query, [Amount, CheckoutRequestID, ExternalReference, MerchantRequestID, MpesaReceiptNumber, Phone, ResultCode, ResultDesc, Status])
+        .then(result => {
+            // Assuming the voucher creation logic goes here
+            // Example: createVoucherFunction()
+
+            res.status(201).json({ message: 'Payment data saved successfully and voucher created' });
+        })
+        .catch(err => {
             console.error('Error saving payment:', err);
-            return res.status(500).json({ error: 'Failed to save payment data' });
-        }
-
-        // res.status(201).json({ message: 'Payment data saved successfully' });
-
-        // I need to create a Voucher here
-
-    });
+            res.status(500).json({ error: 'Failed to save payment data' });
+        });
 });
+
 
 // Read operation - to fetch the saved response data
 router.get('/payments', (req, res) => {
+    console.log("See Payments");
+    
     // SQL query to retrieve all the payment records
     const query = 'SELECT * FROM payments';
 
-    db.query(query, (err, results) => {
-        if (err) {
+    // Use promise-based syntax
+    db.query(query)
+        .then(results => {
+            res.status(200).json(results);
+        })
+        .catch(err => {
             console.error('Error fetching payments:', err);
-            return res.status(500).json({ error: 'Failed to fetch payments data' });
-        }
-
-        res.status(200).json(results);
-    });
+            res.status(500).json({ error: 'Failed to fetch payments data' });
+        });
 });
 
-// Endpoint to check transaction
+
+// Check the status of a transaction
 router.post('/check-transaction', (req, res) => {
     // Get the MpesaReceiptNumber from the request body
     const { mpesaReceiptNumber } = req.body;
@@ -185,40 +193,39 @@ router.post('/check-transaction', (req, res) => {
         WHERE MpesaReceiptNumber = ?
     `;
 
-    db.query(findCheckoutRequestIDQuery, [mpesaReceiptNumber], (err, results) => {
-        if (err) {
-            console.error('Error finding CheckoutRequestID:', err);
-            return res.status(200).json({ status: 'failure', message: 'Failed to retrieve CheckoutRequestID' });
-        }
-
-        if (results.length === 0) {
-            return res.status(200).json({ status: 'failure', message: 'No matching record found in payments table' });
-        }
-
-        const { CheckoutRequestID } = results[0];
-
-        // SQL query to find the reference from paymentrequests table
-        const findReferenceQuery = `
-            SELECT reference
-            FROM paymentrequests
-            WHERE CheckoutRequestID = ?
-        `;
-
-        db.query(findReferenceQuery, [CheckoutRequestID], (err, results) => {
-            if (err) {
-                console.error('Error finding reference:', err);
-                return res.status(200).json({ status: 'failure', message: 'Failed to retrieve reference' });
+    // Use promise-based query handling for the first query
+    db.query(findCheckoutRequestIDQuery, [mpesaReceiptNumber])
+        .then(results => {
+            if (results.length === 0) {
+                return res.status(200).json({ status: 'failure', message: 'No matching record found in payments table' });
             }
 
+            const { CheckoutRequestID } = results[0];
+
+            // SQL query to find the reference from paymentrequests table
+            const findReferenceQuery = `
+                SELECT reference
+                FROM paymentrequests
+                WHERE CheckoutRequestID = ?
+            `;
+
+            // Use promise-based query handling for the second query
+            return db.query(findReferenceQuery, [CheckoutRequestID]);
+        })
+        .then(results => {
             if (results.length === 0) {
                 return res.status(200).json({ status: 'failure', message: 'No matching record found in paymentrequests table' });
             }
 
             const { reference } = results[0];
             res.status(200).json({ status: 'success', message: 'Transaction found successfully', reference });
+        })
+        .catch(err => {
+            console.error('Error processing transaction:', err);
+            res.status(200).json({ status: 'failure', message: 'An error occurred while processing the transaction' });
         });
-    });
 });
+
 
 
 module.exports = router;
