@@ -1,4 +1,4 @@
-const db = require('./db');
+const db = require('./dbPromise');
 const crypto = require('crypto');
 
 // Function to generate a short code for the URL

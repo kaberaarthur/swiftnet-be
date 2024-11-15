@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('./db'); // Import your database connection
+const db = require('./dbPromise');
 
 // Create a new log entry
 router.post('/local_logs', (req, res) => {

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('./db');
+const db = require('./dbPromise');
 
 // CREATE a new router entry
 router.post('/routers', (req, res) => {

@@ -1,5 +1,5 @@
 const express = require('express');
-const db = require('../db');
+const db = require('../dbPromise');
 const { runSSHCommand } = require('./sshCommand');
 
 const router = express.Router();

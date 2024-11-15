@@ -1,5 +1,5 @@
 const express = require('express');
-const db = require('./db'); // Import the db connection
+const db = require('./dbPromise');
 
 const router = express.Router();
 

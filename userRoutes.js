@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require('./db'); // Import the db connection
+const db = require('./dbPromise');
 
 const router = express.Router();
 

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('./db'); // Assuming you have your MySQL setup in db.js
+const db = require('./dbPromise');
 
 // CREATE a new IP pool
 router.post('/ippools', (req, res) => {

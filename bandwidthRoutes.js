@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('./db');
+const db = require('./dbPromise');
 
 // GET all bandwidths for a specific company or all if no filter is applied
 router.get('/bandwidths', (req, res) => {
