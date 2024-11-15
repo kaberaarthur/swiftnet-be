@@ -146,12 +146,12 @@ router.post('/payment', (req, res) => {
     // Use promise-based query handling
     db.query(query, [Amount, CheckoutRequestID, ExternalReference, MerchantRequestID, MpesaReceiptNumber, Phone, ResultCode, ResultDesc, Status])
         .then(result => {
-            // Send detailed error response
-            res.status(500).json({ error: 'Failed to save payment data', details: err.message || err });
+            res.status(201).json({ message: 'Payment data saved successfully and voucher created' });
         })
         .catch(err => {
             console.error('Error saving payment:', err);
-            res.status(500).json({ error: 'Failed to save payment data' });
+            // Send detailed error response
+            res.status(500).json({ error: 'Failed to save payment data', details: err.message || err });
         });
 });
 
@@ -170,12 +170,12 @@ router.get('/payments', (req, res) => {
         })
         .catch(err => {
             console.error('Error fetching payments:', err);
-            res.status(500).json({ error: 'Failed to fetch payments data' });
+            res.status(500).json({ error: 'Failed to fetch payments data', details: err.message || err  });
         });
 });
 
 
-// Check the status of a transaction
+// Check the status of a
 router.post('/check-transaction', (req, res) => {
     // Get the MpesaReceiptNumber from the request body
     const { mpesaReceiptNumber } = req.body;
