@@ -233,7 +233,7 @@ app.post('/payment-request-pro', (req, res) => {
         (err, planResults) => {
             if (err) {
                 console.error('Error querying hotspot_plans table:', err);
-                return res.status(500).json({ error: 'Error processing payment request.' });
+                return res.status(500).json({ error: 'Error processing payment request.', errorDetails: err.message || err });
             }
 
             if (planResults.length === 0) {
@@ -252,7 +252,7 @@ app.post('/payment-request-pro', (req, res) => {
                 async (err, payheroResults) => {
                     if (err) {
                         console.error('Database error:', err);
-                        return res.status(500).json({ error: 'Error processing payment request.' });
+                        return res.status(500).json({ error: 'Error processing payment request.', errorDetails: err.message || err  });
                     }
 
                     if (payheroResults.length === 0) {
