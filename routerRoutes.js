@@ -1,27 +1,47 @@
 const express = require('express');
 const router = express.Router();
-const db = require('./dbPromise');
+const db = require('./dbPromise'); // Import the promise-based database pool
 
 // CREATE a new router entry
-router.post('/routers', (req, res) => {
-    const { router_name, ip_address, username, interface, router_secret, description, company_username, company_id, created_by } = req.body;
-    
+router.post('/routers', async (req, res) => {
+    const {
+        router_name,
+        ip_address,
+        username,
+        interface,
+        router_secret,
+        description,
+        company_username,
+        company_id,
+        created_by,
+    } = req.body;
+
     const query = `
         INSERT INTO routers 
         (router_name, ip_address, username, interface, router_secret, description, company_username, company_id, created_by)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    
-    db.query(query, [router_name, ip_address, username, interface, router_secret, description, company_username, company_id, created_by], (err, result) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+
+    try {
+        const [result] = await db.query(query, [
+            router_name,
+            ip_address,
+            username,
+            interface,
+            router_secret,
+            description,
+            company_username,
+            company_id,
+            created_by,
+        ]);
         res.status(201).json({ message: 'Router added successfully', id: result.insertId });
-    });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // READ all routers or filter by company_id
-router.get('/routers', (req, res) => {
+router.get('/routers', async (req, res) => {
     const { company_id } = req.query;
     let query = 'SELECT * FROM routers';
     let queryParams = [];
@@ -31,34 +51,46 @@ router.get('/routers', (req, res) => {
         queryParams.push(company_id);
     }
 
-    db.query(query, queryParams, (err, results) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+    try {
+        const [results] = await db.query(query, queryParams);
         res.status(200).json(results);
-    });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // READ a single router by ID
-router.get('/routers/:id', (req, res) => {
+router.get('/routers/:id', async (req, res) => {
     const { id } = req.params;
-    db.query('SELECT * FROM routers WHERE id = ?', [id], (err, result) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+
+    try {
+        const [result] = await db.query('SELECT * FROM routers WHERE id = ?', [id]);
         if (result.length === 0) {
             return res.status(404).json({ message: 'Router not found' });
         }
         res.status(200).json(result[0]);
-    });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // UPDATE a router by ID
-router.put('/routers/:id', (req, res) => {
+router.put('/routers/:id', async (req, res) => {
     const { id } = req.params;
-    const { router_name, ip_address, username, interface, router_secret, description, company_username, company_id, created_by, status } = req.body;
+    const {
+        router_name,
+        ip_address,
+        username,
+        interface,
+        router_secret,
+        description,
+        company_username,
+        company_id,
+        created_by,
+        status,
+    } = req.body;
 
-    // Object that maps the column names to the values from the request body
+    // Object mapping column names to request body values
     const fieldsToUpdate = {
         router_name,
         ip_address,
@@ -72,57 +104,50 @@ router.put('/routers/:id', (req, res) => {
         status,
     };
 
-    // Array to hold the set clauses (e.g. "router_name = ?") and values
-    let setClauses = [];
-    let values = [];
-
-    // Dynamically construct the query for fields that are not undefined
-    Object.keys(fieldsToUpdate).forEach((field) => {
-        if (fieldsToUpdate[field] !== undefined) { // Only include non-undefined fields
+    // Build query dynamically for non-undefined fields
+    const setClauses = [];
+    const values = [];
+    for (const [field, value] of Object.entries(fieldsToUpdate)) {
+        if (value !== undefined) {
             setClauses.push(`${field} = ?`);
-            values.push(fieldsToUpdate[field]);
+            values.push(value);
         }
-    });
+    }
 
-    // If no fields are provided, return an error
     if (setClauses.length === 0) {
         return res.status(400).json({ message: 'No fields provided to update' });
     }
 
-    // Construct the final query
     const query = `
         UPDATE routers SET ${setClauses.join(', ')}
         WHERE id = ?
     `;
-
-    // Add the id to the values array for the WHERE clause
     values.push(id);
 
-    // Execute the query
-    db.query(query, values, (err, result) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+    try {
+        const [result] = await db.query(query, values);
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: 'Router not found' });
         }
         res.status(200).json({ message: 'Router updated successfully' });
-    });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-
 // DELETE a router by ID
-router.delete('/routers/:id', (req, res) => {
+router.delete('/routers/:id', async (req, res) => {
     const { id } = req.params;
-    db.query('DELETE FROM routers WHERE id = ?', [id], (err, result) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+
+    try {
+        const [result] = await db.query('DELETE FROM routers WHERE id = ?', [id]);
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: 'Router not found' });
         }
         res.status(200).json({ message: 'Router deleted successfully' });
-    });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 module.exports = router;
