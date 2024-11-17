@@ -229,7 +229,7 @@ async function createUser(macAddress, routerId, planId, password, targetRow) {
                     }).on('close', () => {
                         if (!userExists) {
                             // If user doesn't exist, create it
-                            conn.exec(`/ip hotspot user add name="${macAddress}" password="${password}"`, (err) => {
+                            conn.exec(`/ip hotspot user add name="${macAddress}" password="${password}" profile="${targetRow.plan_name}"`, (err) => {
                                 conn.end();
                                 if (err) return reject("command_failed");
                                 console.log(`User created for MAC Address: ${macAddress}`);
@@ -237,7 +237,7 @@ async function createUser(macAddress, routerId, planId, password, targetRow) {
                             });
                         } else {
                             // User exists, update the password
-                            conn.exec(`/ip hotspot user set [find name="${macAddress}"] password="${password}"`, (err) => {
+                            conn.exec(`/ip hotspot user set [find name="${macAddress}"] password="${password}" profile="${targetRow.plan_name}"`, (err) => {
                                 conn.end();
                                 if (err) return reject("command_failed");
                                 console.log(`Password updated for user with MAC Address: ${macAddress}`);
