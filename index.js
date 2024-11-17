@@ -1,7 +1,7 @@
 // Import Dependencies
 const express = require('express');
 const cors = require('cors');
-const db = require('./db');
+const db = require('./dbPromise');
 const bodyParser = require('body-parser');
 
 // Import Routes
@@ -135,212 +135,214 @@ app.use(express.json());
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 // Function to check if CheckoutRequestID exists in the payments table
-const checkForPayment = (CheckoutRequestID, company_id, company_username, router_id, router_name, plan_id, plan_name, plan_validity, mac_address, phone_number, shared_users) => {
-    return new Promise((resolve, reject) => {
+const checkForPayment = async (
+    CheckoutRequestID,
+    company_id,
+    company_username,
+    router_id,
+    router_name,
+    plan_id,
+    plan_name,
+    plan_validity,
+    mac_address,
+    phone_number,
+    shared_users
+) => {
+    try {
         // First, check if the payment exists with the given CheckoutRequestID
-        db.query('SELECT * FROM payments WHERE CheckoutRequestID = ?', [CheckoutRequestID], (err, results) => {
-            if (err) {
-                return reject(err);  // Handle the error if something goes wrong
-            }
-            
-            if (results.length > 0) {
-                // Log the MpesaReceiptNumber field from the first result row
-                const MpesaReceiptNumber = results[0].MpesaReceiptNumber;
-                console.log(`MpesaReceiptNumber: ${MpesaReceiptNumber}`);
-                
-                // Update the payment if it exists
-                const updatePayment = `
-                    UPDATE payments
-                    SET company_id = ?, company_username = ?, router_id = ?, router_name = ?, plan_id = ?, plan_name = ?, plan_validity = ?, mac_address = ?, phone_number = ?, usedStatus = ?
-                    WHERE CheckoutRequestID = ?
-                `;
-                db.query(updatePayment, [company_id, company_username, router_id, router_name, plan_id, plan_name, plan_validity, mac_address, phone_number, "used", CheckoutRequestID], (err, updateResult) => {
-                    if (err) {
-                        return reject(err);
-                    }
+        const [results] = await db.query(
+            'SELECT * FROM payments WHERE CheckoutRequestID = ?',
+            [CheckoutRequestID]
+        );
 
-                    // Count rows in hotspot_vouchers and generate a voucher code
-                    db.query('SELECT COUNT(*) as total FROM hotspot_vouchers', (err, countResult) => {
-                        if (err) {
-                            return reject(err);
-                        }
+        if (results.length > 0) {
+            // Log the MpesaReceiptNumber field from the first result row
+            const MpesaReceiptNumber = results[0].MpesaReceiptNumber;
+            console.log(`MpesaReceiptNumber: ${MpesaReceiptNumber}`);
 
-                        const totalRows = countResult[0].total;
+            // Update the payment if it exists
+            const updatePayment = `
+                UPDATE payments
+                SET company_id = ?, company_username = ?, router_id = ?, router_name = ?, plan_id = ?, plan_name = ?, plan_validity = ?, mac_address = ?, phone_number = ?, usedStatus = ?
+                WHERE CheckoutRequestID = ?
+            `;
+            await db.query(updatePayment, [
+                company_id,
+                company_username,
+                router_id,
+                router_name,
+                plan_id,
+                plan_name,
+                plan_validity,
+                mac_address,
+                phone_number,
+                "used",
+                CheckoutRequestID,
+            ]);
 
-                        generateVoucherCode(1, totalRows).then(voucherCode => {
-                            
-                            // Insert into hotspot_vouchers, including shared_users as total_users
-                            const insertQuery = `
-                                INSERT INTO hotspot_vouchers (
-                                    router_id, router_name, plan_name, plan_id, plan_validity, company_username, company_id, voucher_code, mpesa_code, mac_address, phone_number, total_users
-                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                            `;
+            // Count rows in hotspot_vouchers and generate a voucher code
+            const [countResult] = await db.query(
+                'SELECT COUNT(*) as total FROM hotspot_vouchers'
+            );
+            const totalRows = countResult[0].total;
 
-                            db.query(insertQuery, [
-                                router_id, 
-                                router_name, 
-                                plan_name, 
-                                plan_id, 
-                                plan_validity, 
-                                company_username, 
-                                company_id, 
-                                voucherCode, 
-                                MpesaReceiptNumber,
-                                mac_address, 
-                                phone_number,
-                                shared_users  // Insert shared_users as total_users
-                            ], (err, insertResult) => {
-                                if (err) {
-                                    console.error('Database query error:', err);
-                                    return resolve({
-                                        status: 200,
-                                        message: 'We couldn\'t process your payment. Contact Admin for Help!'
-                                    });
-                                }
+            const voucherCode = await generateVoucherCode(1, totalRows);
 
-                                console.log('Voucher code generated and stored:', voucherCode);
-                                resolve({ 
-                                    voucherCode,
-                                    status: 'success'
-                                });
-                            });
-                        });
-                    });
-                });
-                
-            } else {
-                return resolve({
-                    status: 200,
-                    message: 'We did not receive your payment on time, Contact Admin for Help.'
-                });
-            }
-        });
-    });
+            // Insert into hotspot_vouchers, including shared_users as total_users
+            const insertQuery = `
+                INSERT INTO hotspot_vouchers (
+                    router_id, router_name, plan_name, plan_id, plan_validity, company_username, company_id, voucher_code, mpesa_code, mac_address, phone_number, total_users
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            await db.query(insertQuery, [
+                router_id,
+                router_name,
+                plan_name,
+                plan_id,
+                plan_validity,
+                company_username,
+                company_id,
+                voucherCode,
+                MpesaReceiptNumber,
+                mac_address,
+                phone_number,
+                shared_users, // Insert shared_users as total_users
+            ]);
+
+            console.log('Voucher code generated and stored:', voucherCode);
+            return {
+                voucherCode,
+                status: 'success',
+            };
+        } else {
+            return {
+                status: 200,
+                message:
+                    'We did not receive your payment on time, Contact Admin for Help.',
+            };
+        }
+    } catch (err) {
+        console.error('Database query error:', err);
+        return {
+            status: 200,
+            message: "We couldn't process your payment. Contact Admin for Help!",
+        };
+    }
 };
 
 
-
-
 // POST endpoint: payment-request-pro
-app.post('/payment-request-pro', (req, res) => {
+app.post('/payment-request-pro', async (req, res) => {
     const { phone_number, company_id, company_username, router_id, router_name, plan_id, mac_address } = req.body;
 
-    // Query the hotspot_plans table for the actual plan details
-    // Prevent the user from inputting their own amount, plan validity in the frontend
-    db.query(
-        'SELECT plan_price, plan_validity, plan_name, router_name, router_id, shared_users FROM hotspot_plans WHERE id = ?',
-        [plan_id],
-        (err, planResults) => {
-            if (err) {
-                console.error('Error querying hotspot_plans table:', err);
-                return res.status(500).json({ error: 'Error processing payment request.', errorDetails: err.message || err });
-            }
+    try {
+        // Query the hotspot_plans table for the actual plan details
+        const [planResults] = await db.query(
+            'SELECT plan_price, plan_validity, plan_name, router_name, router_id, shared_users FROM hotspot_plans WHERE id = ?',
+            [plan_id]
+        );
 
-            if (planResults.length === 0) {
-                return res.status(400).json({ error: "Error processing payment, cannot find the specified plan." });
-            }
-
-            // Destructure the necessary fields from the plan query results
-            const { plan_price, plan_validity, plan_name, router_name, router_id, shared_users } = planResults[0];
-            const amount = Math.floor(plan_price); // Assign plan_price to amount
-
-
-            // Query the payhero_settings table
-            db.query(
-                'SELECT callback_url, channel_id, payhero_token FROM payhero_settings WHERE company_id = ?',
-                [company_id],
-                async (err, payheroResults) => {
-                    if (err) {
-                        console.error('Database error:', err);
-                        return res.status(500).json({ error: 'Error processing payment request.', errorDetails: err.message || err  });
-                    }
-
-                    if (payheroResults.length === 0) {
-                        return res.status(400).json({ error: "Error processing payment, cannot find payhero settings" });
-                    }
-
-                    const { callback_url, channel_id, payhero_token } = payheroResults[0];
-
-                    const paymentPayload = {
-                        amount,
-                        phone_number,
-                        channel_id: Number(channel_id),
-                        provider: "m-pesa",
-                        external_reference: "INV-009",
-                        callback_url
-                    };
-
-                    const headers = {
-                        'Content-Type': 'application/json',
-                        'Authorization': `${payhero_token}`
-                    };
-
-                    /*console.log("####################")
-                    console.log("The Headers: ", headers)
-                    console.log("####################")*/
-
-                    try {
-                        // Make a POST request to the external payment service
-                        const paymentResponse = await axios.post('https://backend.payhero.co.ke/api/v2/payments', paymentPayload, { headers });
-
-                        // Extract relevant fields from the response
-                        const { success, status, reference, CheckoutRequestID } = paymentResponse.data;
-
-                        // SQL query to insert the payment response into the paymentrequests table
-                        const insertPaymentRequest = `
-                            INSERT INTO paymentrequests (success, status, reference, CheckoutRequestID, company_id, company_username, router_id, router_name, plan_id, plan_name, plan_validity, mac_address, phone_number)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-                        `;
-
-                        // Insert data into the table
-                        db.query(insertPaymentRequest, [success, status, reference, CheckoutRequestID, company_id, company_username, router_id, router_name, plan_id, plan_name, plan_validity, mac_address, phone_number], (err, result) => {
-                            if (err) {
-                                console.error('Failed to insert payment request:', err);
-                                return;
-                            }
-                            console.log('Payment request inserted with ID:', result.insertId);
-                        });
-
-                        if (success && CheckoutRequestID) {
-                            let paymentData = null;
-                            for (let attempt = 0; attempt < 6; attempt++) {
-                                console.log(`Checking payment for CheckoutRequestID: ${CheckoutRequestID}, Attempt: ${attempt + 1}`);
-
-                                // Check for payment in the 'payments' table
-                                paymentData = await checkForPayment(CheckoutRequestID, company_id, company_username, router_id, router_name, plan_id, plan_name, plan_validity, mac_address, phone_number, shared_users);
-
-                                if (paymentData && paymentData.voucherCode) {  // Check if voucherCode exists
-                                    return res.status(200).json({
-                                        message: 'Payment request processed successfully',
-                                        voucherCode: paymentData.voucherCode  // Return the voucher code
-                                    });
-                                }
-
-                                // Wait for 10 seconds before next attempt
-                                await delay(10000);
-                            }
-
-                            // If no payment record is found after 6 tries, return failure
-                            return res.status(200).json({
-                                status: 'failure',
-                                message: 'Payment not found after multiple attempts.'
-                            });
-                        } else {
-                            // Handle case where the initial payment request fails
-                            return res.status(200).json({
-                                status: 'failure',
-                                message: paymentResponse.data.error_message || 'Payment request failed.'
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Error making payment request:', error);
-                        return res.status(500).json({ error: 'An error occurred while processing the payment request.' });
-                    }
-                }
-            );
+        if (planResults.length === 0) {
+            return res.status(400).json({ error: "Error processing payment, cannot find the specified plan." });
         }
-    );
+
+        // Destructure the necessary fields from the plan query results
+        const { plan_price, plan_validity, plan_name, router_name, router_id, shared_users } = planResults[0];
+        const amount = Math.floor(plan_price); // Assign plan_price to amount
+
+        // Query the payhero_settings table
+        const [payheroResults] = await db.query(
+            'SELECT callback_url, channel_id, payhero_token FROM payhero_settings WHERE company_id = ?',
+            [company_id]
+        );
+
+        if (payheroResults.length === 0) {
+            return res.status(400).json({ error: "Error processing payment, cannot find payhero settings" });
+        }
+
+        const { callback_url, channel_id, payhero_token } = payheroResults[0];
+
+        const paymentPayload = {
+            amount,
+            phone_number,
+            channel_id: Number(channel_id),
+            provider: "m-pesa",
+            external_reference: "INV-009",
+            callback_url
+        };
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `${payhero_token}`
+        };
+
+        try {
+            // Make a POST request to the external payment service
+            const paymentResponse = await axios.post(
+                'https://backend.payhero.co.ke/api/v2/payments',
+                paymentPayload,
+                { headers }
+            );
+
+            const { success, status, reference, CheckoutRequestID } = paymentResponse.data;
+
+            // SQL query to insert the payment response into the paymentrequests table
+            const insertPaymentRequest = `
+                INSERT INTO paymentrequests (success, status, reference, CheckoutRequestID, company_id, company_username, router_id, router_name, plan_id, plan_name, plan_validity, mac_address, phone_number)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            `;
+
+            await db.query(insertPaymentRequest, [
+                success, status, reference, CheckoutRequestID,
+                company_id, company_username, router_id, router_name,
+                plan_id, plan_name, plan_validity, mac_address, phone_number
+            ]);
+
+            if (success && CheckoutRequestID) {
+                let paymentData = null;
+                for (let attempt = 0; attempt < 6; attempt++) {
+                    console.log(`Checking payment for CheckoutRequestID: ${CheckoutRequestID}, Attempt: ${attempt + 1}`);
+
+                    // Check for payment in the 'payments' table
+                    paymentData = await checkForPayment(
+                        CheckoutRequestID, company_id, company_username,
+                        router_id, router_name, plan_id, plan_name,
+                        plan_validity, mac_address, phone_number, shared_users
+                    );
+
+                    if (paymentData && paymentData.voucherCode) {
+                        return res.status(200).json({
+                            message: 'Payment request processed successfully',
+                            voucherCode: paymentData.voucherCode
+                        });
+                    }
+
+                    // Wait for 10 seconds before the next attempt
+                    await delay(10000);
+                }
+
+                // If no payment record is found after 6 tries, return failure
+                return res.status(200).json({
+                    status: 'failure',
+                    message: 'Payment not found after multiple attempts.'
+                });
+            } else {
+                // Handle case where the initial payment request fails
+                return res.status(200).json({
+                    status: 'failure',
+                    message: paymentResponse.data.error_message || 'Payment request failed.'
+                });
+            }
+        } catch (error) {
+            console.error('Error making payment request:', error);
+            return res.status(500).json({ error: 'An error occurred while processing the payment request.' });
+        }
+    } catch (err) {
+        console.error('Error querying database:', err);
+        return res.status(500).json({ error: 'Error processing payment request.', errorDetails: err.message || err });
+    }
 });
+
 
 
 
