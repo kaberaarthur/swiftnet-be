@@ -87,6 +87,7 @@ async function redeemVoucher(router_id, voucherCode, macAddress) {
             const voucherExpiration = new Date(voucherData.voucher_start);
             voucherExpiration.setHours(voucherExpiration.getHours() + voucherData.plan_validity);
 
+            // Check if voucher has expired
             if (now < new Date(voucherData.voucher_start) || now > voucherExpiration) {
                 connection.release();
                 return { success: false, message: 'Voucher redemption period has ended' };
@@ -150,7 +151,12 @@ async function redeemVoucher(router_id, voucherCode, macAddress) {
 async function createUser(macAddress, routerId, planId, password, targetRow) {
     console.log("Voucher Start Time: ", targetRow.voucher_start)
     const serviceStart = targetRow.voucher_start;
-    const serviceExpiry = new Date(new Date(serviceStart).getTime() + targetRow.plan_validity);
+    const serviceExpiry = new Date(new Date(serviceStart).getTime() + targetRow.plan_validity * 60 * 60 * 1000);
+
+    console.log("Service Start Time: ", serviceStart);
+    console.log("Plan Validity (hours): ", targetRow.plan_validity);
+    console.log("Service Expiry Time: ", serviceExpiry);
+
 
     let connection;
     try {
