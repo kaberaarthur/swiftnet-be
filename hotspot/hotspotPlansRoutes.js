@@ -1,8 +1,18 @@
 const express = require('express');
-const db = require('../dbPromise');
+const db = require('../dbPromise'); // Ensure dbPromise is promise-based
 const { runSSHCommand } = require('./sshCommand');
 
 const router = express.Router();
+
+// Promisify db.query if necessary
+const queryDatabase = (query, params) => {
+    return new Promise((resolve, reject) => {
+        db.query(query, params, (err, results) => {
+            if (err) reject(err);
+            resolve(results);
+        });
+    });
+};
 
 // CREATE a new Hotspot Plan
 router.post('/hotspot-plans', async (req, res) => {
@@ -24,8 +34,6 @@ router.post('/hotspot-plans', async (req, res) => {
     // Format SSH command string
     const sshCommand = `/ip hotspot user profile add name=${plan_validity}hours shared-users=${shared_users} rate-limit=${bandwidth}M/${bandwidth}M`;
 
-    // console.log("SSH Command: ", sshCommand);
-
     try {
         // Run SSH command
         const sshOutput = await runSSHCommand(sshCommand);
@@ -37,24 +45,21 @@ router.post('/hotspot-plans', async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
-        db.query(query, [plan_name, plan_type, limit_type, data_limit, bandwidth, plan_price, shared_users, plan_validity, company_username, company_id, router_id, router_name], (err, results) => {
-            if (err) return res.status(500).json({ error: err.message });
-            res.status(201).json({ message: 'Hotspot Plan created successfully!', plan_id: results.insertId });
-        });
+        const results = await queryDatabase(query, [plan_name, plan_type, limit_type, data_limit, bandwidth, plan_price, shared_users, plan_validity, company_username, company_id, router_id, router_name]);
 
+        res.status(201).json({ message: 'Hotspot Plan created successfully!', plan_id: results.insertId });
     } catch (err) {
-        // Handle SSH failure
-        return res.status(500).json({ error: 'Failed to execute SSH command: ' + err });
+        // Handle SSH failure or database errors
+        return res.status(500).json({ error: 'Failed to execute SSH command or insert into database: ' + err.message });
     }
 });
 
 // READ all Hotspot Plans filtered by company_id and router_id
-router.get('/hotspot-plans', (req, res) => {
+router.get('/hotspot-plans', async (req, res) => {
     const { company_id, router_id } = req.query;
 
     // Dynamic SQL query with filters
     let query = `SELECT * FROM hotspot_plans WHERE 1=1`; // 1=1 allows for optional filters
-
     const params = [];
 
     if (company_id) {
@@ -67,29 +72,31 @@ router.get('/hotspot-plans', (req, res) => {
         params.push(router_id);
     }
 
-    db.query(query, params, (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
+    try {
+        const results = await queryDatabase(query, params);
         res.status(200).json(results);
-    });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
 });
 
 // READ a single Hotspot Plan by ID
-router.get('/hotspot-plans/:id', (req, res) => {
+router.get('/hotspot-plans/:id', async (req, res) => {
     const { id } = req.params;
     const query = `SELECT * FROM hotspot_plans WHERE id = ?`;
 
-    db.query(query, [id], (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
+    try {
+        const results = await queryDatabase(query, [id]);
         if (results.length === 0) return res.status(404).json({ message: 'Hotspot Plan not found' });
         res.status(200).json(results[0]);
-    });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
 });
 
 // UPDATE a Hotspot Plan by ID
-router.put('/hotspot-plans/:id', (req, res) => {
+router.put('/hotspot-plans/:id', async (req, res) => {
     const { id } = req.params;
-
-    // Destructure the request body
     const {
         plan_name,
         plan_type,
@@ -105,14 +112,12 @@ router.put('/hotspot-plans/:id', (req, res) => {
         router_name
     } = req.body;
 
-    // Query the existing data
     const selectQuery = `SELECT * FROM hotspot_plans WHERE id = ?`;
 
-    db.query(selectQuery, [id], async (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
+    try {
+        const results = await queryDatabase(selectQuery, [id]);
         if (results.length === 0) return res.status(404).json({ message: 'Hotspot Plan not found' });
 
-        // Get the current plan data
         const currentPlan = results[0];
         let mikrotikUpdateRequired = false;
         let sshCommand = '';
@@ -140,21 +145,14 @@ router.put('/hotspot-plans/:id', (req, res) => {
 
         // If MikroTik needs to be updated, run the SSH command first
         if (mikrotikUpdateRequired && sshCommand) {
-            try {
-                const sshOutput = await runSSHCommand(sshCommand);
-
-                // If SSH update fails, return an error
-                if (sshOutput.includes('failure')) {
-                    return res.status(500).json({ error: 'Failed to update MikroTik profile' });
-                }
-
-                console.log('MikroTik profile updated successfully.');
-            } catch (err) {
-                return res.status(500).json({ error: `SSH command failed: ${err.message}` });
+            const sshOutput = await runSSHCommand(sshCommand);
+            if (sshOutput.includes('failure')) {
+                return res.status(500).json({ error: 'Failed to update MikroTik profile' });
             }
+            console.log('MikroTik profile updated successfully.');
         }
 
-        // Now proceed to update the database
+        // Proceed to update the database
         const updatedPlan = {
             plan_name: plan_name || currentPlan.plan_name,
             plan_type: plan_type || currentPlan.plan_type,
@@ -177,62 +175,49 @@ router.put('/hotspot-plans/:id', (req, res) => {
             WHERE id = ?
         `;
 
-        db.query(updateQuery, [
+        const updateResults = await queryDatabase(updateQuery, [
             updatedPlan.plan_name, updatedPlan.plan_type, updatedPlan.limit_type, updatedPlan.data_limit, updatedPlan.bandwidth,
             updatedPlan.plan_price, updatedPlan.shared_users, updatedPlan.plan_validity, updatedPlan.company_username,
             updatedPlan.company_id, updatedPlan.router_id, updatedPlan.router_name, id
-        ], (err, results) => {
-            if (err) return res.status(500).json({ error: err.message });
-            if (results.affectedRows === 0) return res.status(404).json({ message: 'Hotspot Plan not found' });
+        ]);
 
-            res.status(200).json({ message: 'Hotspot Plan updated successfully' });
-        });
-    });
+        if (updateResults.affectedRows === 0) return res.status(404).json({ message: 'Hotspot Plan not found' });
+
+        res.status(200).json({ message: 'Hotspot Plan updated successfully' });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
 });
 
 // DELETE a Hotspot Plan by ID
 router.delete('/hotspot-plans/:id', async (req, res) => {
     const { id } = req.params;
 
-    // Fetch the plan to get the plan_name
     const selectQuery = `SELECT plan_name FROM hotspot_plans WHERE id = ?`;
 
-    db.query(selectQuery, [id], async (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
+    try {
+        const results = await queryDatabase(selectQuery, [id]);
         if (results.length === 0) return res.status(404).json({ message: 'Hotspot Plan not found' });
 
         const planName = results[0].plan_name;
-
-        // Construct the SSH command to delete the profile from MikroTik
         const sshCommand = `/ip hotspot user profile remove [find name="${planName}"]`;
 
-        try {
-            // Execute the SSH command
-            const sshOutput = await runSSHCommand(sshCommand);
-
-            // If the SSH command fails, stop the process
-            if (sshOutput.includes('failure')) {
-                return res.status(500).json({ error: 'Failed to remove MikroTik profile' });
-            }
-
-            console.log('MikroTik profile deleted successfully.');
-
-            // Proceed to delete the hotspot plan from the database
-            const deleteQuery = `DELETE FROM hotspot_plans WHERE id = ?`;
-
-            db.query(deleteQuery, [id], (err, results) => {
-                if (err) return res.status(500).json({ error: err.message });
-                if (results.affectedRows === 0) return res.status(404).json({ message: 'Hotspot Plan not found' });
-
-                res.status(200).json({ message: 'Hotspot Plan and MikroTik profile deleted successfully' });
-            });
-
-        } catch (err) {
-            // Handle SSH command error
-            return res.status(500).json({ error: `Failed to execute SSH command: ${err.message}` });
+        const sshOutput = await runSSHCommand(sshCommand);
+        if (sshOutput.includes('failure')) {
+            return res.status(500).json({ error: 'Failed to remove MikroTik profile' });
         }
-    });
-});
 
+        console.log('MikroTik profile deleted successfully.');
+
+        const deleteQuery = `DELETE FROM hotspot_plans WHERE id = ?`;
+        const deleteResults = await queryDatabase(deleteQuery, [id]);
+
+        if (deleteResults.affectedRows === 0) return res.status(404).json({ message: 'Hotspot Plan not found' });
+
+        res.status(200).json({ message: 'Hotspot Plan and MikroTik profile deleted successfully' });
+    } catch (err) {
+        return res.status(500).json({ error: `Failed to execute SSH command or delete plan: ${err.message}` });
+    }
+});
 
 module.exports = router;
