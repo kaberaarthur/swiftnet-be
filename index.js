@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const db = require('./dbPromise');
 const bodyParser = require('body-parser');
+const { Client } = require('ssh2');
 
 // Import Routes
 const userRoutes = require('./userRoutes');
@@ -85,6 +86,48 @@ app.use(hotspotVouchersRoutes);
 // Home route
 app.get('/', (req, res) => {
     res.send('Welcome to the Home Page of our Node.js Application!');
+});
+
+// Test Mikrotik
+// MikroTik SSH Connection Route
+app.get('/test-mikrotik', (req, res) => {
+    const conn = new Client();
+    const mikrotikDetails = {
+        host: '102.0.14.218',
+        port: 22, // Default SSH port
+        username: 'Arthur',
+        password: 'Arthur'
+    };
+
+    const command = `/ip hotspot user add name="J5:B0:D0:63:C2:26" password="o&h0O%" profile="8hours"`;
+
+    conn.on('ready', () => {
+        console.log('SSH Connection to MikroTik established.');
+
+        conn.exec(command, (err, stream) => {
+            if (err) {
+                console.error('Command execution failed:', err);
+                conn.end();
+                return res.status(500).send('Failed to execute command on MikroTik.');
+            }
+
+            let output = '';
+            stream.on('data', (data) => {
+                output += data.toString();
+            }).on('close', () => {
+                console.log('Command execution completed:', output);
+                conn.end();
+                res.send(`Command executed successfully: ${output}`);
+            }).on('error', (err) => {
+                console.error('Stream error:', err);
+                conn.end();
+                res.status(500).send('Error occurred while executing the command.');
+            });
+        });
+    }).on('error', (err) => {
+        console.error('SSH Connection error:', err);
+        res.status(500).send('Failed to connect to MikroTik router.');
+    }).connect(mikrotikDetails);
 });
 
 // Route to shorten a URL

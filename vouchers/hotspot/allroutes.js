@@ -124,7 +124,7 @@ async function redeemVoucher(router_id, voucherCode, macAddress) {
             [voucherCode]
         );
 
-        console.log('Updated Row:', updatedRow[0].voucher_start);
+        // console.log('Updated Row:', updatedRow[0].voucher_start);
         const targetRow = updatedRow[0];
 
 
@@ -132,10 +132,13 @@ async function redeemVoucher(router_id, voucherCode, macAddress) {
         const password = generatePassword();
         const createUserResponse = await createUser(macAddress, router_id, voucherData.plan_id, password, targetRow);
 
+        // console.log("Create User Response: ", createUserResponse)
+
         connection.release();
         return { 
-            success: createUserResponse === "success", 
-            message: createUserResponse === "success" ? 'Voucher redeemed successfully' : 'Failed to redeem voucher',
+            success: createUserResponse.status === "success", 
+            status: createUserResponse.status === "success", 
+            message: createUserResponse.status === "success" ? 'Voucher redeemed successfully' : 'Failed to redeem voucher',
             password: password, 
             createUserResponse 
         };
@@ -149,13 +152,13 @@ async function redeemVoucher(router_id, voucherCode, macAddress) {
 // Add a function to create a user in Mikrotik and generate a password
 // Function to fetch router and create user if not already created
 async function createUser(macAddress, routerId, planId, password, targetRow) {
-    console.log("Voucher Start Time: ", targetRow.voucher_start)
+    // console.log("Voucher Start Time: ", targetRow.voucher_start)
     const serviceStart = targetRow.voucher_start;
     const serviceExpiry = new Date(new Date(serviceStart).getTime() + targetRow.plan_validity * 60 * 60 * 1000);
 
-    console.log("Service Start Time: ", serviceStart);
-    console.log("Plan Validity (hours): ", targetRow.plan_validity);
-    console.log("Service Expiry Time: ", serviceExpiry);
+    // console.log("Service Start Time: ", serviceStart);
+    // console.log("Plan Validity (hours): ", targetRow.plan_validity);
+    // console.log("Service Expiry Time: ", serviceExpiry);
 
 
     let connection;
@@ -176,6 +179,10 @@ async function createUser(macAddress, routerId, planId, password, targetRow) {
 
         const router = routers[0];
 
+        // Check Router Details
+        // console.log("Router SSH Details: " + router.ip_address + " " + 22 + " " + router.username + " " + router.router_secret);
+
+
         // Check if user with Mac Address Exists inside the DB Table
         const [rows] = await connection.execute(
             'SELECT 1 FROM hotspot_clients WHERE mac_address = ? LIMIT 1',
@@ -183,7 +190,7 @@ async function createUser(macAddress, routerId, planId, password, targetRow) {
         );
 
         if (rows.length > 0) {
-            console.log('User with that Mac Address has been found');
+            // console.log('User with that Mac Address has been found');
 
             const updateHotspotUser = await connection.execute(
                 `UPDATE hotspot_clients SET 
@@ -220,48 +227,68 @@ async function createUser(macAddress, routerId, planId, password, targetRow) {
 
         // Check if user already exists on the MikroTik router
         const conn = new Client();
-        return await new Promise((resolve, reject) => {
+        return await new Promise((resolve) => {
             conn.on('ready', () => {
-                console.log('SSH Connection established.');
-
+                // console.log('SSH Connection established.');
+        
                 // Check if user exists based on macAddress
                 conn.exec(`/ip hotspot user print where name="${macAddress}"`, (err, stream) => {
-                    if (err) return reject("command_failed");
-
-                    let userExists = false;
+                    let output = '';
+        
+                    // Capture command output
                     stream.on('data', (data) => {
-                        const output = data.toString();
-                        userExists = output.includes(macAddress);
+                        output += data.toString();
                     }).on('close', () => {
+                        const userExists = output.includes(macAddress);
+        
                         if (!userExists) {
                             // If user doesn't exist, create it
-                            conn.exec(`/ip hotspot user add name="${macAddress}" password="${password}" profile="${targetRow.plan_name}"`, (err) => {
-                                conn.end();
-                                if (err) return reject("command_failed");
-                                console.log(`User created for MAC Address: ${macAddress}`);
-                                resolve("success");
+                            conn.exec(`/ip hotspot user add name="${macAddress}" password="${password}" profile="${targetRow.plan_name}"`, (err, addStream) => {
+                                let addOutput = '';
+                                addStream.on('data', (data) => {
+                                    addOutput += data.toString();
+                                }).on('close', () => {
+                                    conn.end();
+                                    if (err) {
+                                        // If error in creating user, still resolve but with message
+                                        resolve({ status: "failure", message: `Failed to create user. Error: ${err.message || err}` });
+                                    } else {
+                                        console.log(`User created for MAC Address: ${macAddress}`);
+                                        resolve({ status: "success", message: `User created successfully. Command output: ${addOutput}` });
+                                    }
+                                });
                             });
                         } else {
                             // User exists, update the password
-                            conn.exec(`/ip hotspot user set [find name="${macAddress}"] password="${password}" profile="${targetRow.plan_name}"`, (err) => {
-                                conn.end();
-                                if (err) return reject("command_failed");
-                                console.log(`Password updated for user with MAC Address: ${macAddress}`);
-                                resolve("success");
+                            conn.exec(`/ip hotspot user set [find name="${macAddress}"] password="${password}" profile="${targetRow.plan_name}"`, (err, updateStream) => {
+                                let updateOutput = '';
+                                updateStream.on('data', (data) => {
+                                    updateOutput += data.toString();
+                                }).on('close', () => {
+                                    conn.end();
+                                    if (err) {
+                                        // If error in updating password, still resolve but with message
+                                        resolve({ status: "failure", message: `Failed to update user. Error: ${err.message || err}` });
+                                    } else {
+                                        // console.log(`Password updated for user with MAC Address: ${macAddress}`);
+                                        resolve({ status: "success", message: `Password updated successfully. Command output: ${updateOutput}` });
+                                    }
+                                });
                             });
                         }
                     });
                 });
             }).on('error', (err) => {
                 console.error('SSH Connection error:', err);
-                reject("connection_failed");
+                resolve({ status: "success", message: `SSH connection failed. Error: ${err.message || err}` });
             }).connect({
                 host: router.ip_address,
                 port: 22,
                 username: router.username,
                 password: router.router_secret
             });
-        });
+        });        
+
 
     } catch (error) {
         console.error('Database or other error:', error);
@@ -305,7 +332,7 @@ async function updateOrCreateUser(connection, userExists, macAddress, password, 
              WHERE mac_address = ?`,
             [serviceStart, serviceExpiry, password, macAddress]
         );
-        console.log(`Updated existing user with MAC Address: ${macAddress}`);
+        // console.log(`Updated existing user with MAC Address: ${macAddress}`);
         return { success: true, message: "User updated successfully" };
     } else {
         // Insert new user in `hotspot_clients` table
@@ -329,7 +356,7 @@ async function updateOrCreateUser(connection, userExists, macAddress, password, 
                 password
             ]
         );
-        console.log(`Created new user with MAC Address: ${macAddress}`);
+        // console.log(`Created new user with MAC Address: ${macAddress}`);
         return { success: true, message: "User created successfully" };
     }
 };
@@ -534,9 +561,9 @@ router.post('/check-voucher-redeem', async (req, res) => {
             return res.status(404).json({ success: false, message: 'Voucher not found' });
         }
 
-        console.log('Voucher Code:', rows[0].voucher_code);
-        console.log('Router ID:', router_id);
-        console.log('MAC Address:', macAddress);
+        // console.log('Voucher Code:', rows[0].voucher_code);
+        // console.log('Router ID:', router_id);
+        // console.log('MAC Address:', macAddress);
 
         // Call redeemVoucher with the retrieved data
         const result = await redeemVoucher(router_id, rows[0].voucher_code, macAddress);
