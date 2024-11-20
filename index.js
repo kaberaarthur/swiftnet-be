@@ -40,6 +40,13 @@ const port = 8000;
 // Payment Processing
 const axios = require('axios');
 
+// Allow requests from any origin
+app.use(cors({
+    origin: '*',  // Allow all origins
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Specify allowed methods
+    credentials: true,  // Optional: Use this if your requests need to include cookies
+}));
+
 // Middleware to parse JSON bodies
 app.use(bodyParser.json());
 
@@ -73,12 +80,7 @@ app.use(hotspotVouchersRoutes);
 
 
 
-// Allow requests from any origin
-app.use(cors({
-    origin: '*',  // Allow all origins
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Specify allowed methods
-    credentials: true,  // Optional: Use this if your requests need to include cookies
-}));
+
 
 // Home route
 app.get('/', (req, res) => {

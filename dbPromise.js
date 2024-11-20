@@ -1,4 +1,4 @@
-const mysql = require('mysql2/promise'); // Use promise-compatible version
+const mysql = require('mysql2/promise');
 
 // MySQL connection setup
 const pool = mysql.createPool({
