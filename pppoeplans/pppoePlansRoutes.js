@@ -102,13 +102,14 @@ router.post('/pppoe-plans-exp', async (req, res) => {
       // Step 3: Insert the data into the database
       const query = `
         INSERT INTO pppoe_plans 
-        (plan_name, rate_limit, rate_limit_string, plan_price, pool_name, plan_validity, router_id, company_id, company_username, type)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (plan_name, rate_limit, rate_limit_string, plan_price, pool_name, plan_validity, router_id, company_id, company_username, type, mikrotik_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
-      await db.query(query, [plan_name, rate_limit, rate_limit_string, plan_price, pool_name, plan_validity, router_id, company_id, company_username, type]);
+      await db.query(query, [plan_name, rate_limit, rate_limit_string, plan_price, pool_name, plan_validity, router_id, company_id, company_username, type, mikrotikData.ret]);
 
       // Respond with success
+      // console.log("Mikrotik Profile ID: ", mikrotikData.ret);
       res.status(201).json({ success: "true", message: 'PPPoE plan created successfully', mikrotik_response: mikrotikData });
     } else {
       console.error('Router not found!');
@@ -171,7 +172,17 @@ router.get('/pppoe-plans/:id', async (req, res) => {
 // PATCH: Update pppoe plan by id (partial updates allowed)
 router.patch('/pppoe-plans/:id', async (req, res) => {
   const { id } = req.params;
-  const allowedFields = ['plan_name', 'rate_limit', 'plan_price', 'pool_name', 'plan_validity', 'router_id', 'company_id', 'company_username'];
+  const allowedFields = [
+    'plan_name',
+    'rate_limit',
+    'rate_limit_string',
+    'plan_price',
+    'pool_name',
+    'plan_validity',
+    'router_id',
+    'company_id',
+    'company_username'
+  ];
   const updates = req.body;
 
   // Validate that at least one valid field is provided for the update
@@ -181,22 +192,28 @@ router.patch('/pppoe-plans/:id', async (req, res) => {
     return res.status(400).json({ message: 'No valid fields provided for update' });
   }
 
-  // Construct dynamic query
-  const setClause = fieldsToUpdate.map(field => `${field} = ?`).join(', ');
-  const query = `UPDATE pppoe_plans SET ${setClause} WHERE id = ?`;
-
-  const values = [...fieldsToUpdate.map(field => updates[field]), id];
-
   try {
-    const [result] = await db.query(query, values);
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'PPPOE plan not found' });
+    // Step 1: Retrieve the PPPoE plan details from the database to ensure it exists
+    const [existingPlan] = await db.query('SELECT * FROM pppoe_plans WHERE id = ?', [id]);
+    if (!existingPlan || existingPlan.length === 0) {
+      return res.status(404).json({ message: 'PPPoE plan not found' });
     }
 
-    res.status(200).json({ message: 'PPPOE plan updated successfully' });
+    // Step 2: Update the database with the provided fields
+    const setClause = fieldsToUpdate.map(field => `${field} = ?`).join(', ');
+    const query = `UPDATE pppoe_plans SET ${setClause} WHERE id = ?`;
+    const values = [...fieldsToUpdate.map(field => updates[field]), id];
+
+    const [dbResult] = await db.query(query, values);
+    if (dbResult.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Failed to update the PPPoE plan in the database' });
+    }
+
+    // Step 3: Respond with success
+    res.status(200).json({ success: true, message: 'PPPoE plan updated successfully' });
   } catch (error) {
-    res.status(500).json({success: "false", message: 'Error updating PPPOE plan', error });
+    console.error('Error updating PPPoE plan:', error.message);
+    res.status(500).json({ success: false, message: 'Error updating PPPoE plan', error });
   }
 });
 
@@ -205,17 +222,30 @@ router.patch('/pppoe-plans/:id', async (req, res) => {
 router.delete('/pppoe-plans/:id', async (req, res) => {
   const { id } = req.params;
 
-  const query = 'DELETE FROM pppoe_plans WHERE id = ?';
-  
   try {
-    const result = await db.query(query, [id]);
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'PPPOE plan not found' });
+    // Step 1: Retrieve the PPPoE plan details from the database to check existence
+    const selectQuery = 'SELECT * FROM pppoe_plans WHERE id = ?';
+    const [existingPlan] = await db.query(selectQuery, [id]);
+
+    if (!existingPlan || existingPlan.length === 0) {
+      return res.status(404).json({ success: false, message: 'PPPoE plan not found' });
     }
-    res.status(200).json({ message: 'PPPOE plan deleted successfully' });
+
+    // Step 2: Delete the plan from the database
+    const deleteQuery = 'DELETE FROM pppoe_plans WHERE id = ?';
+    const result = await db.query(deleteQuery, [id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Failed to delete PPPoE plan from the database' });
+    }
+
+    // Step 3: Respond with success
+    res.status(200).json({ success: true, message: 'PPPoE plan deleted successfully' });
   } catch (error) {
-    res.status(500).json({success: "false", message: 'Error deleting PPPOE plan', error });
+    console.error('Error deleting PPPoE plan:', error.message);
+    res.status(500).json({ success: false, message: 'Error deleting PPPoE plan', error });
   }
 });
+
 
 module.exports = router;
