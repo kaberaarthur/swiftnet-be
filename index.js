@@ -24,6 +24,7 @@ const freeIPRoutes = require('./freeIPRoutes');
 // Actual Stuff
 const hotspotPlansRoutes = require('./hotspot/hotspotPlansRoutes');
 const staticPlansRoutes = require('./staticplans/staticPlansRoutes');
+const pppoePlansRoutes = require('./pppoeplans/pppoePlansRoutes');
 
 // Client Routes
 const staticClientsRoutes = require('./clients/static/allroutes');
@@ -70,6 +71,7 @@ app.use(freeIPRoutes);
 // Actual Stuff
 app.use(hotspotPlansRoutes);
 app.use(staticPlansRoutes);
+app.use(pppoePlansRoutes);
 
 // Clients Routes
 app.use(staticClientsRoutes);
