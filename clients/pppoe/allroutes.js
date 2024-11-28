@@ -171,7 +171,7 @@ router.post('/pppoe-clients', async (req, res) => {
 
 // Get PPPoE clients with optional query parameters
 router.get('/pppoe-clients', async (req, res) => {
-    const { company_id, router_id, active, type } = req.query;
+    const { company_id, router_id, active, type, phone_number } = req.query;
     let query = 'SELECT * FROM pppoe_clients WHERE 1=1';
     const params = [];
 
@@ -193,6 +193,11 @@ router.get('/pppoe-clients', async (req, res) => {
     if (type) {
         query += ' AND type = ?';
         params.push(type);
+    }
+
+    if (phone_number) {
+        query += ' AND phone_number LIKE ?'; // Use LIKE for partial matching if needed
+        params.push(`%${phone_number}%`);
     }
 
     try {

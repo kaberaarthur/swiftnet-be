@@ -34,6 +34,9 @@ const hotspotClientsRoutes = require('./clients/hotspot/allroutes');
 // Voucher Routes
 const hotspotVouchersRoutes = require('./vouchers/hotspot/allroutes');
 
+// PPPOE Payment Routes
+const pppoePaymentsRoutes = require('./pppoe_payments/payments');
+
 
 
 const app = express();
@@ -81,7 +84,8 @@ app.use(hotspotClientsRoutes);
 // Voucher Routes
 app.use(hotspotVouchersRoutes);
 
-
+// PPPOE Payments Routes
+app.use(pppoePaymentsRoutes);
 
 
 
