@@ -81,8 +81,7 @@ router.post('/pppoe-plans-exp', async (req, res) => {
         "name": `${plan_name}`,
         "local-address": "10.10.100.1", // Fixed local address, can be modified
         "remote-address": `${pool_name}`, // Use pool_name directly as the remote address
-        "rate-limit": `${rate_limit_string}`, // Use the rate_limit_string directly
-        "shared-users": shared_users // Include shared_users in the payload
+        "rate-limit": `${rate_limit_string}`, // Use the rate_limit_string direct
       };
 
       // Step 2: Make the request to MikroTik API
