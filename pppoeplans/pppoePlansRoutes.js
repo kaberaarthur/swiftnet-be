@@ -37,32 +37,34 @@ const getRouterById = async (id) => {
 router.post('/pppoe-plans-exp', async (req, res) => {
   const { 
     plan_name, 
-    rate_limit, 
-    rate_limit_string, 
+    rate_limit,
     plan_price, 
     pool_name, 
     plan_validity, 
     router_id, 
     company_id, 
     company_username, 
-    type 
+    type,
+    shared_users
   } = req.body;
 
   // Check if all required fields are present
   if (
     !plan_name || 
     !rate_limit || 
-    !rate_limit_string || 
     !plan_price || 
     !pool_name || 
     !plan_validity || 
     !router_id || 
     !company_id || 
     !company_username || 
-    !type
+    !type ||
+    !shared_users
   ) {
     return res.status(400).json({ message: "All fields are required, including 'rate_limit_string' and 'type'" });
   }
+
+  const rate_limit_string = `${rate_limit}k/${rate_limit}k`
 
   try {
     // Get Router Details
@@ -79,7 +81,8 @@ router.post('/pppoe-plans-exp', async (req, res) => {
         "name": `${plan_name}`,
         "local-address": "10.10.100.1", // Fixed local address, can be modified
         "remote-address": `${pool_name}`, // Use pool_name directly as the remote address
-        "rate-limit": `${rate_limit_string}` // Use the rate_limit_string directly
+        "rate-limit": `${rate_limit_string}`, // Use the rate_limit_string directly
+        "shared-users": shared_users // Include shared_users in the payload
       };
 
       // Step 2: Make the request to MikroTik API
