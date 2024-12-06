@@ -31,11 +31,14 @@ const getRouterById = async (id) => {
     }
   };
 
-// Create PPPOE User function
+
+  // Function to create a PPPoE user
 async function createPPPoEUser(routerIp, routerUsername, routerPassword, phoneNumber, password, planName) {
     const command = `/ppp secret add name="${phoneNumber}" password="${password}" profile="${planName}"`;
 
     return new Promise((resolve, reject) => {
+        const ssh = new Client();
+
         ssh.on('ready', () => {
             ssh.exec(command, (err, stream) => {
                 if (err) {
@@ -46,30 +49,32 @@ async function createPPPoEUser(routerIp, routerUsername, routerPassword, phoneNu
                     });
                 }
 
-                let stdout = '';
-                let stderr = '';
+                let output = ''; // Collect all output from stdout and stderr
 
+                // Collect data from stdout and stderr
                 stream.on('data', (data) => {
-                    stdout += data.toString();
+                    output += data.toString();
                 });
 
                 stream.stderr.on('data', (data) => {
-                    stderr += data.toString();
+                    output += data.toString();
                 });
 
-                stream.on('close', (code, signal) => {
+                stream.on('close', () => {
                     ssh.end();
 
-                    if (stderr || stdout.toLowerCase().includes('failure') || stdout.toLowerCase().includes('input does not match')) {
+                    // If there is any output, treat it as a failure
+                    if (output.trim()) {
                         return resolve({
                             success: false,
-                            error: stderr || stdout,
+                            error: `Command failed with output: ${output.trim()}`,
                         });
                     }
 
+                    // No output indicates success
                     return resolve({
                         success: true,
-                        data: stdout || 'PPPoE user created successfully.',
+                        data: 'PPPoE user created successfully.',
                     });
                 });
             });
@@ -89,9 +94,30 @@ async function createPPPoEUser(routerIp, routerUsername, routerPassword, phoneNu
             password: routerPassword,
         });
     });
+}
+
+
+// Get details about the Plan you want to register the User on from DB
+const getPlanDetails = async (id) => {
+    try {
+        // Get a connection from the pool
+        const connection = await db.getConnection();
+        
+        // Query the database for the plan with the given id
+        const [rows] = await connection.query('SELECT * FROM pppoe_plans WHERE id = ?', [id]);
+        
+        // Release the connection back to the pool
+        connection.release();
+
+        // If the plan exists, return it; otherwise, return null
+        return rows.length > 0 ? rows[0] : null;
+    } catch (error) {
+        console.error('Error fetching plan details:', error);
+        throw new Error('Failed to fetch plan details');
+    }
 };
   
-
+// Add code to get Plan Details from DB
 // Create a new PPPoE client
 router.post('/pppoe-clients', async (req, res) => {
     const {
@@ -105,9 +131,7 @@ router.post('/pppoe-clients', async (req, res) => {
         sms_group,
         installation_fee,
         router_id,
-        plan_name,
         plan_id,
-        plan_fee, // Subscription Fee
         company_id,
         company_username,
         fat_no,
@@ -117,12 +141,20 @@ router.post('/pppoe-clients', async (req, res) => {
     } = req.body;
 
     // Get Router Details
-    const routerDetails = await getRouterById(router_id);
+    const router_id_no = Number(router_id);
+    const routerDetails = await getRouterById(router_id_no);
 
     // MikroTik router credentials
     const router_ip = routerDetails.ip_address;
     const router_username = routerDetails.username;
     const router_password = routerDetails.router_secret;
+
+    const planDetails = await getPlanDetails(plan_id);
+    // console.log("Plan Details: ", planDetails);
+
+    const plan_name = planDetails.plan_name;
+    const plan_fee = parseFloat(planDetails.plan_price);
+
 
     try {
         // Run the function to create a user on MikroTik

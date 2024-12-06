@@ -37,6 +37,8 @@ const hotspotVouchersRoutes = require('./vouchers/hotspot/allroutes');
 // PPPOE Payment Routes
 const pppoePaymentsRoutes = require('./pppoe_payments/payments');
 
+// Test package mikrotik-ng
+const mikrotikRoutes = require('./mikrotikPackageTest');
 
 
 const app = express();
@@ -87,6 +89,9 @@ app.use(hotspotVouchersRoutes);
 // PPPOE Payments Routes
 app.use(pppoePaymentsRoutes);
 
+
+// Mikrotik NG
+app.use(mikrotikRoutes);
 
 
 // Home route

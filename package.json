@@ -17,9 +17,13 @@
     "express": "^4.21.0",
     "ip": "^2.0.1",
     "jsonwebtoken": "^9.0.2",
+    "mikro-client": "^0.5.3",
+    "mikronode-ng": "^1.0.11",
+    "mikrotik": "^1.0.12",
     "mysql2": "^3.11.0",
     "nodemon": "^3.1.4",
     "pg": "^8.12.0",
+    "routeros-node": "^0.1.0",
     "ssh2": "^1.16.0"
   },
   "devDependencies": {
