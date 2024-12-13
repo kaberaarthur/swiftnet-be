@@ -19,7 +19,8 @@ const checkForPPPOEPayment = async (
     plan_validity,
     mac_address,
     phone_number,
-    payment_type
+    payment_type,
+    installation_fee
 ) => {
     try {
         // First, check if the payment exists with the given CheckoutRequestID
@@ -36,7 +37,7 @@ const checkForPPPOEPayment = async (
             // Update the payment if it exists
             const updatePayment = `
                 UPDATE pppoe_payments
-                SET company_id = ?, company_username = ?, router_id = ?, router_name = ?, plan_id = ?, plan_name = ?, plan_validity = ?, mac_address = ?, phone_number = ?, usedStatus = ?, payment_type = ?
+                SET company_id = ?, company_username = ?, router_id = ?, router_name = ?, plan_id = ?, plan_name = ?, plan_validity = ?, mac_address = ?, phone_number = ?, usedStatus = ?, payment_type = ?, installation_fee = ?
                 WHERE CheckoutRequestID = ?
             `;
             await db.query(updatePayment, [
@@ -51,7 +52,8 @@ const checkForPPPOEPayment = async (
                 phone_number,
                 "used",
                 payment_type,
-                CheckoutRequestID
+                CheckoutRequestID,
+                installation_fee
             ]);
             
 
@@ -79,7 +81,7 @@ const checkForPPPOEPayment = async (
 
 // POST endpoint: payment-request-pro
 router.post('/pppoe-payment-request-pro', async (req, res) => {
-    const { phone_number, company_id, company_username, router_id, router_name, plan_id, mac_address, payment_type } = req.body;
+    const { phone_number, company_id, company_username, router_id, router_name, plan_id, mac_address, payment_type, installation_fee } = req.body;
 
     try {
         // Query the pppoe_plans table for the actual plan details
@@ -94,7 +96,11 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
 
         // Destructure the necessary fields from the plan query results
         const { plan_price, plan_validity, plan_name, router_id, type, rate_limit_string } = planResults[0];
-        const amount = Math.floor(plan_price); // Assign plan_price to amount
+        let amount = Math.floor(plan_price); // Assign plan_price to amount
+
+        if ( installation_fee > 0 ) {
+            amount = Math.floor(plan_price + installation_fee)
+        };
 
         // Query the payhero_settings table
         const [payheroResults] = await db.query(
@@ -107,6 +113,7 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
         }
 
         const { pppoe_callback_url, channel_id, payhero_token } = payheroResults[0];
+
 
         const paymentPayload = {
             amount,
@@ -136,14 +143,14 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
 
             // SQL query to insert the payment response into the paymentrequests table
             const insertPaymentRequest = `
-                INSERT INTO pppoe_payment_requests (success, status, reference, CheckoutRequestID, company_id, company_username, router_id, router_name, plan_id, plan_name, plan_validity, mac_address, phone_number, payment_type)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                INSERT INTO pppoe_payment_requests (success, status, reference, CheckoutRequestID, company_id, company_username, router_id, router_name, plan_id, plan_name, plan_validity, mac_address, phone_number, payment_type, installation_fee)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             `;
 
             await db.query(insertPaymentRequest, [
                 success, status, reference, CheckoutRequestID,
                 company_id, company_username, router_id, router_name,
-                plan_id, plan_name, plan_validity, mac_address, phone_number, payment_type
+                plan_id, plan_name, plan_validity, mac_address, phone_number, payment_type, installation_fee
             ]);
 
             if (success && CheckoutRequestID) {
@@ -155,7 +162,7 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
                     paymentData = await checkForPPPOEPayment(
                         CheckoutRequestID, company_id, company_username,
                         router_id, router_name, plan_id, plan_name,
-                        plan_validity, mac_address, phone_number, payment_type
+                        plan_validity, mac_address, phone_number, payment_type, installation_fee
                     );
 
 
