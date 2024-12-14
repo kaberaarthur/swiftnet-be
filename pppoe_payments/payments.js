@@ -52,29 +52,32 @@ const checkForPPPOEPayment = async (
                 phone_number,
                 "used",
                 payment_type,
-                CheckoutRequestID,
-                installation_fee
+                installation_fee,
+                CheckoutRequestID                
             ]);
             
 
             // Update the PPPOE Clients row here
             return {
-                status: 200,
-                message: 'Payment received successfully',
+                success: true,
                 transactionCode: MpesaReceiptNumber // Include voucher or relevant identifier
             };
             
             
         } else {
             return {
-                status: 400,
+                success: false,
                 message:
                     'We did not receive your payment on time, Contact Admin for Help.',
             };
         }
     } catch (err) {
         console.error(`Database error: ${err.message}`);
-        return res.status(500).json({ error: 'Internal server error', details: err.message });
+        return {
+            success: false,
+            message: "Database error.",
+            error: err.message,
+        };
     }
     
 };
@@ -96,11 +99,13 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
 
         // Destructure the necessary fields from the plan query results
         const { plan_price, plan_validity, plan_name, router_id, type, rate_limit_string } = planResults[0];
-        let amount = Math.floor(plan_price); // Assign plan_price to amount
 
-        if ( installation_fee > 0 ) {
-            amount = Math.floor(plan_price + installation_fee)
-        };
+        // console.log("Plan Price: ", Number(plan_price));
+        // console.log("Installation Fee: ", installation_fee);
+
+        let amount = Number(plan_price) + installation_fee; // Assign plan_price to amount
+        // console.log("Amount Payable: ", Number(plan_price) + installation_fee);
+
 
         // Query the payhero_settings table
         const [payheroResults] = await db.query(
@@ -114,6 +119,8 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
 
         const { pppoe_callback_url, channel_id, payhero_token } = payheroResults[0];
 
+        // console.log("PPPOE Callback URL: ", pppoe_callback_url);
+
 
         const paymentPayload = {
             amount,
@@ -121,7 +128,7 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
             channel_id: Number(channel_id),
             provider: "m-pesa",
             external_reference: "INV-009",
-            pppoe_callback_url
+            callback_url:pppoe_callback_url
         };
 
         // console.log("Payment Payload: ", paymentPayload);
@@ -167,7 +174,7 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
 
 
                     // Update user profile with new plan details
-                    if (paymentData) {
+                    if (paymentData.success) {
                         try {
                             // Query the database to find the user in pppoe_clients with the given phone_number
                             const [client] = await db.query(
@@ -212,24 +219,35 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
                 }
 
                 // If no payment record is found after 6 tries, return failure
-                return res.status(200).json({
+                return res.status(400).json({
                     status: 'failure',
+                    success: false,
                     message: 'Payment not found after multiple attempts.'
                 });
             } else {
                 // Handle case where the initial payment request fails
-                return res.status(200).json({
+                return res.status(400).json({
                     status: 'failure',
+                    success: false,
                     message: paymentResponse.data.error_message || 'Payment request failed.'
                 });
             }
         } catch (error) {
             console.error('Error making payment request:', error);
-            return res.status(500).json({ error: 'An error occurred while processing the payment request.' });
+            return res.status(500).json({ 
+                status: 'failure',
+                success: false, 
+                error: 'An error occurred while processing the payment request.' 
+            });
         }
     } catch (err) {
         console.error('Error querying database:', err);
-        return res.status(500).json({ error: 'Error processing payment request.', errorDetails: err.message || err });
+        return res.status(500).json({ 
+            status: 'failure',
+            success: false,
+            error: 'Error processing payment request.', 
+            errorDetails: err.message || err 
+        });
     }
 });
 
@@ -237,6 +255,8 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
 // Create operation - to store the response data
 router.post('/pppoe-payments', (req, res) => {
     const { response } = req.body;
+
+    // console.log("Callback Body: ", response)
 
     // Extracting the relevant fields from the response
     const {
