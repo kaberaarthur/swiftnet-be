@@ -8,6 +8,8 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 // Function to check if the payment in pppoe_payments has been entered
 // Function to check if CheckoutRequestID exists in the payments table
+
+// payment_type, mac_address, plan_validity, plan_name
 const checkForPPPOEPayment = async (
     CheckoutRequestID,
     company_id,
@@ -15,11 +17,7 @@ const checkForPPPOEPayment = async (
     router_id,
     router_name,
     plan_id,
-    plan_name,
-    plan_validity,
-    mac_address,
     phone_number,
-    payment_type,
     installation_fee
 ) => {
     try {
@@ -36,9 +34,9 @@ const checkForPPPOEPayment = async (
 
             // Update the payment if it exists
             const updatePayment = `
-                UPDATE pppoe_payments
-                SET company_id = ?, company_username = ?, router_id = ?, router_name = ?, plan_id = ?, plan_name = ?, plan_validity = ?, mac_address = ?, phone_number = ?, usedStatus = ?, payment_type = ?, installation_fee = ?
-                WHERE CheckoutRequestID = ?
+            UPDATE pppoe_payments
+            SET company_id = ?, company_username = ?, router_id = ?, router_name = ?, plan_id = ?, phone_number = ?, usedStatus = ?, installation_fee = ?
+            WHERE CheckoutRequestID = ?
             `;
             await db.query(updatePayment, [
                 company_id,
@@ -46,14 +44,10 @@ const checkForPPPOEPayment = async (
                 router_id,
                 router_name,
                 plan_id,
-                plan_name,
-                plan_validity,
-                mac_address,
                 phone_number,
                 "used",
-                payment_type,
                 installation_fee,
-                CheckoutRequestID                
+                CheckoutRequestID
             ]);
             
 
@@ -84,61 +78,68 @@ const checkForPPPOEPayment = async (
 
 // POST endpoint: payment-request-pro
 router.post('/pppoe-payment-request-pro', async (req, res) => {
-    const { phone_number, company_id, company_username, router_id, router_name, plan_id, mac_address, payment_type, installation_fee } = req.body;
+    const { client_id } = req.body;
 
     try {
-        // Query the pppoe_plans table for the actual plan details
-        const [planResults] = await db.query(
-            'SELECT plan_price, plan_validity, plan_name, router_id, type, rate_limit_string FROM pppoe_plans WHERE id = ?',
-            [plan_id]
+        // Query the database to find the user in pppoe_clients with the given phone_number
+        const [client] = await db.query(
+            'SELECT * FROM pppoe_clients WHERE id = ? LIMIT 1',
+            [client_id]
         );
 
-        if (planResults.length === 0) {
-            return res.status(400).json({ message: "Error processing payment, cannot find the specified plan." });
-        }
+        const phone_number = client.phone_number
 
-        // Destructure the necessary fields from the plan query results
-        const { plan_price, plan_validity, plan_name, router_id, type, rate_limit_string } = planResults[0];
+        if (client.id){
+            console.log("Found the Client");
+            // Query the pppoe_plans table for the actual plan details
+            const [planResults] = await db.query(
+                'SELECT plan_validity, plan_name, router_id FROM pppoe_plans WHERE id = ?',
+                [client.plan_id]
+            );
 
-        // console.log("Plan Price: ", Number(plan_price));
-        // console.log("Installation Fee: ", installation_fee);
+            if (planResults.length === 0) {
+                return res.status(400).json({ message: "Error processing payment, cannot find the specified plan." });
+            }
 
-        let amount = Number(plan_price) + installation_fee; // Assign plan_price to amount
-        // console.log("Amount Payable: ", Number(plan_price) + installation_fee);
+            // Destructure the necessary fields from the plan query results
+            const {  plan_validity, plan_name, router_id } = planResults[0];
 
+            // console.log("Plan Price: ", Number(plan_price));
+            // console.log("Installation Fee: ", installation_fee);
 
-        // Query the payhero_settings table
-        const [payheroResults] = await db.query(
-            'SELECT pppoe_callback_url, channel_id, payhero_token FROM payhero_settings WHERE company_id = ?',
-            [company_id]
-        );
-
-        if (payheroResults.length === 0) {
-            return res.status(400).json({ error: "Error processing payment, cannot find payhero settings" });
-        }
-
-        const { pppoe_callback_url, channel_id, payhero_token } = payheroResults[0];
-
-        // console.log("PPPOE Callback URL: ", pppoe_callback_url);
+            let amount = Number(client.plan_fee) + client.installation_fee; // Assign plan_price to amount
+            // console.log("Amount Payable: ", Number(plan_price) + installation_fee);
 
 
-        const paymentPayload = {
-            amount,
-            phone_number,
-            channel_id: Number(channel_id),
-            provider: "m-pesa",
-            external_reference: "INV-009",
-            callback_url:pppoe_callback_url
-        };
+            // Query the payhero_settings table
+            const [payheroResults] = await db.query(
+                'SELECT pppoe_callback_url, channel_id, payhero_token FROM payhero_settings WHERE company_id = ?',
+                [client.company_id]
+            );
 
-        // console.log("Payment Payload: ", paymentPayload);
+            if (payheroResults.length === 0) {
+                return res.status(400).json({ error: "Error processing payment, cannot find payhero settings" });
+            }
 
-        const headers = {
-            'Content-Type': 'application/json',
-            'Authorization': `${payhero_token}`
-        };
+            const { pppoe_callback_url, channel_id, payhero_token } = payheroResults[0];
 
-        try {
+            // console.log("PPPOE Callback URL: ", pppoe_callback_url);
+
+
+            const paymentPayload = {
+                amount,
+                phone_number: client.phone_number,
+                channel_id: Number(channel_id),
+                provider: "m-pesa",
+                external_reference: "INV-009",
+                callback_url:pppoe_callback_url
+            };
+
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `${payhero_token}`
+            };
+        
             // Make a POST request to the external payment service
             const paymentResponse = await axios.post(
                 'https://backend.payhero.co.ke/api/v2/payments',
@@ -148,17 +149,18 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
 
             const { success, status, reference, CheckoutRequestID } = paymentResponse.data;
 
-            // SQL query to insert the payment response into the paymentrequests table
+            // SQL query to insert the payment response into the payment_requests table
             const insertPaymentRequest = `
-                INSERT INTO pppoe_payment_requests (success, status, reference, CheckoutRequestID, company_id, company_username, router_id, router_name, plan_id, plan_name, plan_validity, mac_address, phone_number, payment_type, installation_fee)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            INSERT INTO pppoe_payment_requests (success, status, reference, CheckoutRequestID, company_id, company_username, router_id, plan_id, plan_name, phone_number, installation_fee)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             `;
 
             await db.query(insertPaymentRequest, [
-                success, status, reference, CheckoutRequestID,
-                company_id, company_username, router_id, router_name,
-                plan_id, plan_name, plan_validity, mac_address, phone_number, payment_type, installation_fee
+            success, status, reference, CheckoutRequestID,
+            client.company_id, client.company_username, client.router_id,
+            client.plan_id, client.plan_name, client.phone_number, client.installation_fee
             ]);
+
 
             if (success && CheckoutRequestID) {
                 let paymentData = null;
@@ -167,34 +169,42 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
 
                     // Check for payment in the 'payments' table
                     paymentData = await checkForPPPOEPayment(
-                        CheckoutRequestID, company_id, company_username,
-                        router_id, router_name, plan_id, plan_name,
-                        plan_validity, mac_address, phone_number, payment_type, installation_fee
+                        CheckoutRequestID, client.company_id, client.company_username,
+                        client.router_id, client.plan_id, client.plan_name,
+                        client.phone_number, client.installation_fee
                     );
 
 
                     // Update user profile with new plan details
                     if (paymentData.success) {
-                        try {
-                            // Query the database to find the user in pppoe_clients with the given phone_number
-                            const [client] = await db.query(
-                                'SELECT * FROM pppoe_clients WHERE phone_number = ? LIMIT 1',
-                                [phone_number]
-                            );
-                    
+                        try {                          
                             if (client.length > 0) {
-                                // User found, calculate the new end_date based on plan_validity
+                                // User found, Calculate the new expiry date base on whether the plan has already expired or not.
+                                
                                 const startDate = new Date(); // Current timestamp
-                                const endDate = new Date(startDate.getTime() + plan_validity * 60 * 60 * 1000); 
+                                const daysToAdd = 30; // Number of days to add
+                                const current_endDate = new Date(client.end_date); // Assuming client.end_date is a valid date string
+
+                                // Check if the current_endDate is in the past
+                                let endDate;
+                                if (current_endDate < startDate) {
+                                    // If the current_endDate is past, add 30 days to current timestamp
+                                    endDate = new Date(startDate.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+                                } else {
+                                    // If the current_endDate is not past, add 30 days to current_endDate
+                                    endDate = new Date(current_endDate.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+                                }
+
+                                const installation_fee = 0;
 
                                 // Update the user's record in pppoe_clients
                                 await db.query(
                                     `
                                     UPDATE pppoe_clients
-                                    SET start_date = ?, updated_at = ?, end_date = ?, plan_name = ?
+                                    SET start_date = ?, updated_at = ?, end_date = ?, plan_name = ?, installation_fee = ?
                                     WHERE phone_number = ?
                                     `,
-                                    [startDate, startDate, endDate, plan_name, phone_number]
+                                    [startDate, startDate, endDate, plan_name, installation_fee, phone_number]
                                 );
                     
                                 console.log(`User with phone_number ${phone_number} updated successfully.`);
@@ -203,7 +213,8 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
                             }
                     
                             return res.status(200).json({
-                                message: 'Your payment has been processed successfully'
+                                message: 'Your payment has been processed successfully',
+                                new_end_date: String(endDate),
                             });
                         } catch (err) {
                             console.error('Error updating user in PPPoE Clients:', err);
@@ -232,13 +243,6 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
                     message: paymentResponse.data.error_message || 'Payment request failed.'
                 });
             }
-        } catch (error) {
-            console.error('Error making payment request:', error);
-            return res.status(500).json({ 
-                status: 'failure',
-                success: false, 
-                error: 'An error occurred while processing the payment request.' 
-            });
         }
     } catch (err) {
         console.error('Error querying database:', err);

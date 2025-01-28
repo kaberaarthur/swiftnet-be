@@ -203,7 +203,7 @@ router.post('/import-users', async (req, res) => {
 
     // Insert processed clients into the pppoe_clients table
     for (const client of processedClients) {
-      console.log("Handling Client: ", client.full_name);
+      // console.log("Handling Client: ", client.full_name);
       try {
         const query = `
           INSERT INTO pppoe_clients (
