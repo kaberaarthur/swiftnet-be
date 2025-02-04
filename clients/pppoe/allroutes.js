@@ -121,86 +121,98 @@ const getPlanDetails = async (id) => {
 // Add code to get Plan Details from DB
 // Create a new PPPoE client
 router.post('/pppoe-clients', async (req, res) => {
-    const {
-        account,
-        full_name,
-        email,
-        password,
-        address,
-        phone_number,
-        payment_no,
-        sms_group,
-        installation_fee,
-        router_id,
-        plan_id,
-        company_id,
-        company_username,
-        fat_no,
-        active,
-        rate_limit,
-        type // New field for type
-    } = req.body;
-
-    // Get Router Details
-    const router_id_no = Number(router_id);
-    const routerDetails = await getRouterById(router_id_no);
-
-    // MikroTik router credentials
-    const router_ip = routerDetails.ip_address;
-    const router_username = routerDetails.username;
-    const router_password = routerDetails.router_secret;
-
-    const planDetails = await getPlanDetails(plan_id);
-    // console.log("Plan Details: ", planDetails);
-
-    const plan_name = planDetails.plan_name;
-    const plan_fee = parseFloat(planDetails.plan_price);
-
-
     try {
-        // Run the function to create a user on MikroTik
+        const {
+            account,
+            full_name,
+            email,
+            password,
+            portal_password,
+            address,
+            phone_number,
+            payment_no,
+            sms_group,
+            installation_fee,
+            router_id,
+            plan_id,
+            company_id,
+            company_username,
+            fat_no,
+            active,
+            rate_limit,
+            type,
+            secret
+        } = req.body;
+
+        // Get Router Details
+        const router_id_no = Number(router_id);
+        const routerDetails = await getRouterById(router_id_no);
+
+        if (!routerDetails) {
+            throw new Error(`Router with ID ${router_id_no} not found.`);
+        }
+
+        const { ip_address: router_ip, username: router_username, router_secret: router_password } = routerDetails;
+
+        // Get Plan Details
+        const planDetails = await getPlanDetails(plan_id);
+        if (!planDetails) {
+            throw new Error(`Plan with ID ${plan_id} not found.`);
+        }
+
+        const plan_name = planDetails.plan_name;
+        const plan_fee = parseFloat(planDetails.plan_price);
+
+        // Create user on MikroTik
         const createUserResponse = await createPPPoEUser(
             router_ip,
             router_username,
             router_password,
-            phone_number,
+            secret,
             password,
             plan_name
         );
 
-        if (createUserResponse.success) {
-            // Insert into the PPPoE clients database if the MikroTik command is successful
-            const query = `
-                INSERT INTO pppoe_clients (
-                    account, full_name, email, password, address, phone_number, 
-                    payment_no, sms_group, installation_fee, router_id, plan_name, 
-                    plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, 
-                    start_date, end_date, date_created
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP())`;
-
-            const result = await db.execute(query, [
-                account, full_name, email, password, address, phone_number,
-                payment_no, sms_group, installation_fee, router_id, plan_name,
-                plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type
-            ]);
-
-            // Respond with success and the new record's ID
-            res.status(201).json({
-                success: true,
-                id: result.insertId,
-            });
-        } else {
-            res.status(400).json({
-                success: false,
-                error: `Error creating user in Mikrotik`,
-            });
+        if (!createUserResponse.success) {
+            throw new Error(`MikroTik error: ${createUserResponse.error || "Unknown error"}`);
         }
+
+        // Insert into database
+        const query = `
+            INSERT INTO pppoe_clients (
+                account, full_name, email, password, portal_password, address, phone_number, 
+                payment_no, sms_group, installation_fee, router_id, plan_name, 
+                plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, 
+                start_date, end_date, date_created
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP())`;
+
+        const [result] = await db.execute(query, [
+            account, full_name, email, password, portal_password, address, phone_number,
+            payment_no, sms_group, installation_fee, router_id, plan_name,
+            plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type
+        ]);
+
+
+        // Log success
+        console.log("PPPoE Client Created:", { id: result.insertId, account });
+
+        // Respond with success
+        res.status(201).json({
+            success: true,
+            id: result.insertId,
+            message: "Client Created Successfully"
+        });
     } catch (error) {
-        // Handle errors
-        res.status(500).json({ message: error.message });
+        // Log error details
+        console.error("Error in /pppoe-clients:", error);
+
+        res.status(500).json({
+            success: false,
+            message: error.message || "Internal Server Error",
+            stack: process.env.NODE_ENV === "development" ? error.stack : undefined, // Show stack trace only in development
+        });
     }
 });
-
 
 // Get PPPoE clients with optional query parameters
 router.get('/pppoe-clients', async (req, res) => {
