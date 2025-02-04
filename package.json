@@ -24,7 +24,8 @@
     "nodemon": "^3.1.4",
     "pg": "^8.12.0",
     "routeros-node": "^0.1.0",
-    "ssh2": "^1.16.0"
+    "ssh2": "^1.16.0",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "axios": "^1.7.8",

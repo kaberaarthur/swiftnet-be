@@ -17,13 +17,18 @@ router.post('/local_logs', async (req, res) => {
 // Read all log entries with optional filtering
 router.get('/local_logs', async (req, res) => {
     try {
-        const { company_id } = req.query;
+        const { company_id, router_id } = req.query;
         let sql = 'SELECT * FROM local_logs';
         const params = [];
 
         if (company_id) {
             sql += ' WHERE company_id = ?';
             params.push(company_id);
+        }
+
+        if (router_id) {
+            sql += ' WHERE router_id = ?';
+            params.push(router_id);
         }
 
         const results = await db.query(sql, params);

@@ -12,7 +12,8 @@ const db = mysql.createConnection({
     host: host,  // Dynamically set the host based on the server IP
     user: 'swiftnet',
     password: 'nOIqSz3aGgYM9z7J',
-    database: 'swiftnet'
+    database: 'swiftnet',
+    timezone: "+03:00"
 });
 
 db.connect((err) => {

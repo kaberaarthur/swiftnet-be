@@ -4,6 +4,7 @@ const db = require('../../dbPromise');
 const { runSSHCommand } = require('../sshCommand');
 const { Client } = require('ssh2');
 const ssh = new Client();
+const axios = require('axios');
 
 // A function to get the Mikrotik Details Dynamically
 // Include a check to see whether that router belongs to the company of the registered user
@@ -251,6 +252,7 @@ router.get('/pppoe-clients/:id', async (req, res) => {
         if (client.length === 0) {
             return res.status(404).json({ message: 'Client not found' });
         }
+        console.log(client[0].end_date);
 
         res.json(client[0]);
     } catch (error) {
@@ -259,10 +261,100 @@ router.get('/pppoe-clients/:id', async (req, res) => {
 });
 
 
+// Send to Microservice
+async function changePppoePlan(secret_name, new_plan, router, customer_id) {
+    const url = 'http://localhost:3001/api/change-pppoe-plan';
+  
+    const requestBody = {
+      secret_name,
+      new_plan,
+      router,
+      customer_id
+    };
+  
+    console.log(secret_name,
+        new_plan,
+        router,
+        customer_id);
+
+    try {
+      const response = await axios.post(url, requestBody);
+      console.log('Response:', response.data);
+      return { status: 'success', message: 'Plan changed successfully' };  // Return success
+    } catch (error) {
+      console.error('Error making request:', error);
+      // Customize error message based on error response
+      if (error.response) {
+        // Request made and server responded with a status other than 2xx
+        return { status: 'failure', message: `Microservice error: ${error.response.data || error.response.statusText}` };
+      } else if (error.request) {
+        // Request made but no response received
+        return { status: 'failure', message: 'No response received from microservice' };
+      } else {
+        // Something went wrong in setting up the request
+        return { status: 'failure', message: `Error: ${error.message}` };
+      }
+    }
+  }
+  
+  router.patch('/edit-pppoe-client/:id', async (req, res) => {
+    const { id } = req.params;
+    const updates = req.body;
+  
+    // console.log(id);
+    console.log("New End Date: ", updates.end_date);
+  
+    // Step 3: Generate dynamic SQL query for updating other fields
+    let query = 'UPDATE pppoe_clients SET ';
+    const params = [];
+  
+    for (const key in updates) {
+      if (updates.hasOwnProperty(key) && key !== 'phone_number') {
+        query += `${key} = ?, `;
+        params.push(updates[key]);
+      }
+    }
+  
+    // Add timestamp and id to the query
+    query = query.slice(0, -2) + ', updated_at = CURRENT_TIMESTAMP() WHERE id = ?';
+    params.push(id);
+  
+    try {
+      // Step 4: Execute the update query in the database
+      const result = await db.execute(query, params);
+  
+      // Call changePppoePlan function and handle success/failure
+      const change_result = await changePppoePlan(updates.secret, updates.plan_name, updates.router_id, id);
+  
+      if (change_result.status === 'failure') {
+        return res.status(500).json({
+          message: 'Client updated, but failed to change PPPoE plan.',
+          affectedRows: result.affectedRows,
+          error: change_result.message
+        });
+      }
+  
+      // Successful response
+      return res.json({
+        message: 'Client updated and plan changed successfully.',
+        affectedRows: result.affectedRows,
+      });
+  
+    } catch (err) {
+      // Handle database errors or other unexpected errors
+      console.error('Database update failed:', err);
+      return res.status(500).json({
+        message: 'Failed to update client in the database.',
+        error: err.message
+      });
+    }
+  });
+
 // Update PPPoE client details (PATCH)
 router.patch('/pppoe-clients/:id', async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
+    console.log("This Plan: ", id)
 
     try {
         // Step 1: Fetch the existing client from the database
@@ -273,10 +365,13 @@ router.patch('/pppoe-clients/:id', async (req, res) => {
         }
 
         const client = clientResult[0];
+        console.log("Fetched Client:", client);
         const { phone_number, router_id } = client; // Cannot edit `phone_number` (MikroTik secret name)
 
         // Step 2: Check if `plan_name` (profile) is being updated
         if (updates.plan_name && updates.plan_name !== client.plan_name) {
+            console.log("Switch to: ", updates.plan_name)
+            console.log("For Client: ", client.secret)
             // Step 2a: Fetch router details using `getRouterById`
             const routerDetails = await getRouterById(router_id);
 
@@ -287,7 +382,7 @@ router.patch('/pppoe-clients/:id', async (req, res) => {
             const { ip_address, username, router_secret } = routerDetails;
 
             // Step 2b: Update profile in MikroTik
-            const mikrotikCommand = `/ppp secret set [find name="${phone_number}"] profile="${updates.plan_name}"`;
+            const mikrotikCommand = `/ppp secret set [find name="${client.secret}"] profile="${updates.plan_name}"`;
 
             // Execute SSH command
             const sshResult = await new Promise((resolve) => {

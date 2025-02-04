@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const db = require('../dbPromise');
+const fs = require('fs');
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -79,22 +80,24 @@ const checkForPPPOEPayment = async (
 // POST endpoint: payment-request-pro
 router.post('/pppoe-payment-request-pro', async (req, res) => {
     const { client_id } = req.body;
+    console.log("Started Processing Payment: ", client_id);
 
     try {
         // Query the database to find the user in pppoe_clients with the given phone_number
-        const [client] = await db.query(
+        const [theClient] = await db.query(
             'SELECT * FROM pppoe_clients WHERE id = ? LIMIT 1',
             [client_id]
         );
 
-        const phone_number = client.phone_number
+        if (theClient && theClient.length > 0){
+            const client = theClient[0];
+            const phone_number = client.phone_number
 
-        if (client.id){
-            console.log("Found the Client");
+            console.log("Found the Client: ", client.full_name);
             // Query the pppoe_plans table for the actual plan details
             const [planResults] = await db.query(
                 'SELECT plan_validity, plan_name, router_id FROM pppoe_plans WHERE id = ?',
-                [client.plan_id]
+                [Number(client.plan_id)]
             );
 
             if (planResults.length === 0) {
@@ -107,7 +110,7 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
             // console.log("Plan Price: ", Number(plan_price));
             // console.log("Installation Fee: ", installation_fee);
 
-            let amount = Number(client.plan_fee) + client.installation_fee; // Assign plan_price to amount
+            let amount = Number(client.plan_fee) + Number(client.installation_fee); // Assign plan_price to amount
             // console.log("Amount Payable: ", Number(plan_price) + installation_fee);
 
 
@@ -132,8 +135,12 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
                 channel_id: Number(channel_id),
                 provider: "m-pesa",
                 external_reference: "INV-009",
+                customer_name: client.full_name,
                 callback_url:pppoe_callback_url
             };
+
+            // Write payload to a text file
+            fs.writeFileSync("payment_payload.txt", JSON.stringify(paymentPayload, null, 4));
 
             const headers = {
                 'Content-Type': 'application/json',
@@ -158,7 +165,7 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
             await db.query(insertPaymentRequest, [
             success, status, reference, CheckoutRequestID,
             client.company_id, client.company_username, client.router_id,
-            client.plan_id, client.plan_name, client.phone_number, client.installation_fee
+            Number(client.plan_id), client.plan_name, client.phone_number, client.installation_fee
             ]);
 
 
@@ -170,7 +177,7 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
                     // Check for payment in the 'payments' table
                     paymentData = await checkForPPPOEPayment(
                         CheckoutRequestID, client.company_id, client.company_username,
-                        client.router_id, client.plan_id, client.plan_name,
+                        client.router_id, Number(client.plan_id), client.plan_name,
                         client.phone_number, client.installation_fee
                     );
 
@@ -180,7 +187,7 @@ router.post('/pppoe-payment-request-pro', async (req, res) => {
                         try {                          
                             if (client.length > 0) {
                                 // User found, Calculate the new expiry date base on whether the plan has already expired or not.
-                                
+
                                 const startDate = new Date(); // Current timestamp
                                 const daysToAdd = 30; // Number of days to add
                                 const current_endDate = new Date(client.end_date); // Assuming client.end_date is a valid date string
@@ -316,6 +323,39 @@ router.get('/pppoe-payments', async (req, res) => {
         if (phone_number) {
             query += ' AND phone_number = ?';
             params.push(phone_number);
+        }
+
+        // Execute the query
+        const [results] = await db.query(query, params);
+
+        // Send the response
+        res.status(200).json(results);
+    } catch (err) {
+        console.error('Error retrieving payments:', err);
+        res.status(500).json({ error: 'An error occurred while fetching PPPoE payments.' });
+    }
+});
+
+// GET endpoint to retrieve PPPoE payments with optional filters
+router.get('/customer-payments', async (req, res) => {
+    const { customer_id, portal_password } = req.query;
+
+    if(!customer_id) {
+        res.status(400).json({message: "Error Accessing Resource"});
+    }
+
+    try {
+        // Base query
+        let query = 'SELECT * FROM pppoe_payments WHERE 1=1';
+        const params = [];
+
+        if (customer_id) {
+            query += ' AND customer_id = ?';
+            params.push(customer_id);
+        }
+
+        if (portal_password) {
+            console.log("Portal Password: ", portal_password);
         }
 
         // Execute the query

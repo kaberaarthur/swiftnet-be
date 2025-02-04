@@ -12,7 +12,11 @@ const pool = mysql.createPool({
     host: host,  // Dynamically set the host based on the server IP
     user: 'swiftnet',
     password: 'nOIqSz3aGgYM9z7J',
-    database: 'swiftnet'
+    database: 'swiftnet',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    timezone: "+03:00"
 });
 
 module.exports = pool;

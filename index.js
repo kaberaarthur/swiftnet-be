@@ -36,6 +36,7 @@ const hotspotVouchersRoutes = require('./vouchers/hotspot/allroutes');
 
 // PPPOE Payment Routes
 const pppoePaymentsRoutes = require('./pppoe_payments/payments');
+const pppoePaymentsTestRoutes = require('./pppoe_payments/test');
 
 
 
@@ -48,7 +49,7 @@ const axios = require('axios');
 // Allow requests from any origin
 app.use(cors({
     origin: '*',  // Allow all origins
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Specify allowed methods
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],  // Specify allowed methods
     credentials: true,  // Optional: Use this if your requests need to include cookies
 }));
 
@@ -86,9 +87,7 @@ app.use(hotspotVouchersRoutes);
 
 // PPPOE Payments Routes
 app.use(pppoePaymentsRoutes);
-
-
-
+app.use(pppoePaymentsTestRoutes);
 
 // Home route
 app.get('/', (req, res) => {

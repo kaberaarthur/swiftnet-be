@@ -1,0 +1,9 @@
+{
+    "amount": 3,
+    "phone_number": "0790485731",
+    "channel_id": 528,
+    "provider": "m-pesa",
+    "external_reference": "INV-009",
+    "customer_name": "Arthur Kabera",
+    "callback_url": "http://139.59.60.20:8000/pppoe-payments"
+}
