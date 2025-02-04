@@ -180,7 +180,7 @@ router.post('/pppoe-clients', async (req, res) => {
         // Insert into database
         const query = `
             INSERT INTO pppoe_clients (
-                account, full_name, email, password, portal_password, address, phone_number, 
+                account, full_name, email, password, portal_password, location, phone_number, 
                 payment_no, sms_group, installation_fee, router_id, plan_name, 
                 plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, 
                 start_date, end_date, date_created
