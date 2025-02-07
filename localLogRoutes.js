@@ -5,16 +5,29 @@ const db = require('./dbPromise');
 // Create a new log entry
 router.post('/local_logs', async (req, res) => {
     try {
-        const { user_type, ip_address, description, company_id, company_username, user_id, name } = req.body;
-        const sql = 'INSERT INTO local_logs (user_type, ip_address, description, company_id, company_username, user_id, name) VALUES (?, ?, ?, ?, ?, ?, ?)';
-        const result = await db.query(sql, [user_type, ip_address, description, company_id, company_username, user_id, name]);
+        const { user_type, ip_address, description, company_id, company_username, user_id, name, router_id } = req.body;
+        const sql = `
+        INSERT INTO local_logs 
+        (user_type, ip_address, description, company_id, company_username, user_id, name, router_id) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
+        const result = await db.query(sql, [
+        user_type,
+        ip_address,
+        description,
+        company_id,
+        company_username,
+        user_id,
+        name,
+        router_id // Added router_id to the values array
+        ]);
+
         res.status(201).json({ id: result.insertId });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Read all log entries with optional filtering
 router.get('/local_logs', async (req, res) => {
     try {
         const { company_id, router_id } = req.query;
@@ -27,12 +40,12 @@ router.get('/local_logs', async (req, res) => {
         }
 
         if (router_id) {
-            sql += ' WHERE router_id = ?';
+            sql += params.length ? ' AND router_id = ?' : ' WHERE router_id = ?';
             params.push(router_id);
         }
 
-        const results = await db.query(sql, params);
-        res.json(results);
+        const [results] = await db.query(sql, params); // Extracting only the first result
+        res.json(results); // Send only the actual rows
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -13,7 +13,8 @@ const db = mysql.createConnection({
     user: 'swiftnet',
     password: 'nOIqSz3aGgYM9z7J',
     database: 'swiftnet',
-    timezone: "+03:00"
+    timezone: "+03:00",
+    connectTimeout: 10000,
 });
 
 db.connect((err) => {
