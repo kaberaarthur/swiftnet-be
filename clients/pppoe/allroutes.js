@@ -141,8 +141,11 @@ router.post('/pppoe-clients', async (req, res) => {
             active,
             rate_limit,
             type,
-            secret
+            secret,
+            brand
         } = req.body;
+
+        console.log("Brand Name: ", brand)
 
         // Get Router Details
         const router_id_no = Number(router_id);
@@ -182,15 +185,21 @@ router.post('/pppoe-clients', async (req, res) => {
             INSERT INTO pppoe_clients (
                 account, full_name, email, password, portal_password, secret, location, phone_number, 
                 payment_no, sms_group, installation_fee, router_id, plan_name, 
-                plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, 
+                plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, brand, 
                 start_date, end_date, date_created
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
                 CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP() + INTERVAL 4 HOUR, CURRENT_TIMESTAMP())`;
 
         const [result] = await db.execute(query, [
             account, full_name, email, password, portal_password, secret, address, phone_number,
             payment_no, sms_group, installation_fee, router_id, plan_name,
-            plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type
+            plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, brand
+        ]);
+
+        console.log("Inserting into DB:", [
+            account, full_name, email, password, portal_password, secret, address, phone_number,
+            payment_no, sms_group, installation_fee, router_id, plan_name,
+            plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, brand
         ]);
 
         // Log success
@@ -477,7 +486,7 @@ router.delete('/pppoe-clients/:id', async (req, res) => {
 
     try {
         // Step 1: Fetch the PPPoE client from the database to get `phone_number` and `router_id`
-        const [clientResult] = await db.execute('SELECT phone_number, router_id FROM pppoe_clients WHERE id = ?', [id]);
+        const [clientResult] = await db.execute('SELECT phone_number, router_id, full_name FROM pppoe_clients WHERE id = ?', [id]);
 
         if (clientResult.length === 0) {
             return res.status(404).json({ message: 'Client not found' });
@@ -496,6 +505,8 @@ router.delete('/pppoe-clients/:id', async (req, res) => {
 
         // Step 3: Run the SSH command to remove the PPPoE client from MikroTik
         const mikrotikCommand = `/ppp secret remove [find name="${phone_number}"]`;
+
+        console.log("Mikrotik Command for Delete: ", mikrotikCommand)
 
         const ssh = new Client();
         const sshResult = await new Promise((resolve) => {
@@ -549,7 +560,7 @@ router.delete('/pppoe-clients/:id', async (req, res) => {
         const result = await db.execute('DELETE FROM pppoe_clients WHERE id = ?', [id]);
 
         // Step 5: Send the response with the number of affected rows (should be 1 if successful)
-        res.json({ message: 'Client deleted', affectedRows: result.affectedRows });
+        res.json({ message: 'Client deleted today', client: clientResult, affectedRows: result.affectedRows });
     } catch (error) {
         // If any error occurs (SSH command or DB operation), return an error response
         res.status(500).json({ message: error.message });

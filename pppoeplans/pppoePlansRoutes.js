@@ -191,8 +191,11 @@ router.post('/import-users', async (req, res) => {
           row.end_date = new Date(row.end_date);
 
           row.account = convertToUsername(row.full_name);
+          row.portal_password = row.password;
 
           processedClients.push(row);
+
+          console.log("Processed Client: ", row)
         } else {
           console.error(`No plan found for plan_id ${row.plan_id}`);
         }
@@ -221,9 +224,11 @@ router.post('/import-users', async (req, res) => {
             company_username,
             rate_limit,
             type,
-            plan_fee
+            plan_fee,
+            brand,
+            portal_password
           ) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         // Use await with db.query, passing the query and client data
@@ -242,7 +247,9 @@ router.post('/import-users', async (req, res) => {
           client.company_username,
           client.rate_limit,
           client.type,
-          client.plan_fee // Insert plan_fee
+          client.plan_fee,
+          client.brand,
+          client.portal_password
         ]);
       } catch (err) {
         console.error(`Error inserting client ${client.full_name}:`, err.message);
