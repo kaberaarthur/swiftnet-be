@@ -3,6 +3,8 @@ const router = express.Router();
 const db = require('../dbPromise');
 const { findUnusedIPs } = require('../unusedIPFunction');
 
+const moment = require('moment');
+
 // A function to get the Mikrotik Details Dynamically
 // Include a check to see whether that router belongs to the company of the registered user
 const getRouterById = async (id) => {
@@ -162,21 +164,17 @@ router.post('/import-users', async (req, res) => {
   try {
     const processedClients = [];
 
-    // Process each row in the tableData (clients)
     for (let i = 0; i < clients.length; i++) {
       const row = clients[i];
 
-      // Skip empty rows or rows missing important fields
       if (!row || !row.plan_id || !row.full_name) {
         console.warn(`Skipping empty or invalid row at index ${i}:`, row);
         continue;
       }
 
       try {
-        // Fetch the plan details from the pppoe_plans table based on plan_id
         const planData = await getPlanData(Number(row.plan_id));
 
-        // If planData is found, add it to the row
         if (planData) {
           row.router_id = planData.router_id;
           row.plan_name = planData.plan_name;
@@ -184,18 +182,22 @@ router.post('/import-users', async (req, res) => {
           row.company_username = planData.company_username;
           row.rate_limit = planData.rate_limit_string;
           row.type = planData.type;
-          row.plan_fee = planData.plan_price;  // Add plan_fee to the row
+          row.plan_fee = planData.plan_price;
 
-          // Convert start_date and end_date strings into Date objects
-          row.start_date = new Date(row.start_date);
-          row.end_date = new Date(row.end_date);
+          row.start_date = moment(row.start_date, "DD/MM/YYYY").format("YYYY-MM-DD");
+          row.end_date = moment(row.end_date, "DD/MM/YYYY")
+            .add(4, "hours")
+            .format("YYYY-MM-DD");
+
+
+          // Determine active status
+          const currentTimestamp = moment().format("YYYY-MM-DD");
+          row.active = moment(row.end_date).isBefore(currentTimestamp) ? 0 : 1;
 
           row.account = convertToUsername(row.full_name);
           row.portal_password = row.password;
 
           processedClients.push(row);
-
-          console.log("Processed Client: ", row)
         } else {
           console.error(`No plan found for plan_id ${row.plan_id}`);
         }
@@ -204,9 +206,7 @@ router.post('/import-users', async (req, res) => {
       }
     }
 
-    // Insert processed clients into the pppoe_clients table
     for (const client of processedClients) {
-      // console.log("Handling Client: ", client.full_name);
       try {
         const query = `
           INSERT INTO pppoe_clients (
@@ -217,6 +217,7 @@ router.post('/import-users', async (req, res) => {
             secret,
             start_date,
             end_date,
+            active,
             plan_id,
             router_id,
             plan_name,
@@ -228,10 +229,9 @@ router.post('/import-users', async (req, res) => {
             brand,
             portal_password
           ) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
-        // Use await with db.query, passing the query and client data
         await db.query(query, [
           client.account,
           client.full_name,
@@ -240,6 +240,7 @@ router.post('/import-users', async (req, res) => {
           client.secret,
           client.start_date,
           client.end_date,
+          client.active, // Newly added active field
           client.plan_id,
           client.router_id,
           client.plan_name,
@@ -253,16 +254,13 @@ router.post('/import-users', async (req, res) => {
         ]);
       } catch (err) {
         console.error(`Error inserting client ${client.full_name}:`, err.message);
-        res.status(500).send({ error: 'Internal Server Error' });
-        return; // Stop further execution if an error occurs
+        res.status(500).send({ error: `Error inserting client ${client.full_name}: ` + err.message });
+        return;
       }
     }
 
-
-    // Log the first 3 processed rows to the console
     console.log('First 3 rows with plan data:', processedClients.slice(0, 3));
 
-    // Send response back
     res.status(200).send({
       message: 'Data processed and inserted successfully',
       data: processedClients,
