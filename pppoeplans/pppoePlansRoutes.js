@@ -199,7 +199,7 @@ router.post('/import-users', async (req, res) => {
 
           processedClients.push(row);
         } else {
-          console.error(`No plan found for plan_id ${row.plan_id}`);
+          console.error(`No plans found for plan_id ${row.plan_id}`);
         }
       } catch (err) {
         console.error(`Error fetching plan data for row ${i}:`, err.message);
