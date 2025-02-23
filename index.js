@@ -38,6 +38,8 @@ const hotspotVouchersRoutes = require('./vouchers/hotspot/allroutes');
 const pppoePaymentsRoutes = require('./pppoe_payments/payments');
 const pppoePaymentsTestRoutes = require('./pppoe_payments/test');
 
+// Reminder
+const pppoeReminderRoute = require('./clients/pppoe/reminder');
 
 
 const app = express();
@@ -88,6 +90,9 @@ app.use(hotspotVouchersRoutes);
 // PPPOE Payments Routes
 app.use(pppoePaymentsRoutes);
 app.use(pppoePaymentsTestRoutes);
+
+// Reminder
+app.use(pppoeReminderRoute);
 
 // Home route
 app.get('/', (req, res) => {
