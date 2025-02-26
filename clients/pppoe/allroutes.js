@@ -142,10 +142,11 @@ router.post('/pppoe-clients', async (req, res) => {
             rate_limit,
             type,
             secret,
-            brand
+            brand,
+            comments // New field
         } = req.body;
 
-        console.log("Brand Name: ", brand)
+        console.log("Brand Name: ", brand);
 
         // Get Router Details
         const router_id_no = Number(router_id);
@@ -186,20 +187,22 @@ router.post('/pppoe-clients', async (req, res) => {
                 account, full_name, email, password, portal_password, secret, location, phone_number, 
                 payment_no, sms_group, installation_fee, router_id, plan_name, 
                 plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, brand, 
-                start_date, end_date, date_created
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
+                comments, start_date, end_date, date_created
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
                 CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP() + INTERVAL 4 HOUR, CURRENT_TIMESTAMP())`;
 
         const [result] = await db.execute(query, [
             account, full_name, email, password, portal_password, secret, address, phone_number,
             payment_no, sms_group, installation_fee, router_id, plan_name,
-            plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, brand
+            plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, brand,
+            comments // Added comments here
         ]);
 
         console.log("Inserting into DB:", [
             account, full_name, email, password, portal_password, secret, address, phone_number,
             payment_no, sms_group, installation_fee, router_id, plan_name,
-            plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, brand
+            plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, brand,
+            comments
         ]);
 
         // Log success
@@ -222,6 +225,7 @@ router.post('/pppoe-clients', async (req, res) => {
         });
     }
 });
+
 
 // Get PPPoE clients with optional query parameters
 router.get('/pppoe-clients', async (req, res) => {
