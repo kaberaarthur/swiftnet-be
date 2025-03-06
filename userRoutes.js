@@ -60,93 +60,88 @@ router.get('/verify-token', (req, res) => {
     });
 });
 
+// Test Route
+router.get('/message', (req, res) => {
+    res.send('Hello, this is your message!');
+});
 
 // Signup route
-router.post('/signup', (req, res) => {
-    const { name, email, phone, password } = req.body;
+router.post('/signup', async (req, res) => {
+    try {
+        const { name, email, phone, password } = req.body;
+        console.log(req.body);
 
-    // Input validation (this is a simple example, more validation should be added)
-    if (!name || !email || !phone || !password) {
-        return res.status(400).json({ message: 'All fields are required' });
-    }
-    if (password.length < 8) {
-        return res.status(400).json({ message: 'Password must be at least 8 characters long' });
-    }
+        // Input validation
+        if (!name || !email || !phone || !password) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+        if (password.length < 8) {
+            return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+        }
+        console.log("This point");
 
-    // Check if user already exists
-    db.query('SELECT * FROM users WHERE email = ?', [email], (err, result) => {
-        if (err) {
-            console.error('Error during user lookup:', err);
-            return res.status(500).json({ message: 'Database query error' });
+        // Check if user already exists
+        const [existingUsers] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
+        if (existingUsers.length > 0) {
+            return res.status(400).json({ message: 'Email already in use' });
         }
 
-        if (result.length > 0) {
-            return res.status(400).json({ message: 'Email already exists' });
-        }
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 8);
 
-        // Hash the password asynchronously
-        bcrypt.hash(password, 8, (err, hashedPassword) => {
-            if (err) {
-                console.error('Password hashing error:', err);
-                return res.status(500).json({ message: 'Password hashing error' });
-            }
+        const defaultUserType = 'customer';
+        const defaultCompanyId = 2;
+        const defaultCompanyName = "@kijaniinternet";
+        const active = true;
 
-            const defaultUserType = 'editor';
-            const defaultCompanyId = null;
-            const defaultCompanyName = null;
-            const active = true;
+        // Insert user into database
+        const [insertResult] = await db.execute(
+            'INSERT INTO users (name, email, phone, password, user_type, company_id, company_username, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [name, email, phone, hashedPassword, defaultUserType, defaultCompanyId, defaultCompanyName, active]
+        );
 
-            // Insert user into database
-            db.query('INSERT INTO users (name, email, phone, password, user_type, company_id, company_name, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
-            [name, email, phone, hashedPassword, defaultUserType, defaultCompanyId, defaultCompanyName, active], (err, result) => {
-                if (err) {
-                    console.error('Error during user insertion:', err);
-                    return res.status(500).json({ message: 'Database query error' });
-                }
+        const newUserId = insertResult.insertId;
 
-                // Get the newly inserted user's ID
-                const newUserId = result.insertId;
+        // Create a token for the new user with 1 year expiration
+        const token = jwt.sign({ id: newUserId }, 'your_jwt_secret', { expiresIn: '365d' });
 
-                // Create a token for the new user with 1 year expiration
-                const token = jwt.sign({ id: newUserId }, 'your_jwt_secret', { expiresIn: '365d' });
+        // Fetch the newly registered user details
+        const [userResults] = await db.execute(
+            'SELECT id, name, email, phone, user_type, company_id, company_username, active FROM users WHERE id = ?',
+            [newUserId]
+        );
 
-                // Fetch the newly registered user details
-                db.query('SELECT id, name, email, phone, user_type, company_id, company_name, active FROM users WHERE id = ?', [newUserId], (err, result) => {
-                    if (err) {
-                        console.error('Error fetching user details:', err);
-                        return res.status(500).json({ message: 'Database query error' });
-                    }
+        const user = userResults[0];
 
-                    const user = result[0];
-
-                    // Respond with user details and token
-                    res.status(201).json({
-                        message: 'User registered successfully',
-                        token,
-                        user
-                    });
-                });
-            });
+        // Respond with user details and token
+        res.status(201).json({
+            message: 'User registered successfully',
+            token,
+            user
         });
-    });
+
+    } catch (error) {
+        console.error('Signup error:', error);
+        res.status(500).json({ message: 'An error occurred during signup' });
+    }
 });
 
 // Sign-in route
-router.post('/signin', (req, res) => {
-    const { email, password } = req.body;
+router.post('/signin', async (req, res) => {
+    try {
+        const { email, password } = req.body;
 
-    // Check if user exists
-    db.query('SELECT * FROM users WHERE email = ?', [email], (err, result) => {
-        if (err) return res.status(500).json({ message: 'Database query error' });
-
-        if (result.length === 0) {
+        // Check if user exists
+        const [results] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
+        
+        if (results.length === 0) {
             return res.status(400).json({ message: 'User not found' });
         }
 
-        const user = result[0];
+        const user = results[0];
 
         // Check password
-        const isPasswordValid = bcrypt.compareSync(password, user.password);
+        const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(401).json({ message: 'Invalid password' });
         }
@@ -154,29 +149,41 @@ router.post('/signin', (req, res) => {
         // Create and return a token with 1 year expiration
         const token = jwt.sign({ id: user.id }, 'your_jwt_secret', { expiresIn: '365d' });
 
+        // Remove password from user object before sending the response
+        const { password: userPassword, ...userWithoutPassword } = user;
+
         res.json({
             message: 'Sign-in successful',
             token,
-            user,
+            user: userWithoutPassword,
         });
-    });
+    } catch (error) {
+        console.error('Sign-in error:', error);
+        res.status(500).json({ message: 'An error occurred during sign-in' });
+    }
 });
 
 
 // Route to get user details
-router.get('/user', verifyToken, (req, res) => {
-    const userId = req.userId;
+router.get('/user', verifyToken, async (req, res) => {
+    try {
+        const userId = req.userId;
 
-    db.query('SELECT id, name, email, phone, user_type, company_id, company_name, active FROM users WHERE id = ?', [userId], (err, result) => {
-        if (err) return res.status(500).json({ message: 'Database query error' });
+        const [results] = await db.execute(
+            'SELECT id, name, email, phone, user_type, company_id, company_username, active FROM users WHERE id = ?', 
+            [userId]
+        );
 
-        if (result.length === 0) {
+        if (results.length === 0) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const user = result[0];
+        const user = results[0];
         res.json(user);
-    });
+    } catch (error) {
+        console.error('Error fetching user details:', error);
+        res.status(500).json({ message: 'An error occurred while retrieving user details' });
+    }
 });
 
 // Protected route example

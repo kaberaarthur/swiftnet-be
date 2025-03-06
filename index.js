@@ -59,8 +59,8 @@ app.use(cors({
 app.use(bodyParser.json());
 
 // Use the user management routes
-// app.use('/api', userRoutes);
-app.use(userRoutes);
+app.use('/api', userRoutes);
+// app.use(userRoutes);
 app.use(paymentRoutes)
 app.use(companyRoutes)
 app.use(voucherRoutes)
@@ -357,9 +357,6 @@ app.post('/payment-request-pro', async (req, res) => {
         return res.status(500).json({ error: 'Error processing payment request.', errorDetails: err.message || err });
     }
 });
-
-
-
 
 
 // Start the server
