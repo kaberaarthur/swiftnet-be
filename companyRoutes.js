@@ -1,5 +1,26 @@
 const express = require('express');
 const db = require('./dbPromise');
+const jwt = require('jsonwebtoken');
+
+// Middleware to verify token
+function verifyToken(req, res, next) {
+    const token = req.headers['authorization'];
+
+    if (!token) {
+        return res.status(403).json({ message: 'No token provided' });
+    }
+
+    const bearerToken = token.split(' ')[1];
+    
+    jwt.verify(bearerToken, 'your_jwt_secret', (err, decoded) => {
+        if (err) {
+            return res.status(500).json({ message: 'Failed to authenticate token' });
+        }
+        req.userId = decoded.id;
+        req.userType = decoded.user_type;
+        next();
+    });
+}
 
 const router = express.Router();
 
@@ -22,7 +43,7 @@ const generateUniqueUsername = async (company_name, maxRetries = 10) => {
 };
 
 // Create a new company (POST)
-router.post('/companies', async (req, res) => {
+router.post('/companies', verifyToken, async (req, res) => {
     const { company_name, address, phone_number, logo } = req.body;
 
     try {
@@ -42,36 +63,73 @@ router.post('/companies', async (req, res) => {
     }
 });
 
-// Get all companies or a single company by ID (GET)
-router.get('/companies/:id?', async (req, res) => {
-    const companyId = req.params.id;
-
+// Get all companies (GET)
+router.get('/companies', verifyToken, async (req, res) => {
     try {
-        if (companyId) {
-            const [result] = await db.execute('SELECT * FROM companies WHERE id = ?', [companyId]);
-            if (result.length === 0) {
-                return res.status(404).json({ message: 'Company not found' });
-            }
-            res.json(result[0]);
-        } else {
-            const [result] = await db.execute('SELECT * FROM companies', []);
-            res.json(result);
+        // Check if user is admin
+        if (req.userType !== 'superadmin') {
+            return res.status(403).json({ 
+                message: 'Access denied: Administrator privileges required' 
+            });
         }
+
+        const [result] = await db.execute('SELECT * FROM companies');
+        res.json(result);
     } catch (err) {
         res.status(500).json({ message: 'Database query error', error: err.message });
     }
 });
 
-// Update company details by ID (PUT)
-router.put('/companies/:id', async (req, res) => {
+// Get a single company by ID (GET)
+router.get('/companies/:id', verifyToken, async (req, res) => {
     const companyId = req.params.id;
-    const { company_name, address, phone_number, logo } = req.body;
 
     try {
-        const [result] = await db.execute(
-            'UPDATE companies SET company_name = ?, address = ?, phone_number = ?, logo = ? WHERE id = ?',
-            [company_name, address, phone_number, logo, companyId]
-        );
+        const [result] = await db.execute('SELECT * FROM companies WHERE id = ?', [companyId]);
+        if (result.length === 0) {
+            return res.status(404).json({ message: 'Company not found' });
+        }
+        res.json(result[0]);
+    } catch (err) {
+        res.status(500).json({ message: 'Database query error', error: err.message });
+    }
+});
+
+// Update company details by ID (PATCH)
+router.patch('/companies/:id', verifyToken, async (req, res) => {
+    const companyId = req.params.id;
+    const { company_name, address, phone_number, logo } = req.body;
+    
+    try {
+        // Build dynamic query based on provided fields
+        const updates = [];
+        const values = [];
+        
+        if (company_name !== undefined) {
+            updates.push('company_name = ?');
+            values.push(company_name);
+        }
+        if (address !== undefined) {
+            updates.push('address = ?');
+            values.push(address);
+        }
+        if (phone_number !== undefined) {
+            updates.push('phone_number = ?');
+            values.push(phone_number);
+        }
+        if (logo !== undefined) {
+            updates.push('logo = ?');
+            values.push(logo);
+        }
+
+        if (updates.length === 0) {
+            return res.status(400).json({ message: 'No fields provided to update' });
+        }
+
+        values.push(companyId);
+        const query = `UPDATE companies SET ${updates.join(', ')} WHERE id = ?`;
+        
+        const [result] = await db.execute(query, values);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: 'Company not found' });
@@ -84,7 +142,7 @@ router.put('/companies/:id', async (req, res) => {
 });
 
 // Delete company by ID (DELETE)
-router.delete('/companies/:id', async (req, res) => {
+router.delete('/companies/:id', verifyToken, async (req, res) => {
     const companyId = req.params.id;
 
     try {

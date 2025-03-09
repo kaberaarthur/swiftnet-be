@@ -27,6 +27,8 @@ function verifyToken(req, res, next) {
 
         // Attach the user ID to the request object
         req.userId = decoded.id;
+        req.userType = decoded.user_type;
+        req.companyId = decoded.company_id;
         next();
     });
     
@@ -133,7 +135,7 @@ router.post('/signup', async (req, res) => {
 
         // Create a token with user_type included
         const token = jwt.sign(
-            { id: newUserId, user_type: defaultUserType },
+            { id: newUserId, user_type: defaultUserType, company_id: companyId },
             'your_jwt_secret',
             { expiresIn: '365d' }
         );
@@ -183,6 +185,10 @@ router.post('/signin', async (req, res) => {
 
         const user = results[0];
 
+        if (user.active === 0) {
+            return res.status(400).json({ message: 'You account is inactive, contact your Admin.' });
+        }
+
         // Check password
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
@@ -191,7 +197,7 @@ router.post('/signin', async (req, res) => {
 
         // Create and return a token with user_type included
         const token = jwt.sign(
-            { id: user.id, user_type: user.user_type }, // Include user_type
+            { id: user.id, user_type: user.user_type, company_id: user.company_id }, // Include user_type
             'your_jwt_secret',
             { expiresIn: '365d' }
         );
@@ -240,25 +246,107 @@ router.get('/protected', verifyToken, (req, res) => {
     });
 });
 
-// Route to get all users or a specific user by ID
-router.get('/users/:id?', verifyToken, (req, res) => {
+
+// Route to get all users or a specific user by ID, filtered by company_id
+router.get('/users/:id?', verifyToken, async (req, res) => {
     const userId = req.params.id;
+    const companyId = req.companyId; // Use camelCase consistently
 
-    if (userId) {
-        db.query('SELECT id, name, email, phone, user_type, company_id, company_name, active FROM users WHERE id = ?', [userId], (err, result) => {
-            if (err) return res.status(500).json({ message: 'Database query error' });
+    console.log("Company ID: ", companyId);
 
-            if (result.length === 0) {
-                return res.status(404).json({ message: 'User not found' });
-            }
-
-            res.json(result[0]);
+    // Check if user is superadmin
+    if (req.userType !== 'admin') {
+        return res.status(403).json({ 
+            message: 'Access denied: Admin privileges required' 
         });
-    } else {
-        db.query('SELECT id, name, email, phone, user_type, company_id, company_name, active FROM users', (err, result) => {
-            if (err) return res.status(500).json({ message: 'Database query error' });
+    }
 
+    try {
+        if (userId) {
+            const [result] = await db.execute(
+                'SELECT id, name, email, phone, user_type, company_id, company_username, active FROM users WHERE id = ? AND company_id = ?',
+                [userId, companyId]
+            );
+            
+            if (result.length === 0) {
+                return res.status(404).json({ message: 'User not found or does not belong to your company' });
+            }
+            
+            res.json(result[0]);
+        } else {
+            const [result] = await db.execute(
+                'SELECT id, name, email, phone, user_type, company_id, company_username, active FROM users WHERE company_id = ?',
+                [companyId]
+            );
+            
             res.json(result);
+        }
+    } catch (err) {
+        res.status(500).json({ 
+            message: 'Database query error', 
+            error: err.message 
+        });
+    }
+});
+
+// Route to toggle the active status of a specific user by ID
+router.patch('/users/:id/toggle-active', verifyToken, async (req, res) => {
+    const userId = req.params.id;
+    const companyId = req.companyId; // Extracted from token by verifyToken middleware
+
+    // Check if user is admin
+    if (req.userType !== 'admin') {
+        return res.status(403).json({ 
+            message: 'Access denied: Admin privileges required' 
+        });
+    }
+
+    try {
+        // Step 1: Fetch the user to verify company_id and get current active status
+        const [userResult] = await db.execute(
+            'SELECT company_id, active FROM users WHERE id = ?',
+            [userId]
+        );
+
+        if (userResult.length === 0) {
+            return res.status(404).json({ 
+                message: 'User not found' 
+            });
+        }
+
+        const user = userResult[0];
+
+        // Step 2: Verify company_id matches
+        if (user.company_id !== companyId) {
+            return res.status(403).json({ 
+                message: 'User does not belong to your company' 
+            });
+        }
+
+        // Step 3: Toggle the active status
+        const newActiveStatus = user.active === 1 ? 0 : 1;
+
+        // Step 4: Update the user's active status
+        await db.execute(
+            'UPDATE users SET active = ? WHERE id = ?',
+            [newActiveStatus, userId]
+        );
+
+        // Step 5: Fetch and return the updated user data
+        const [updatedUserResult] = await db.execute(
+            'SELECT id, name, email, phone, user_type, company_id, company_username, active FROM users WHERE id = ?',
+            [userId]
+        );
+
+        res.json({
+            message: 'User active status updated successfully',
+            user: updatedUserResult[0]
+        });
+
+    } catch (err) {
+        res.status(500).json({ 
+            message: 'Database query error', 
+            error: err.message 
         });
     }
 });
@@ -368,5 +456,68 @@ router.post("/reset-password", async (req, res) => {
         res.status(500).json({ success: false, message: "Database query error" });
     }
 });
+
+// Create-user route
+router.post('/create-user', verifyToken, async (req, res) => {
+    try {
+        const { name, email, phone, password, company_username } = req.body;
+        const companyId = req.companyId;
+
+        // Input validation
+        if (!name || !email || !phone || !password || !company_username) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+        if (password.length < 8) {
+            return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+        }
+
+        // Check if user is admin
+        if (req.userType !== 'admin' && req.userType !== 'superadmin') {
+            return res.status(403).json({ 
+                message: 'Access denied: Admin privileges required' 
+            });
+        }
+
+        // Check if user already exists
+        const [existingUsers] = await db.execute(
+            'SELECT * FROM users WHERE email = ?',
+            [email]
+        );
+        if (existingUsers.length > 0) {
+            return res.status(400).json({ message: 'Email already in use' });
+        }
+
+        // Check if company exists and matches the provided username
+        const [companyCheck] = await db.execute(
+            'SELECT * FROM companies WHERE id = ? AND username = ?',
+            [companyId, company_username]
+        );
+        if (companyCheck.length === 0) {
+            return res.status(400).json({ 
+                message: 'Company ID and username do not match or company does not exist' 
+            });
+        }
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 8);
+        const defaultUserType = 'manager';
+
+        // Insert user into users table
+        const [userResult] = await db.execute(
+            'INSERT INTO users (name, email, phone, password, user_type, company_id, company_username, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [name, email, phone, hashedPassword, defaultUserType, companyId, company_username, 1]
+        );
+
+        // Respond with success message only
+        res.status(201).json({
+            message: 'User created successfully', user: userResult
+        });
+
+    } catch (error) {
+        console.error('Create user error:', error);
+        res.status(500).json({ message: 'An error occurred during user creation' });
+    }
+});
+
 
 module.exports = router;
