@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('./dbPromise');
-const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken'); // Added this
 
 // Middleware to verify token
 function verifyToken(req, res, next) {
