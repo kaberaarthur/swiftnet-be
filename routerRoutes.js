@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const db = require('./dbPromise'); // Import the promise-based database pool
+const db = require('./dbPromise');
+const jwt = require('jsonwebtoken');
 
 // Middleware to verify token
 function verifyToken(req, res, next) {
@@ -99,6 +100,8 @@ router.get('/routers', async (req, res) => {
 router.get('/routers/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
     const companyIdFromToken = req.companyId;
+
+    console.log("Router Company ID: ", companyIdFromToken);
 
     try {
         const [result] = await db.query(
