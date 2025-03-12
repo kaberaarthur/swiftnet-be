@@ -561,13 +561,13 @@ router.delete('/pppoe-clients/:id', async (req, res) => {
 
     try {
         // Step 1: Fetch the PPPoE client from the database to get `phone_number` and `router_id`
-        const [clientResult] = await db.execute('SELECT phone_number, router_id, full_name FROM pppoe_clients WHERE id = ?', [id]);
+        const [clientResult] = await db.execute('SELECT secret, phone_number, router_id, full_name FROM pppoe_clients WHERE id = ?', [id]);
 
         if (clientResult.length === 0) {
             return res.status(404).json({ message: 'Client not found' });
         }
 
-        const { phone_number, router_id } = clientResult[0];
+        const { secret, phone_number, router_id } = clientResult[0];
 
         // Step 2: Fetch router details using `getRouterById`
         const routerDetails = await getRouterById(router_id);
@@ -579,7 +579,7 @@ router.delete('/pppoe-clients/:id', async (req, res) => {
         const { ip_address, username, router_secret } = routerDetails;
 
         // Step 3: Run the SSH command to remove the PPPoE client from MikroTik
-        const mikrotikCommand = `/ppp secret remove [find name="${phone_number}"]`;
+        const mikrotikCommand = `/ppp secret remove [find name="${secret}"]`;
 
         console.log("Mikrotik Command for Delete: ", mikrotikCommand)
 
