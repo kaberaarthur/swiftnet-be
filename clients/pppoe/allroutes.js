@@ -5,6 +5,39 @@ const { runSSHCommand } = require('../sshCommand');
 const { Client } = require('ssh2');
 const ssh = new Client();
 const axios = require('axios');
+const jwt = require('jsonwebtoken');
+
+require('dotenv').config();
+
+const jwtSecret = process.env.JWT_SECRET;
+
+// Middleware to verify token
+function verifyToken(req, res, next) {
+    // Extract the token from the Authorization header
+    const token = req.headers['authorization'];
+
+    if (!token) {
+        return res.status(403).json({ message: 'No token provided' });
+    }
+
+    // Extract the token from the 'Authorization' header
+    const bearerToken = token.split(' ')[1];
+
+    
+    // Verify the token
+    jwt.verify(bearerToken, jwtSecret, (err, decoded) => {
+        if (err) {
+            return res.status(500).json({ message: 'Failed to authenticate token' });
+        }
+
+        // Attach the user ID to the request object
+        req.userId = decoded.id;
+        req.userType = decoded.user_type;
+        req.companyId = decoded.company_id;
+        next();
+    });
+    
+}
 
 // A function to get the Mikrotik Details Dynamically
 // Include a check to see whether that router belongs to the company of the registered user
@@ -120,7 +153,9 @@ const getPlanDetails = async (id) => {
   
 // Add code to get Plan Details from DB
 // Create a new PPPoE client
-router.post('/pppoe-clients', async (req, res) => {
+router.post('/pppoe-clients', verifyToken, async (req, res) => {
+    const company_id = req.companyId;
+
     try {
         const {
             account,
@@ -135,7 +170,6 @@ router.post('/pppoe-clients', async (req, res) => {
             installation_fee,
             router_id,
             plan_id,
-            company_id,
             company_username,
             fat_no,
             active,
@@ -228,8 +262,11 @@ router.post('/pppoe-clients', async (req, res) => {
 
 
 // Get PPPoE clients with optional query parameters
-router.get('/pppoe-clients', async (req, res) => {
-    const { company_id, router_id, active, type, phone_number } = req.query;
+router.get('/pppoe-clients', verifyToken, async (req, res) => {
+    const { router_id, active, type, phone_number } = req.query;
+
+    const company_id = req.companyId;
+
     let query = 'SELECT * FROM pppoe_clients WHERE 1=1';
     const params = [];
 
@@ -268,11 +305,12 @@ router.get('/pppoe-clients', async (req, res) => {
 
 
 // Get a single PPPoE client by ID
-router.get('/pppoe-clients/:id', async (req, res) => {
+router.get('/pppoe-clients/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
+    const company_id = req.companyId;
 
     try {
-        const [client] = await db.execute('SELECT * FROM pppoe_clients WHERE id = ?', [id]);
+        const [client] = await db.execute('SELECT * FROM pppoe_clients WHERE id = ? AND company_id = ?', [id, company_id]);
 
         if (client.length === 0) {
             return res.status(404).json({ message: 'Client not found' });
@@ -321,10 +359,13 @@ async function changePppoePlan(secret_name, new_plan, router, customer_id) {
       }
     }
   }
+
   
-  router.patch('/edit-pppoe-client/:id', async (req, res) => {
+  router.patch('/edit-pppoe-client/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
+    const company_id = req.companyId;
+
   
     // console.log(id);
     console.log("New End Date: ", updates.end_date);
@@ -358,6 +399,39 @@ async function changePppoePlan(secret_name, new_plan, router, customer_id) {
           error: change_result.message
         });
       }
+
+      // Update Client Status on Mikrotik
+      // http://localhost:3001/api/enable-client
+        // Update Client Status on MikroTik
+        try {
+            const enableClientResponse = await fetch("http://localhost:3001/api/enable-client", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${req.headers.authorization}` // Assuming auth token is needed
+                },
+                body: JSON.stringify({ client_id: id })
+            });
+        
+            const enableClientData = await enableClientResponse.json();
+        
+            if (!enableClientResponse.ok) {
+            console.error("Failed to enable client:", enableClientData);
+            return res.status(enableClientResponse.status).json({
+                message: "Client updated, but enabling client failed.",
+                error: enableClientData
+            });
+            }
+        
+            console.log("Client successfully enabled:", enableClientData);
+        } catch (error) {
+            console.error("Error enabling client:", error);
+            return res.status(500).json({
+            message: "Client updated, but an error occurred while enabling client.",
+            error: error.message
+            });
+        } 
+
   
       // Successful response
       return res.json({

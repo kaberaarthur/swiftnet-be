@@ -41,6 +41,11 @@ const pppoePaymentsTestRoutes = require('./pppoe_payments/test');
 // Reminder
 const pppoeReminderRoute = require('./clients/pppoe/reminder');
 
+require('dotenv').config();
+
+const jwtSecret = process.env.JWT_SECRET;
+// console.log("JWT Secret:", jwtSecret);
+
 
 const app = express();
 const port = 8000;
