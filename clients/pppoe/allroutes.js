@@ -148,7 +148,7 @@ const getPlanDetails = async (id) => {
     }
 };
 
-router.get("/log", (req, res) => {
+router.get("/log", verifyToken, (req, res) => {
     console.log("Endpoint /log was accessed!");
     res.send("Check your console, log recorded!");
 });
