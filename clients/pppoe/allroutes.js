@@ -43,10 +43,7 @@ function verifyToken(req, res, next) {
 // Include a check to see whether that router belongs to the company of the registered user
 const getRouterById = async (id) => {  
     // Validate input ID
-    if (!id || typeof id !== 'number') {
-      console.error("Invalid ID. Please provide a valid integer.");
-      return;
-    }
+    console.log("Fetch Router of ID: ", id)
   
     try {
       // Query the database to find the router with the specified ID
@@ -150,6 +147,11 @@ const getPlanDetails = async (id) => {
         throw new Error('Failed to fetch plan details');
     }
 };
+
+router.get("/log", (req, res) => {
+    console.log("Endpoint /log was accessed!");
+    res.send("Check your console, log recorded!");
+});
   
 // Add code to get Plan Details from DB
 // Create a new PPPoE client
@@ -201,6 +203,7 @@ router.post('/pppoe-clients', verifyToken, async (req, res) => {
         const plan_name = planDetails.plan_name;
         const plan_fee = parseFloat(planDetails.plan_price);
 
+        
         // Create user on MikroTik
         const createUserResponse = await createPPPoEUser(
             router_ip,
@@ -209,8 +212,8 @@ router.post('/pppoe-clients', verifyToken, async (req, res) => {
             secret,
             password,
             plan_name
-        );
-
+        );        
+        
         if (!createUserResponse.success) {
             throw new Error(`MikroTik error: ${createUserResponse.error || "Unknown error"}`);
         }
@@ -229,14 +232,7 @@ router.post('/pppoe-clients', verifyToken, async (req, res) => {
             account, full_name, email, password, portal_password, secret, address, phone_number,
             payment_no, sms_group, installation_fee, router_id, plan_name,
             plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, brand,
-            comments // Added comments here
-        ]);
-
-        console.log("Inserting into DB:", [
-            account, full_name, email, password, portal_password, secret, address, phone_number,
-            payment_no, sms_group, installation_fee, router_id, plan_name,
-            plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, brand,
-            comments
+            comments ?? null // Added comments here
         ]);
 
         // Log success
@@ -248,6 +244,7 @@ router.post('/pppoe-clients', verifyToken, async (req, res) => {
             id: result.insertId,
             message: "Client Created Successfully"
         });
+        
     } catch (error) {
         // Log error details
         console.error("Error in /pppoe-clients:", error);
