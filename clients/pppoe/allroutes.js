@@ -309,7 +309,7 @@ router.get('/pppoe-clients/:id', async (req, res) => {
         const [client] = await db.execute('SELECT * FROM pppoe_clients WHERE id = ?', [id]);
 
         if (client.length === 0) {
-            return res.status(404).json({ message: 'Client not found' });
+            return res.status(404).json({ message: 'Client not registered with us' });
         }
         console.log(client[0].end_date);
 
