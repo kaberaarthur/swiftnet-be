@@ -302,12 +302,11 @@ router.get('/pppoe-clients', verifyToken, async (req, res) => {
 
 
 // Get a single PPPoE client by ID
-router.get('/pppoe-clients/:id', verifyToken, async (req, res) => {
+router.get('/pppoe-clients/:id', async (req, res) => {
     const { id } = req.params;
-    const company_id = req.companyId;
 
     try {
-        const [client] = await db.execute('SELECT * FROM pppoe_clients WHERE id = ? AND company_id = ?', [id, company_id]);
+        const [client] = await db.execute('SELECT * FROM pppoe_clients WHERE id = ?', [id]);
 
         if (client.length === 0) {
             return res.status(404).json({ message: 'Client not found' });
