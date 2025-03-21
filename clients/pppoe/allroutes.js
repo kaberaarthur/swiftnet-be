@@ -307,11 +307,6 @@ router.get('/pppoe-clients-cron', async (req, res) => {
     let query = 'SELECT * FROM pppoe_clients WHERE 1=1';
     const params = [];
 
-    if (company_id) {
-        query += ' AND company_id = ?';
-        params.push(company_id);
-    }
-
     if (router_id) {
         query += ' AND router_id = ?';
         params.push(router_id);
