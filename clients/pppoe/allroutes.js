@@ -300,6 +300,46 @@ router.get('/pppoe-clients', verifyToken, async (req, res) => {
     }
 });
 
+// Get PPPoE clients router, created for the cronjob
+router.get('/pppoe-clients-cron', async (req, res) => {
+    const { router_id, active, type, phone_number } = req.query;
+
+    let query = 'SELECT * FROM pppoe_clients WHERE 1=1';
+    const params = [];
+
+    if (company_id) {
+        query += ' AND company_id = ?';
+        params.push(company_id);
+    }
+
+    if (router_id) {
+        query += ' AND router_id = ?';
+        params.push(router_id);
+    }
+
+    if (typeof active !== 'undefined') {
+        query += ' AND active = ?';
+        params.push(active);
+    }
+
+    if (type) {
+        query += ' AND type = ?';
+        params.push(type);
+    }
+
+    if (phone_number) {
+        query += ' AND phone_number LIKE ?'; // Use LIKE for partial matching if needed
+        params.push(`%${phone_number}%`);
+    }
+
+    try {
+        const [clients] = await db.execute(query, params);
+        res.json(clients);
+    } catch (error) {
+        res.status(500).json({ success:false, message: error.message });
+    }
+});
+
 
 // Get a single PPPoE client by ID
 router.get('/pppoe-clients/:id', async (req, res) => {
