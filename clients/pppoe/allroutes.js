@@ -399,7 +399,7 @@ async function changePppoePlan(secret_name, new_plan, router, customer_id) {
 
   
     // console.log(id);
-    console.log("New End Date: ", updates.end_date);
+    console.log("Update Client: ", updates);
   
     // Step 3: Generate dynamic SQL query for updating other fields
     let query = 'UPDATE pppoe_clients SET ';
