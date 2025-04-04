@@ -588,6 +588,40 @@ router.patch('/pppoe-clients/:id', async (req, res) => {
     }
 });
 
+router.patch('/pppoe-clients-change-plan/:id', async (req, res) => {
+    const { id } = req.params;
+    const { plan_id, plan_name, plan_fee } = req.body;
+  
+    if (!plan_id || !plan_name || !plan_fee) {
+      return res.status(400).json({ message: 'Missing required fields.' });
+    }
+  
+    try {
+      // Check if the client exists
+      const [clientResult] = await db.execute(
+        'SELECT * FROM pppoe_clients WHERE id = ?',
+        [id]
+      );
+  
+      if (clientResult.length === 0) {
+        return res.status(404).json({ message: 'Client not found.' });
+      }      
+  
+      // Update plan info
+      const [updateResult] = await db.execute(
+        `UPDATE pppoe_clients
+         SET plan_id = ?, plan_name = ?, plan_fee = ?
+         WHERE id = ?`,
+        [plan_id, plan_name, plan_fee, id]
+      );
+  
+      res.json({ message: 'Plan details updated successfully.' });
+    } catch (error) {
+      console.error('Error updating plan details:', error);
+      res.status(500).json({ message: 'Internal server error.' });
+    }
+});
+  
 
 // Delete a PPPoE client
 router.delete('/pppoe-clients/:id', async (req, res) => {
