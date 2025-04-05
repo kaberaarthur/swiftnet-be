@@ -7,6 +7,8 @@ const ssh = new Client();
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 
+const { sendSMS } = require('./functions');
+
 require('dotenv').config();
 
 const jwtSecret = process.env.JWT_SECRET;
@@ -588,13 +590,33 @@ router.patch('/pppoe-clients/:id', async (req, res) => {
     }
 });
 
+// POST /send-otp-sms
+router.post('/send-otp-sms', async (req, res) => {
+  const { client_id, phone_number } = req.body;
+
+  if (!client_id || !phone_number) {
+    return res.status(400).json({ message: 'client_id and phone_number are required.' });
+  }
+
+  try {
+    const result = await sendSMS(client_id, phone_number);
+    res.status(200).json({ message: 'OTP sent successfully.', result });
+  } catch (error) {
+    console.error('Failed to send OTP:', error);
+    res.status(500).json({ message: 'Failed to send OTP.', error: error.message });
+  }
+});
+
 router.patch('/pppoe-clients-change-plan/:id', async (req, res) => {
     const { id } = req.params;
-    const { plan_id, plan_name, plan_fee } = req.body;
+    const { plan_id, plan_name, plan_fee, otp } = req.body;
   
-    if (!plan_id || !plan_name || !plan_fee) {
+    if (!plan_id || !plan_name || !plan_fee || !otp) {
       return res.status(400).json({ message: 'Missing required fields.' });
     }
+
+    // Generate random 6-digit OTP
+    const scrambledOtp = Math.floor(100000 + Math.random() * 900000);
   
     try {
       // Check if the client exists
@@ -605,20 +627,26 @@ router.patch('/pppoe-clients-change-plan/:id', async (req, res) => {
   
       if (clientResult.length === 0) {
         return res.status(404).json({ message: 'Client not found.' });
-      }      
-  
-      // Update plan info
-      const [updateResult] = await db.execute(
-        `UPDATE pppoe_clients
-         SET plan_id = ?, plan_name = ?, plan_fee = ?
-         WHERE id = ?`,
-        [plan_id, plan_name, plan_fee, id]
-      );
-  
-      res.json({ message: 'Plan details updated successfully.' });
+      }
+      
+      // Check OTP
+      if (otp == clientResult[0].otp) {
+        // Update plan info
+        const [updateResult] = await db.execute(
+            `UPDATE pppoe_clients
+            SET plan_id = ?, plan_name = ?, plan_fee = ?, otp = ?
+            WHERE id = ?`,
+            [plan_id, plan_name, plan_fee, scrambledOtp, id]
+        );
+    
+        res.json({ message: 'Your subscription plan was changed successfully.', success: true });
+      } else {
+        res.status(500).json({ message: 'You entered an Invalid OTP Code', success: false });
+      }
+
     } catch (error) {
       console.error('Error updating plan details:', error);
-      res.status(500).json({ message: 'Internal server error.' });
+      res.status(500).json({ message: 'Internal server error.', success: false });
     }
 });
   
