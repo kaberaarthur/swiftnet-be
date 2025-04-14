@@ -651,12 +651,11 @@ router.patch('/pppoe-clients-change-plan/:id', async (req, res) => {
 });
   
 
-// Delete a PPPoE client
 router.delete('/pppoe-clients/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
-        // Step 1: Fetch the PPPoE client from the database to get `phone_number` and `router_id`
+        // Step 1: Fetch the PPPoE client from the database
         const [clientResult] = await db.execute('SELECT secret, phone_number, router_id, full_name FROM pppoe_clients WHERE id = ?', [id]);
 
         if (clientResult.length === 0) {
@@ -665,24 +664,23 @@ router.delete('/pppoe-clients/:id', async (req, res) => {
 
         const { secret, phone_number, router_id } = clientResult[0];
 
-        // Step 2: Fetch router details using `getRouterById`
+        // Step 2: Get router details
         const routerDetails = await getRouterById(router_id);
-
         if (!routerDetails) {
             return res.status(404).json({ message: 'Router details not found for this client' });
         }
 
         const { ip_address, username, router_secret } = routerDetails;
 
-        // Step 3: Run the SSH command to remove the PPPoE client from MikroTik
-        const mikrotikCommand = `/ppp secret remove [find name="${secret}"]`;
-
-        console.log("Mikrotik Command for Delete: ", mikrotikCommand)
-
         const ssh = new Client();
         const sshResult = await new Promise((resolve) => {
             ssh.on('ready', () => {
-                ssh.exec(mikrotikCommand, (err, stream) => {
+                // Step 3a: Remove active connection
+                const removeActiveCmd = `/ppp active remove [find name="${secret}"]`;
+                // Step 3b: Remove PPP secret
+                const removeSecretCmd = `/ppp secret remove [find name="${secret}"]`;
+
+                ssh.exec(`${removeActiveCmd} ; ${removeSecretCmd}`, (err, stream) => {
                     if (err) {
                         ssh.end();
                         return resolve({ success: false, error: `SSH command failed: ${err.message}` });
@@ -702,7 +700,7 @@ router.delete('/pppoe-clients/:id', async (req, res) => {
                     stream.on('close', () => {
                         ssh.end();
 
-                        if (stderr || stdout.toLowerCase().includes('failure') || stdout.toLowerCase().includes('input does not match')) {
+                        if (stderr || stdout.toLowerCase().includes('failure')) {
                             return resolve({ success: false, error: stderr || stdout });
                         }
 
@@ -727,13 +725,11 @@ router.delete('/pppoe-clients/:id', async (req, res) => {
             return res.status(500).json({ message: `Error removing client from MikroTik: ${sshResult.error}` });
         }
 
-        // Step 4: If the SSH command is successful, delete the client from the database
+        // Step 4: Delete from database
         const result = await db.execute('DELETE FROM pppoe_clients WHERE id = ?', [id]);
 
-        // Step 5: Send the response with the number of affected rows (should be 1 if successful)
-        res.json({ message: 'Client deleted today', client: clientResult, affectedRows: result.affectedRows });
+        res.json({ message: 'Client and active connection deleted', client: clientResult, affectedRows: result.affectedRows });
     } catch (error) {
-        // If any error occurs (SSH command or DB operation), return an error response
         res.status(500).json({ message: error.message });
     }
 });
