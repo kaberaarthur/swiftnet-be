@@ -274,7 +274,7 @@ router.post('/import-users', async (req, res) => {
 
 // READ: Get pppoe plans (with optional filtering by company_id and router_id)
 router.get('/pppoe-plans', async (req, res) => {
-  const { company_id, router_id, type } = req.query;
+  const { company_id, router_id, type, brand } = req.query;
   
   let query = 'SELECT * FROM pppoe_plans WHERE 1=1'; // 1=1 is a placeholder that allows appending more conditions
   const params = [];
@@ -287,6 +287,11 @@ router.get('/pppoe-plans', async (req, res) => {
   if (router_id) {
     query += ' AND router_id = ?';
     params.push(router_id);
+  }
+
+  if (brand) {
+    query += ' AND brand = ?';
+    params.push(brand);
   }
 
   if (type) {
@@ -331,9 +336,12 @@ router.patch('/pppoe-plans/:id', async (req, res) => {
     'plan_validity',
     'router_id',
     'company_id',
-    'company_username'
+    'company_username',
+    'brand'
   ];
   const updates = req.body;
+
+  console.log("Plan Updates: ", updates);
 
   // Validate that at least one valid field is provided for the update
   const fieldsToUpdate = Object.keys(updates).filter(field => allowedFields.includes(field));
