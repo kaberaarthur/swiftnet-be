@@ -42,6 +42,9 @@ const pppoePaymentsTestRoutes = require('./pppoe_payments/test');
 // Reminder
 const pppoeReminderRoute = require('./clients/pppoe/reminder');
 
+// Brands
+const brandRoutes = require('./brands/brandRoutes.js');
+
 require('dotenv').config();
 
 const jwtSecret = process.env.JWT_SECRET;
@@ -100,6 +103,9 @@ app.use(pppoePaymentsTestRoutes);
 
 // Reminder
 app.use(pppoeReminderRoute);
+
+// Brands
+app.use(brandRoutes);
 
 // Home route
 app.get('/', (req, res) => {

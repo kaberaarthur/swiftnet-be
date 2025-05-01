@@ -3,6 +3,9 @@ const express = require('express');
 const { Client } = require('ssh2');
 const db = require('../dbPromise');
 const router = express.Router();
+const getRouterById = require('./getRouterById');
+
+
 
 // Utility function to parse and clean MikroTik output
 function parsePPPProfiles(output) {
@@ -36,24 +39,38 @@ function parsePPPProfiles(output) {
     return profiles;
 }
 
+// Write a function to get Router details by ID
 
-// Route to get PPPoE plans
+
+// Route to get PPPoE plans using ID from query parameter
 router.get('/router-pppoe-plans', async (req, res) => {
-    // Get credentials from environment variables for security
-    // Alternative: get from request headers or query parameters
-    const routerIP = process.env.MIKROTIK_IP || '102.0.14.218';
-    const username = process.env.MIKROTIK_USER || 'Arthur';
-    const password = process.env.MIKROTIK_PASSWORD || 'Arthur123';
-  
-    try {
-      const profiles = await listPPPoEPlans(routerIP, username, password);
-      res.json(profiles);
-    } catch (error) {
-      console.error('Error fetching PPPoE plans:', error);
-      res.status(500).json({ error: 'Failed to fetch PPPoE plans', message: error.message });
-    }
-  });
-  
+  const id = req.query.id;
+
+  // Validate the ID
+  if (!id || isNaN(id)) {
+      return res.status(400).json({ message: 'Missing or invalid "id" query parameter.' });
+  }
+
+  try {
+      const response = await getRouterById(Number(id));
+
+      if (response.success === true) {
+          const routerIP = response.data.ip_address;
+          const username = response.data.username;
+          const password = response.data.router_secret;
+
+          const profiles = await listPPPoEPlans(routerIP, username, password);
+          res.json(profiles);
+      } else {
+          res.status(404).json({ message: 'Router not found.' });
+      }
+  } catch (error) {
+      console.error('Error in /router-pppoe-plans:', error);
+      res.status(500).json({ error: 'Internal Server Error', message: error.message });
+  }
+});
+
+
   /**
    * Connect to MikroTik router and list all PPP profiles
    * @param {string} ipAddress - Router IP address
