@@ -45,6 +45,9 @@ const pppoeReminderRoute = require('./clients/pppoe/reminder');
 // Brands
 const brandRoutes = require('./brands/brandRoutes.js');
 
+// Mikrotik PPPoE Users
+const mikrotikPPPoEUserRoutes = require('./clients/pppoe/mikrotik/allRoutes.js');
+
 require('dotenv').config();
 
 const jwtSecret = process.env.JWT_SECRET;
@@ -106,6 +109,9 @@ app.use(pppoeReminderRoute);
 
 // Brands
 app.use(brandRoutes);
+
+// Mikrotik PPPoE Users
+app.use('/mikrotik', mikrotikPPPoEUserRoutes);
 
 // Home route
 app.get('/', (req, res) => {
