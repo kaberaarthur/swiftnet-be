@@ -47,6 +47,7 @@ const brandRoutes = require('./brands/brandRoutes.js');
 
 // Mikrotik PPPoE Users
 const mikrotikPPPoEUserRoutes = require('./clients/pppoe/mikrotik/allRoutes.js');
+const mikrotikImportClients = require('./clients/pppoe/mikrotik/importClient.js');
 
 require('dotenv').config();
 
@@ -112,6 +113,7 @@ app.use(brandRoutes);
 
 // Mikrotik PPPoE Users
 app.use('/mikrotik', mikrotikPPPoEUserRoutes);
+app.use('/mikrotik', mikrotikImportClients);
 
 // Home route
 app.get('/', (req, res) => {
