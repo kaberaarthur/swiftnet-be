@@ -93,71 +93,138 @@ function findMatchingPlan(profile, plans) {
 
 // Endpoint to import MikroTik clients
 router.post('/import-mikrotik-clients', verifyToken, async (req, res) => {
-  try {
-    const company_id = req.company_id;
-    const { router_id, clients } = req.body;
-    let clientData = clients;
-    
-    // Log the received data
-    console.log('Received client import data:', clientData.length);
-
-    const routerDetails = await getRouterByID(router_id, company_id);
-    console.log('Router Details: ', routerDetails);
-
-    const pppoePlans = await getPppoePlansByRouterId(router_id);
-
-    if (!pppoePlans || !Array.isArray(pppoePlans) || pppoePlans.length === 0) {
+    try {
+      const company_id = req.company_id;
+      const { router_id, clients } = req.body;
+  
+      if (!router_id || !Array.isArray(clients)) {
+        return res.status(400).json({ success: false, error: 'router_id and clients array are required' });
+      }
+  
+      console.log('Received client import data:', clients.length);
+  
+      const routerDetails = await getRouterByID(router_id, company_id);
+      console.log('Router Details:', routerDetails);
+  
+      const pppoePlans = await getPppoePlansByRouterId(router_id);
+  
+      if (!pppoePlans || !Array.isArray(pppoePlans) || pppoePlans.length === 0) {
         return res.status(404).json({ error: 'No PPPoE plans found for the given router ID' });
-    }
-
-    // Populate clientData with plan details based on profile matching
-    // Using spread operator to ensure all original client fields are preserved
-    clientData = clientData.map(client => {
-      const profile = client.profile || '';
-      const matchingPlan = findMatchingPlan(profile, pppoePlans);
-      
-      // This preserves all original client fields and adds the plan fields, company_id, and router_id
-      return {
-        ...client,
-        plan_id: matchingPlan.id,
-        plan_price: matchingPlan.plan_price,
-        plan_name: matchingPlan.plan_name,
-        company_id: company_id,
-        router_id: router_id
-      };
-    });
-    
-    // Log the first five entries to verify
-    console.log('First five clients with plan data:');
-    clientData.slice(0, 5).forEach((client, index) => {
-      // Log complete client object to show all fields are preserved
-      console.log(`Client ${index + 1}:`, client);
-      
-      // Also log specific plan-related fields for quick verification
-      console.log(`Client ${index + 1} plan info:`, {
-        profile: client.profile,
-        plan_id: client.plan_id,
-        plan_name: client.plan_name,
-        plan_price: client.plan_price,
-        company_id: client.company_id,
-        router_id: client.router_id
+      }
+  
+      // Enrich client data with matching plans and metadata
+      const enrichedClients = clients.slice(0, 2).map(client => {
+        const profile = client.profile || '';
+        const matchingPlan = findMatchingPlan(profile, pppoePlans);
+  
+        return {
+          ...client,
+          plan_id: matchingPlan?.id || null,
+          plan_price: matchingPlan?.plan_price || null,
+          plan_name: matchingPlan?.plan_name || '',
+          company_id,
+          router_id
+        };
       });
-    });
-    
-    // Send back a success response
-    res.status(200).json({ 
-      success: true, 
-      message: 'Client data received and processed successfully',
-      count: Array.isArray(clientData) ? clientData.length : 0
-    });
-  } catch (error) {
-    console.error('Error processing client import:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to process client import', 
-      details: error.message 
-    });
-  }
-});
+  
+      // Insert each client into DB
+      for (const client of enrichedClients) {
+        const {
+          phone = '',
+          smsGroup = '',
+          router_id,
+          company_id,
+          disabled,
+          endDate = '',
+          plan_name = '',
+          plan_id = null,
+          plan_price = '',
+          location = '',
+          name,
+          password,
+          brand = ''
+        } = client;
+      
+        const active = disabled ? 0 : 1;
+        const formattedEndDate = endDate ? new Date(`${endDate}T08:00:00`) : null;
+      
+        // Check for existing client with same secret and router_id
+        const [existing] = await db.query(
+          'SELECT id FROM pppoe_clients WHERE secret = ? AND router_id = ? LIMIT 1',
+          [name, router_id]
+        );
+      
+        if (existing.length > 0) {
+          console.log(`Skipping duplicate client: ${name} (router_id: ${router_id})`);
+          continue; // Skip this client
+        }
+      
+        const sql = `
+          INSERT INTO pppoe_clients (
+            phone_number,
+            sms_group,
+            router_id,
+            company_id,
+            active,
+            end_date,
+            plan_name,
+            type,
+            plan_id,
+            plan_fee,
+            location,
+            secret,
+            password,
+            portal_password,
+            brand
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+      
+        const values = [
+          phone,
+          smsGroup,
+          router_id,
+          company_id,
+          active,
+          formattedEndDate,
+          plan_name,
+          'pppoe',
+          plan_id,
+          plan_price,
+          location,
+          name,
+          password,
+          'N0t4P4$$w0Rd',
+          brand
+        ];
+      
+        try {
+          await db.query(sql, values);
+        } catch (err) {
+          console.error(`Failed to insert client ${name}:`, err.message);
+          return res.status(500).json({
+            success: false,
+            error: `Failed to insert client ${name}`,
+            details: err.message
+          });
+        }
+      }
+      
+  
+      return res.status(200).json({
+        success: true,
+        message: 'All clients imported successfully',
+        count: enrichedClients.length
+      });
+  
+    } catch (error) {
+      console.error('Error processing client import:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to process client import',
+        details: error.message
+      });
+    }
+  });
+  
 
 module.exports = router;
