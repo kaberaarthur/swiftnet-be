@@ -3,8 +3,30 @@ const router = express.Router();
 const axios = require('axios');
 const db = require('../dbPromise');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+// Middleware to verify token
+function verifyToken(req, res, next) {
+    const token = req.headers['authorization'];
+
+    if (!token) {
+        return res.status(403).json({ message: 'No token provided' });
+    }
+
+    const bearerToken = token.split(' ')[1];
+    
+    jwt.verify(bearerToken, 'your_jwt_secret', (err, decoded) => {
+        if (err) {
+            return res.status(500).json({ message: 'Failed to authenticate token' });
+        }
+        req.userId = decoded.id;
+        req.userType = decoded.user_type;
+        req.company_id = decoded.company_id;
+        next();
+    });
+}
 
 
 // Function to check if the payment in pppoe_payments has been entered
@@ -325,8 +347,9 @@ router.post('/pppoe-payments', (req, res) => {
 });
 
 // GET endpoint to retrieve PPPoE payments with optional filters
-router.get('/pppoe-payments', async (req, res) => {
+router.get('/pppoe-payments', verifyToken, async (req, res) => {
     const { company_id, router_id, phone_number } = req.query;
+    const user_company_id = req.company_id;
 
     try {
         // Base query
@@ -334,9 +357,9 @@ router.get('/pppoe-payments', async (req, res) => {
         const params = [];
 
         // Apply filters dynamically
-        if (company_id) {
+        if (user_company_id) {
             query += ' AND company_id = ?';
-            params.push(company_id);
+            params.push(user_company_id);
         }
 
         if (router_id) {
