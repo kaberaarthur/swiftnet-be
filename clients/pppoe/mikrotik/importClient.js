@@ -142,7 +142,8 @@ router.post('/import-mikrotik-clients', verifyToken, async (req, res) => {
           location = '',
           name,
           password,
-          brand = ''
+          brand = '',
+          full_name = '',
         } = client;
       
         const active = disabled ? 0 : 1;
@@ -175,8 +176,9 @@ router.post('/import-mikrotik-clients', verifyToken, async (req, res) => {
             secret,
             password,
             portal_password,
-            brand
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            brand,
+            full_name
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
       
         const values = [
@@ -194,7 +196,8 @@ router.post('/import-mikrotik-clients', verifyToken, async (req, res) => {
           name,
           password,
           'N0t4P4$$w0Rd',
-          brand
+          brand,
+          full_name
         ];
       
         try {
