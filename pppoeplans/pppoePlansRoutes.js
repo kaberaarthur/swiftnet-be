@@ -2,8 +2,30 @@ const express = require('express');
 const router = express.Router();
 const db = require('../dbPromise');
 const { findUnusedIPs } = require('../unusedIPFunction');
+const jwt = require('jsonwebtoken');
 
 const moment = require('moment');
+
+// Middleware to verify token
+function verifyToken(req, res, next) {
+    const token = req.headers['authorization'];
+
+    if (!token) {
+        return res.status(403).json({ message: 'No token provided' });
+    }
+
+    const bearerToken = token.split(' ')[1];
+    
+    jwt.verify(bearerToken, 'your_jwt_secret', (err, decoded) => {
+        if (err) {
+            return res.status(500).json({ message: 'Failed to authenticate token' });
+        }
+        req.userId = decoded.id;
+        req.userType = decoded.user_type;
+        req.company_id = decoded.company_id;
+        next();
+    });
+}
 
 // A function to get the Mikrotik Details Dynamically
 // Include a check to see whether that router belongs to the company of the registered user
@@ -48,15 +70,15 @@ router.post('/pppoe-plans-exp', async (req, res) => {
     company_id, 
     company_username, 
     type,
-    shared_users
+    shared_users,
+    brand
   } = req.body;
 
   // Check if all required fields are present
   if (
     !plan_name || 
     !rate_limit || 
-    !plan_price || 
-    !pool_name || 
+    !plan_price ||
     !plan_validity || 
     !router_id || 
     !company_id || 
@@ -82,8 +104,6 @@ router.post('/pppoe-plans-exp', async (req, res) => {
       // Step 1: Prepare the MikroTik API request payload
       const mikrotikPayload = {
         "name": `${plan_name}`,
-        "local-address": "10.10.100.1", // Fixed local address, can be modified
-        "remote-address": `${pool_name}`, // Use pool_name directly as the remote address
         "rate-limit": `${rate_limit_string}`, // Use the rate_limit_string direct
       };
 
@@ -107,11 +127,11 @@ router.post('/pppoe-plans-exp', async (req, res) => {
       // Step 3: Insert the data into the database
       const query = `
         INSERT INTO pppoe_plans 
-        (plan_name, rate_limit, rate_limit_string, plan_price, pool_name, plan_validity, router_id, company_id, company_username, type, mikrotik_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (plan_name, rate_limit, rate_limit_string, plan_price, pool_name, plan_validity, router_id, company_id, company_username, type, mikrotik_id, brand)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
-      await db.query(query, [plan_name, rate_limit, rate_limit_string, plan_price, pool_name, plan_validity, router_id, company_id, company_username, type, mikrotikData.ret]);
+      await db.query(query, [plan_name, rate_limit, rate_limit_string, plan_price, pool_name, plan_validity, router_id, company_id, company_username, type, mikrotikData.ret, brand]);
 
       // Respond with success
       // console.log("Mikrotik Profile ID: ", mikrotikData.ret);
@@ -377,7 +397,7 @@ router.patch('/pppoe-plans/:id', async (req, res) => {
 
 
 // DELETE: Remove a pppoe plan by id
-router.delete('/pppoe-plans/:id', async (req, res) => {
+router.delete('/pppoe-plans/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
