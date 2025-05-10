@@ -223,7 +223,7 @@ router.post('/import-mikrotik-clients', verifyToken, async (req, res) => {
   
       return res.status(200).json({
         success: true,
-        message: 'All clients imported successfully.',
+        message: 'All clients imported successfully',
         count: enrichedClients.length
       });
   
