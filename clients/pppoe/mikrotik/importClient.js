@@ -143,6 +143,7 @@ router.post('/import-mikrotik-clients', verifyToken, async (req, res) => {
           name,
           password,
           brand = '',
+          comment = '',
           full_name = '',
         } = client;
       
@@ -177,8 +178,9 @@ router.post('/import-mikrotik-clients', verifyToken, async (req, res) => {
             password,
             portal_password,
             brand,
+            comments,
             full_name
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
       
         const values = [
@@ -197,6 +199,7 @@ router.post('/import-mikrotik-clients', verifyToken, async (req, res) => {
           password,
           'N0t4P4$$w0Rd',
           brand,
+          comment,
           full_name
         ];
       
