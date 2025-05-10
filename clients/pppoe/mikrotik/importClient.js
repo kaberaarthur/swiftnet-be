@@ -105,6 +105,8 @@ router.post('/import-mikrotik-clients', verifyToken, async (req, res) => {
   
       const routerDetails = await getRouterByID(router_id, company_id);
       console.log('Router Details:', routerDetails);
+
+      const companyUsername = routerDetails.company_username;
   
       const pppoePlans = await getPppoePlansByRouterId(router_id);
   
@@ -180,8 +182,9 @@ router.post('/import-mikrotik-clients', verifyToken, async (req, res) => {
             portal_password,
             brand,
             comments,
-            full_name
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            full_name,
+            company_username
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
       
         const values = [
@@ -201,7 +204,8 @@ router.post('/import-mikrotik-clients', verifyToken, async (req, res) => {
           'N0t4P4$$w0Rd',
           brand,
           comment,
-          full_name
+          full_name,
+          companyUsername
         ];
       
         try {
