@@ -113,7 +113,8 @@ router.post('/import-mikrotik-clients', verifyToken, async (req, res) => {
       }
   
       // Enrich client data with matching plans and metadata
-      const enrichedClients = clients.slice(0, 2).map(client => {
+      // const enrichedClients = clients.slice(0, 2).map(client => { // Used for testing import only 2
+      const enrichedClients = clients.map(client => {
         const profile = client.profile || '';
         const matchingPlan = findMatchingPlan(profile, pppoePlans);
   
