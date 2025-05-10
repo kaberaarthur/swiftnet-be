@@ -45,61 +45,66 @@ function verifyToken(req, res, next) {
 
 function parseTextToJson(text) {
   const lines = text.trim().split('\n');
-  
-  // Extract flags information (we'll use this to determine disabled status)
+
   let flags = "";
   let columns = [];
-  
-  // Find flags and columns info
-  for (const line of lines) {
-    if (line.includes('Flags:')) {
-      flags = line.replace('Flags:', '').trim();
-    } else if (line.includes('Columns:')) {
-      columns = line.replace('Columns:', '').split(',').map(col => col.trim());
-    }
-  }
-  
-  // Parse data rows
   const dataRows = [];
-  
-  // Process data lines (skip header lines)
+  let comment = "";
   let dataStarted = false;
-  
+
   for (const line of lines) {
     const trimmedLine = line.trim();
-    
-    // Skip empty lines
+
     if (!trimmedLine) continue;
-    
-    // Check if this is the header line that comes right before data
+
+    // Detect and store flag or column info
+    if (trimmedLine.startsWith('Flags:')) {
+      flags = trimmedLine.replace('Flags:', '').trim();
+      continue;
+    } else if (trimmedLine.startsWith('Columns:')) {
+      columns = trimmedLine.replace('Columns:', '').split(',').map(col => col.trim());
+      continue;
+    }
+
+    // Capture comment (;;; Kihuri)
+    if (trimmedLine.startsWith(';;;')) {
+      comment = trimmedLine.replace(';;;', '').trim();
+      continue;
+    }
+
+    // Detect header before data
     if (trimmedLine.startsWith('#')) {
       dataStarted = true;
       continue;
     }
-    
-    // Skip lines until we find the header line
+
+    // Skip unrelated lines
     if (!dataStarted && !trimmedLine.match(/^\d+/)) continue;
-    
-    // Extract data using regex to handle the fixed-width format
-    const regex = /^\s*(\d+)\s+(X)?\s+(\S+)\s+(\S+)\s+(\S+)\s+(.+?)\s*$/;
+
+    // Match actual data line (with optional 'X' flag)
+    const regex = /^\s*(\d+)\s+(X)?\s*(\S+)\s+(\S+)\s+(\S+)\s+(.+?)\s*$/;
     const match = line.match(regex);
-    
+
     if (match) {
       const [, index, flagged, name, service, password, profile] = match;
-      
+
       dataRows.push({
         index: parseInt(index),
         disabled: flagged === 'X',
         name: name,
         service: service,
         password: password,
-        profile: profile.trim()
+        profile: profile.trim(),
+        comment: comment // can be empty string if not set
       });
+
+      comment = ""; // reset after use
     }
   }
-  
+
   return dataRows;
 }
+
 
 // Function to fetch PPP secrets
 function fetchPPPoEUsers(routerDetails) {
