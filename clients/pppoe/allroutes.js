@@ -734,4 +734,31 @@ router.delete('/pppoe-clients/:id', async (req, res) => {
     }
 });
 
+router.delete('/pppoe-clients-only-system/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Step 1: Fetch the PPPoE client from the database
+        const [clientResult] = await db.execute(
+            'SELECT secret, phone_number, router_id, full_name FROM pppoe_clients WHERE id = ?',
+            [id]
+        );
+
+        if (clientResult.length === 0) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+
+        // Step 2: Delete from database
+        const [deleteResult] = await db.execute('DELETE FROM pppoe_clients WHERE id = ?', [id]);
+
+        res.json({
+            message: 'Client deleted from the system only (no MikroTik action performed)',
+            client: clientResult[0],
+            affectedRows: deleteResult.affectedRows,
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 module.exports = router;
