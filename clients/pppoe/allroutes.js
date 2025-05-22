@@ -408,10 +408,10 @@ async function changePppoePlan(secret_name, new_plan, router, customer_id) {
     const params = [];
   
     for (const key in updates) {
-      if (updates.hasOwnProperty(key) && key !== 'phone_number') {
-        query += `${key} = ?, `;
-        params.push(updates[key]);
-      }
+        if (updates.hasOwnProperty(key)) {
+            query += `${key} = ?, `;
+            params.push(updates[key]);
+          }          
     }
   
     // Add timestamp and id to the query
