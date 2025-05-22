@@ -198,7 +198,7 @@ router.post('/import-mikrotik-clients', verifyToken, async (req, res) => {
           router_id,
           company_id,
           active,
-          formattedEndDate,
+          mysqlFormattedEndDate,
           plan_name,
           'pppoe',
           plan_id,
