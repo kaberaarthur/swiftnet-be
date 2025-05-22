@@ -151,7 +151,12 @@ router.post('/import-mikrotik-clients', verifyToken, async (req, res) => {
         } = client;
       
         const active = disabled ? 0 : 1;
-        const formattedEndDate = endDate ? new Date(`${endDate}T08:00:00`) : null;
+        const formattedEndDate = endDate
+          ? new Date(`${endDate}T08:00:00`)
+          : new Date();
+
+        const mysqlFormattedEndDate = formattedEndDate.toISOString().slice(0, 19).replace('T', ' ');
+
       
         // Check for existing client with same secret and router_id
         const [existing] = await db.query(
