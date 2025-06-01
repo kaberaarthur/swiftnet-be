@@ -3,9 +3,41 @@ const db = require('../dbPromise'); // Ensure dbPromise is promise-based
 const { runSSHCommand } = require('./sshCommand');
 
 const router = express.Router();
+const jwt = require('jsonwebtoken');
+
+const jwtSecret = process.env.JWT_SECRET;
+
+// Middleware to verify token
+function verifyToken(req, res, next) {
+    // Extract the token from the Authorization header
+    const token = req.headers['authorization'];
+
+    if (!token) {
+        return res.status(403).json({ message: 'No token provided' });
+    }
+
+    // Extract the token from the 'Authorization' header
+    const bearerToken = token.split(' ')[1];
+
+    
+    // Verify the token
+    jwt.verify(bearerToken, jwtSecret, (err, decoded) => {
+        if (err) {
+            return res.status(500).json({ message: 'Failed to authenticate token' });
+        }
+
+        // Attach the user ID to the request object
+        req.userId = decoded.id;
+        req.userType = decoded.user_type;
+        req.companyId = decoded.company_id;
+        next();
+    });
+    
+}
 
 // CREATE a new Hotspot Plan
 router.post('/hotspot-plans', async (req, res) => {
+
     const {
         plan_name,
         plan_type,
@@ -52,13 +84,13 @@ router.post('/hotspot-plans', async (req, res) => {
 router.get('/hotspot-plans', async (req, res) => {
     const { company_id, router_id } = req.query;
 
-    let query = `SELECT * FROM hotspot_plans WHERE 1=1`;
-    const params = [];
-
-    if (company_id) {
-        query += ` AND company_id = ?`;
-        params.push(company_id);
+    // ✅ Check if company_id is provided
+    if (!company_id) {
+        return res.status(400).json({ error: 'company_id is required' });
     }
+
+    let query = `SELECT * FROM hotspot_plans WHERE company_id = ?`;
+    const params = [company_id];
 
     if (router_id) {
         query += ` AND router_id = ?`;
@@ -69,9 +101,10 @@ router.get('/hotspot-plans', async (req, res) => {
         const [results] = await db.execute(query, params);
         res.status(200).json(results);
     } catch (err) {
-        return res.status(500).json({ error: err.message });
+        res.status(500).json({ error: err.message });
     }
 });
+
 
 // READ a single Hotspot Plan by ID
 router.get('/hotspot-plans/:id', async (req, res) => {

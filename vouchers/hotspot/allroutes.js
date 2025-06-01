@@ -77,6 +77,32 @@ router.post('/captive-portals', verifyToken, async (req, res) => {
     }
 });
 
+
+// Get a single captive portal by router_id
+router.get('/captive-portals', async (req, res) => {
+    const { router_id } = req.query;
+
+    if (!router_id) {
+        return res.status(400).json({ error: 'router_id is required.' });
+    }
+
+    try {
+        const [results] = await db.execute(
+            'SELECT * FROM captive_portals WHERE router_id = ?',
+            [router_id]
+        );
+
+        if (results.length === 0) {
+            return res.status(404).json({ message: 'No captive portal found for the specified router.' });
+        }
+
+        res.status(200).json(results[0]);
+    } catch (err) {
+        console.error('Database error:', err);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+
 // Function to generate a voucher code
 const generateVoucherCode = async (connection, index, lastId) => {
     // Get the current month and day of the week
