@@ -3,6 +3,79 @@ const router = express.Router();
 const db = require('../../dbPromise'); // Change to use `db` instead of `dbPromise`
 const { Client } = require('ssh2');
 const e = require('express');
+const jwt = require('jsonwebtoken');
+
+const jwtSecret = process.env.JWT_SECRET;
+
+// Middleware to verify token
+function verifyToken(req, res, next) {
+    // Extract the token from the Authorization header
+    const token = req.headers['authorization'];
+
+    if (!token) {
+        return res.status(403).json({ message: 'No token provided' });
+    }
+
+    // Extract the token from the 'Authorization' header
+    const bearerToken = token.split(' ')[1];
+
+    
+    // Verify the token
+    jwt.verify(bearerToken, jwtSecret, (err, decoded) => {
+        if (err) {
+            return res.status(500).json({ message: 'Failed to authenticate token' });
+        }
+
+        // Attach the user ID to the request object
+        req.userId = decoded.id;
+        req.userType = decoded.user_type;
+        req.companyId = decoded.company_id;
+        next();
+    });
+    
+}
+
+
+// Create/Update a captive portal for a single Router
+router.post('/captive-portals', verifyToken, async (req, res) => {
+    const { heading_one, heading_2, support_hotline, router_id } = req.body;
+
+    if (!heading_one || !heading_2 || !support_hotline || !router_id) {
+        return res.status(400).json({ error: 'All fields are required.' });
+    }
+
+    try {
+        // Check if a portal already exists for this router
+        const [existing] = await db.execute(
+            'SELECT id FROM captive_portals WHERE router_id = ?',
+            [router_id]
+        );
+
+        if (existing.length > 0) {
+            // Update existing record
+            await db.execute(
+                `UPDATE captive_portals 
+                 SET heading_one = ?, heading_2 = ?, support_hotline = ?
+                 WHERE router_id = ?`,
+                [heading_one, heading_2, support_hotline, router_id]
+            );
+
+            return res.status(200).json({ message: 'Captive portal updated successfully.' });
+        }
+
+        // Insert new record
+        await db.execute(
+            `INSERT INTO captive_portals (heading_one, heading_2, support_hotline, router_id) 
+             VALUES (?, ?, ?, ?)`,
+            [heading_one, heading_2, support_hotline, router_id]
+        );
+
+        res.status(201).json({ message: 'Captive portal created successfully.' });
+    } catch (err) {
+        console.error('Database error:', err);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
 
 // Function to generate a voucher code
 const generateVoucherCode = async (connection, index, lastId) => {
