@@ -5,6 +5,11 @@ const db = require('./dbPromise');
 const bodyParser = require('body-parser');
 const { Client } = require('ssh2');
 
+require('dotenv').config();
+
+// const jwtSecret = process.env.JWT_SECRET;
+// console.log("JWT Secret:", jwtSecret);
+
 // Import Routes
 const userRoutes = require('./userRoutes');
 const paymentRoutes = require('./paymentRoutes');
@@ -23,6 +28,7 @@ const freeIPRoutes = require('./freeIPRoutes');
 
 // Actual Stuff
 const hotspotPlansRoutes = require('./hotspot/hotspotPlansRoutes');
+const hotspotActionRoutes = require('./hotspot/actionRoutes.js');
 const staticPlansRoutes = require('./staticplans/staticPlansRoutes');
 const pppoePlansRoutes = require('./pppoeplans/pppoePlansRoutes');
 const routerPlans = require('./pppoeplans/routerPlans');
@@ -49,10 +55,6 @@ const brandRoutes = require('./brands/brandRoutes.js');
 const mikrotikPPPoEUserRoutes = require('./clients/pppoe/mikrotik/allRoutes.js');
 const mikrotikImportClients = require('./clients/pppoe/mikrotik/importClient.js');
 
-require('dotenv').config();
-
-const jwtSecret = process.env.JWT_SECRET;
-// console.log("JWT Secret:", jwtSecret);
 
 
 const app = express();
@@ -89,6 +91,10 @@ app.use(freeIPRoutes);
 
 // Actual Stuff
 app.use(hotspotPlansRoutes);
+
+// This route handles customer related actions e.g buying a plan and logging in e.t.c
+app.use('/hotspot-action', hotspotActionRoutes);
+
 app.use(staticPlansRoutes);
 app.use(pppoePlansRoutes);
 app.use(routerPlans);
