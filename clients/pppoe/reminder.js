@@ -68,4 +68,11 @@ router.patch('/reminder/all/reset', async (req, res) => {
     }
 });
 
+router.get('/reminder-test', (req, res) => {
+    res.json({
+        message: 'Test endpoint is working',
+        status: 'ok'
+    });
+});
+
 module.exports = router;
