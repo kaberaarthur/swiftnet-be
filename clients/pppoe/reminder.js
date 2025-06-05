@@ -48,4 +48,24 @@ router.patch('/reminder/:customer_id', async (req, res) => {
     }
 });
 
+// New endpoint to disable all reminders with value 1
+router.patch('/reminder/all/reset', async (req, res) => {
+    try {
+        const [result] = await db.execute(
+            'UPDATE pppoe_clients SET reminder = 1 WHERE reminder = 0'
+        );
+
+        res.json({
+            message: 'All inactive reminders enabled',
+            affectedRows: result.affectedRows
+        });
+    } catch (err) {
+        console.error('Error enabling all inactive reminders:', err);
+        res.status(500).json({
+            message: 'Database error',
+            error: err.message
+        });
+    }
+});
+
 module.exports = router;

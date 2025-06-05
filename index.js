@@ -29,6 +29,7 @@ const freeIPRoutes = require('./freeIPRoutes');
 // Actual Stuff
 const hotspotPlansRoutes = require('./hotspot/hotspotPlansRoutes');
 const hotspotActionRoutes = require('./hotspot/actionRoutes.js');
+const hotspotMpesaRoutes = require('./hotspot/mpesaRoutes.js');
 const staticPlansRoutes = require('./staticplans/staticPlansRoutes');
 const pppoePlansRoutes = require('./pppoeplans/pppoePlansRoutes');
 const routerPlans = require('./pppoeplans/routerPlans');
@@ -94,6 +95,7 @@ app.use(hotspotPlansRoutes);
 
 // This route handles customer related actions e.g buying a plan and logging in e.t.c
 app.use('/hotspot-action', hotspotActionRoutes);
+app.use('/hotspot-mpesa', hotspotMpesaRoutes);
 
 app.use(staticPlansRoutes);
 app.use(pppoePlansRoutes);
