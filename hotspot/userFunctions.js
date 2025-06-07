@@ -1,5 +1,6 @@
 const db = require('../dbPromise');
 const moment = require('moment-timezone');
+const { getRouterDetails, createMikrotikUser } = require('./mikrotikFunctions');
 
 async function fetchUser(customer) {
   if (!customer || typeof customer !== 'string' || customer.trim() === '') {
@@ -102,6 +103,31 @@ async function createOrUpdateUser({ phone_number, password, router_id, plan_id }
           formattedExpiry
         ]
       );
+
+      // Create a user in the Mikrotik
+      const routerResults = await getRouterDetails(plan.router_id);
+      if (routerResults.success) {
+        console.log(routerResults.data)
+
+        /*
+        const { ip_address, router_secret, username } = routerResults.data;
+        const result = await createMikrotikUser(
+          ip_address,
+          username,
+          router_secret,
+          phone_number,
+          password
+        );
+
+        if (result.success) {
+          console.log('✅ MikroTik user created:', result.message);
+        } else {
+          console.error('❌ Failed to create MikroTik user:', result.message);
+        }
+        */
+      } else {
+        console.error(routerResults.message);
+      }
 
       return { success: true, message: 'User created successfully.', created: true, userPassword: password };
     }

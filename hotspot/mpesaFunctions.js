@@ -4,9 +4,14 @@ const db = require('../dbPromise');
 const axios = require('axios');
 const moment = require('moment-timezone');
 
+const userFunctions = require('./userFunctions');
+const { generatePassword } = require('./actionFunctions');
+const createOrUpdateUser = userFunctions.createOrUpdateUser;
+
 // Initiates STK Push via PayHero
-async function initiateSTKPush(phone_number, company_id) {
-  if (!phone_number || !company_id) {
+// Include a plan_id
+async function initiateSTKPush(phone_number, company_id, plan_id) {
+  if (!phone_number || !company_id || !plan_id) {
     return { success: false, message: 'phone_number and company_id are required' };
   }
 
@@ -22,6 +27,18 @@ async function initiateSTKPush(phone_number, company_id) {
     }
 
     const settings = rows[0];
+
+    // Fetch plan details
+    const [planRows] = await db.execute(
+      'SELECT * FROM hotspot_plans WHERE id = ? LIMIT 1',
+      [plan_id]
+    );
+
+    if (planRows.length === 0) {
+      return { success: false, message: 'This plan does not exist.' };
+    }
+
+    const plan = planRows[0];
 
     // Payload for the STK push
     const payload = {
@@ -40,14 +57,143 @@ async function initiateSTKPush(phone_number, company_id) {
       'Authorization': `${settings.payhero_token}`
     };
 
-    // Make the request
+    // Make the stk push request
     const response = await axios.post('https://backend.payhero.co.ke/api/v2/payments', payload, { headers });
 
-    return {
-      success: true,
-      message: 'STK push initiated successfully.',
-      data: response.data
-    };
+    const resData = response.data;
+
+    // Store in `paymentrequests` table
+    await db.execute(
+        `INSERT INTO paymentrequests 
+            (phone_number, plan_id, company_id, CheckoutRequestID, reference, 
+            status, success, company_username, router_id, plan_name, plan_validity) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+            phone_number,
+            plan_id,
+            company_id,
+            resData.CheckoutRequestID,
+            resData.reference,
+            resData.status,
+            resData.success,
+            plan.company_username,
+            plan.router_id,
+            plan.plan_name,
+            plan.plan_validity
+        ]
+    );
+
+    console.log("Checkout Request ID: ", resData.CheckoutRequestID);
+
+    // Check if we received payment from payhero
+    try {
+            const responseFromAPI = await axios.post(
+                'http://localhost:8000/hotspot-mpesa/find-payment',
+                { checkoutRequestID: resData.CheckoutRequestID }
+            );
+
+            const result = responseFromAPI.data;
+
+            if (!result.success) {
+                return {
+                success: false,
+                message: 'STK push initiated but payment could not be verified.',
+                data: result
+                };
+            }
+
+            // ✅ Update the payments row with additional info from the plan
+            await db.execute(
+                `UPDATE payments 
+                SET company_username = ?, 
+                    router_id = ?, 
+                    plan_name = ?, 
+                    plan_validity = ?,
+                    plan_id = ?,
+                    company_id = ?,
+                    phone_number = ?
+                WHERE id = ?`,
+                [
+                plan.company_username,
+                plan.router_id,
+                plan.plan_name,
+                plan.plan_validity,
+                plan.id,
+                plan.company_id,
+                phone_number,
+                result.data.id // ID from the found payment row
+                ]
+            );
+
+            // Get user
+            const [users] = await db.execute(
+                'SELECT * FROM hotspot_clients WHERE phone_number = ? LIMIT 1',
+                [phone_number]
+            );
+
+            if (users.length === 0) {
+                // Create user ifnotexists, update user
+                const newPassword = generatePassword();
+                console.log("New User, New Password: ", newPassword);
+
+                // Call createOrUpdateUser
+                const userCreationResult = await createOrUpdateUser({
+                    phone_number,
+                    router_id: plan.router_id,
+                    plan_id: plan.id,
+                    password: newPassword // This 'password' is the one passed into createOrUpdateUser for new users
+                });
+
+                // Check if the user creation/update was successful
+                if (!userCreationResult.success) {
+                    return res.status(500).json({
+                        success: false,
+                        message: userCreationResult.message || 'Failed to create or update user.'
+                    });
+                }
+
+                // Use the password returned from createOrUpdateUser
+                const finalPassword = userCreationResult.userPassword;
+
+                // ✅ Respond after successful user creation
+                return {
+                    success: true,
+                    message: 'STK push initiated and payment verified.',
+                    data: {
+                        user: {
+                            "username": phone_number,
+                            "password": finalPassword,
+                        },
+                        stkResponse: response.data,
+                        payment: result.data,
+                    }
+                };
+            }
+
+            const thisUser = users[0];
+
+            // ✅ Respond after successful update
+            return {
+                success: true,
+                message: 'STK push initiated and payment verified.',
+                data: {
+                    user: {
+                        "username": phone_number,
+                        "password": thisUser.password,
+                    },
+                    stkResponse: response.data,
+                    payment: result.data,
+                }
+            };
+        } catch (apiError) {
+            console.error("API Error:", apiError.response?.data || apiError.message);
+            return {
+                success: false,
+                message: 'Failed to verify payment after STK push.',
+                error: apiError.response?.data || apiError.message
+            };
+        }
+
   } catch (error) {
     console.error('Error during STK push:', error?.response?.data || error.message);
     return {
@@ -58,4 +204,102 @@ async function initiateSTKPush(phone_number, company_id) {
   }
 }
 
-module.exports = { initiateSTKPush };
+
+async function confirmPaymentByTransactionCode(transactionCode, router_id) {
+  if (!transactionCode || !router_id) {
+    return { success: false, message: 'You must provide all parameters' };
+  }
+
+  try {
+    const [rows] = await db.execute(
+      'SELECT * FROM payments WHERE MpesaReceiptNumber = ? AND router_id = ? LIMIT 1',
+      [transactionCode, router_id]
+    );
+
+    if (rows.length === 0) {
+      return { success: false, message: 'Cannot connect. Mpesa transaction not found.' };
+    }
+
+    const payment = rows[0];
+
+
+    // Parse end_date and get current time in Nairobi
+    const currentTimeNairobi = moment.tz('Africa/Nairobi');
+    const endDate = moment.tz(payment.end_date, 'Africa/Nairobi');
+
+    if (endDate.isBefore(currentTimeNairobi)) {
+      return {
+        success: false,
+        message: 'Cannot connect. Time for this payment has expired.'
+      };
+    }
+
+    // Get user
+    const [users] = await db.execute(
+      'SELECT * FROM hotspot_clients WHERE phone_number = ? LIMIT 1',
+      [payment.Phone]
+    );
+
+    if (users.length === 0) {
+      return { success: false, message: 'Cannot connect. User could not be traced.' };
+    }
+
+    const thisUser = users[0];
+
+    return {
+      success: true,
+      message: 'Reconnect approved.',
+      username: thisUser.phone_number,
+      password: thisUser.password,
+      data: payment,
+    };
+  } catch (error) {
+    console.error('Error in confirmPaymentByTransactionCode:', error.message);
+    return { success: false, message: 'Internal server error.' };
+  }
+}
+
+
+async function findPaymentByCheckoutRequestID(checkoutRequestID) {
+  if (!checkoutRequestID) {
+    return { success: false, message: 'CheckoutRequestID is required.' };
+  }
+
+  const maxAttempts = 60;
+  const delay = 1000; // 1 second
+
+  const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const [rows] = await db.execute(
+        'SELECT * FROM payments WHERE CheckoutRequestID = ? LIMIT 1',
+        [checkoutRequestID]
+      );
+
+      if (rows.length > 0) {
+        return {
+          success: true,
+          message: 'Payment found.',
+          data: rows[0]
+        };
+      }
+
+      if (attempt < maxAttempts) {
+        await wait(delay);
+      }
+
+    } catch (error) {
+      console.error(`Error on attempt ${attempt}:`, error.message);
+      return { success: false, message: 'Database error.', error: error.message };
+    }
+  }
+
+  return { success: false, message: 'Payment not found after 10 seconds.' };
+}
+
+module.exports = { 
+    initiateSTKPush,
+    confirmPaymentByTransactionCode,
+    findPaymentByCheckoutRequestID
+};

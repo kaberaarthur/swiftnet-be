@@ -65,4 +65,74 @@ async function enableHotspotUser(router_id, hotspot_user) {
   }
 }
 
-module.exports = { enableHotspotUser };
+async function getRouterDetails(router_id) {
+  if (!router_id) {
+    return { success: false, message: 'router_id is required.' };
+  }
+
+  try {
+    const [rows] = await db.execute(
+      'SELECT ip_address, router_secret, username FROM routers WHERE id = ? LIMIT 1',
+      [router_id]
+    );
+
+    if (rows.length === 0) {
+      return { success: false, message: 'Router not found.' };
+    }
+
+    return {
+      success: true,
+      message: 'Router details retrieved successfully.',
+      data: rows[0]
+    };
+  } catch (error) {
+    console.error('Error fetching router details:', error.message);
+    return {
+      success: false,
+      message: 'Database error.',
+      error: error.message
+    };
+  }
+}
+
+async function createMikrotikUser(ip, username, password, phone_number, userPassword) {
+  return new Promise((resolve, reject) => {
+    const conn = new Client();
+
+    conn
+      .on('ready', () => {
+        conn.exec(
+          `/ppp secret add name=${phone_number} password=${userPassword} service=pppoe profile=default`,
+          (err, stream) => {
+            if (err) {
+              conn.end();
+              return reject({ success: false, message: 'SSH command failed', error: err.message });
+            }
+
+            stream
+              .on('close', (code, signal) => {
+                conn.end();
+                resolve({ success: true, message: 'User added successfully' });
+              })
+              .on('data', (data) => {
+                console.log('STDOUT:', data.toString());
+              })
+              .stderr.on('data', (data) => {
+                console.error('STDERR:', data.toString());
+              });
+          }
+        );
+      })
+      .on('error', (err) => {
+        reject({ success: false, message: 'SSH connection error', error: err.message });
+      })
+      .connect({
+        host: ip,
+        port: 22,
+        username: username,
+        password: password,
+      });
+  });
+}
+
+module.exports = { enableHotspotUser, getRouterDetails, createMikrotikUser };
