@@ -9,7 +9,39 @@ const { generatePassword, generateUniqueVoucher, createVoucher, verifyToken, del
 const userFunctions = require('./userFunctions');
 const fetchUser = userFunctions.fetchUser;
 const createOrUpdateUser = userFunctions.createOrUpdateUser;
-const { enableHotspotUser } = require('./mikrotikFunctions');
+const { enableHotspotUser, createMikrotikHotspotUser, getRouterDetails } = require('./mikrotikFunctions');
+
+// POST /mikrotik/create-user
+router.post('/create-mikrotik-user', async (req, res) => {
+  const { router_id, phone_number, password } = req.body;
+
+  if (!router_id || !phone_number || !password) {
+    return res.status(400).json({ success: false, message: 'Missing required parameters' });
+  }
+
+  try {
+    const routerDetails = await getRouterDetails(router_id);
+
+    if (!routerDetails.success) {
+      return res.status(404).json({ success: false, message: 'Router not found' });
+    }
+
+    const { ip_address, username, router_secret } = routerDetails.data;
+
+    const result = await createMikrotikHotspotUser(
+      ip_address,
+      username,
+      router_secret,
+      phone_number,
+      password
+    );
+
+    return res.status(result.success ? 200 : 500).json(result);
+  } catch (err) {
+    console.error('Error in /mikrotik/create-user:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error', error: err.message });
+  }
+});
 
 router.get('/test', verifyToken, (req, res) => {
     res.json({ message: 'Hello from the GET endpoint!' });

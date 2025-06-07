@@ -1,6 +1,6 @@
 const db = require('../dbPromise');
 const moment = require('moment-timezone');
-const { getRouterDetails, createMikrotikUser } = require('./mikrotikFunctions');
+const { getRouterDetails, createMikrotikHotspotUser } = require('./mikrotikFunctions');
 
 async function fetchUser(customer) {
   if (!customer || typeof customer !== 'string' || customer.trim() === '') {
@@ -107,24 +107,33 @@ async function createOrUpdateUser({ phone_number, password, router_id, plan_id }
       // Create a user in the Mikrotik
       const routerResults = await getRouterDetails(plan.router_id);
       if (routerResults.success) {
-        console.log(routerResults.data)
 
-        /*
-        const { ip_address, router_secret, username } = routerResults.data;
-        const result = await createMikrotikUser(
-          ip_address,
-          username,
-          router_secret,
-          phone_number,
-          password
-        );
+          const the_router_ip_address = routerResults.data.ip_address;
+          const the_router_username = routerResults.data.username;
+          const the_router_secret = routerResults.data.router_secret;
 
-        if (result.success) {
-          console.log('✅ MikroTik user created:', result.message);
-        } else {
-          console.error('❌ Failed to create MikroTik user:', result.message);
-        }
-        */
+          console.log(JSON.stringify({
+            the_router_ip_address,
+            the_router_username,
+            the_router_secret,
+            phone_number,
+            password
+          }, null, 2));
+
+          const mikrotik_result = await createMikrotikHotspotUser(
+            the_router_ip_address,
+            the_router_username,
+            the_router_secret,
+            phone_number,
+            password
+          );
+
+          if (mikrotik_result.success) {
+            console.log('✅ MikroTik user created:', mikrotik_result.message);
+          } else {
+            console.error('❌ Failed to create MikroTik user:', mikrotik_result.message);
+          }
+        
       } else {
         console.error(routerResults.message);
       }

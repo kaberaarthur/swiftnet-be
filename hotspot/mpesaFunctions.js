@@ -102,6 +102,13 @@ async function initiateSTKPush(phone_number, company_id, plan_id) {
                 };
             }
 
+            // Calculate service_start and service_expiry using UTC+3
+            const serviceStart = moment().tz('Africa/Nairobi');
+            const serviceExpiry = moment(serviceStart).add(plan.plan_validity, 'hours');
+        
+            const formattedStart = serviceStart.format('YYYY-MM-DD HH:mm:ss');
+            const formattedExpiry = serviceExpiry.format('YYYY-MM-DD HH:mm:ss');
+
             // ✅ Update the payments row with additional info from the plan
             await db.execute(
                 `UPDATE payments 
@@ -111,7 +118,9 @@ async function initiateSTKPush(phone_number, company_id, plan_id) {
                     plan_validity = ?,
                     plan_id = ?,
                     company_id = ?,
-                    phone_number = ?
+                    phone_number = ?,
+                    start_date = ?,
+                    end_date = ?
                 WHERE id = ?`,
                 [
                 plan.company_username,
@@ -121,6 +130,8 @@ async function initiateSTKPush(phone_number, company_id, plan_id) {
                 plan.id,
                 plan.company_id,
                 phone_number,
+                formattedStart,
+                formattedExpiry,
                 result.data.id // ID from the found payment row
                 ]
             );

@@ -95,44 +95,57 @@ async function getRouterDetails(router_id) {
   }
 }
 
-async function createMikrotikUser(ip, username, password, phone_number, userPassword) {
+async function createMikrotikHotspotUser(ip, username, password, phone_number, userPassword) {
   return new Promise((resolve, reject) => {
     const conn = new Client();
 
-    conn
-      .on('ready', () => {
-        conn.exec(
-          `/ppp secret add name=${phone_number} password=${userPassword} service=pppoe profile=default`,
-          (err, stream) => {
-            if (err) {
-              conn.end();
-              return reject({ success: false, message: 'SSH command failed', error: err.message });
+    conn.on('ready', () => {
+      const command = `/ip hotspot user add name="${phone_number}" password="${userPassword}" profile=default`;
+
+      conn.exec(command, (err, stream) => {
+        if (err) {
+          conn.end();
+          return reject({ success: false, message: 'SSH command failed', error: err.message });
+        }
+
+        let errorOutput = '';
+
+        stream
+          .on('close', (code, signal) => {
+            conn.end();
+
+            if (errorOutput) {
+              return reject({
+                success: false,
+                message: 'Router responded with an error',
+                error: errorOutput,
+              });
             }
 
-            stream
-              .on('close', (code, signal) => {
-                conn.end();
-                resolve({ success: true, message: 'User added successfully' });
-              })
-              .on('data', (data) => {
-                console.log('STDOUT:', data.toString());
-              })
-              .stderr.on('data', (data) => {
-                console.error('STDERR:', data.toString());
-              });
-          }
-        );
-      })
-      .on('error', (err) => {
-        reject({ success: false, message: 'SSH connection error', error: err.message });
-      })
-      .connect({
-        host: ip,
-        port: 22,
-        username: username,
-        password: password,
+            resolve({ success: true, message: 'Hotspot user added successfully' });
+          })
+          .on('data', (data) => {
+            console.log('STDOUT:', data.toString());
+          });
+
+        stream.stderr.on('data', (data) => {
+          errorOutput += data.toString();
+          console.error('STDERR:', data.toString());
+        });
       });
+    });
+
+    conn.on('error', (err) => {
+      reject({ success: false, message: 'SSH connection error', error: err.message });
+    });
+
+    conn.connect({
+      host: ip,
+      port: 22,
+      username: username,
+      password: password,
+    });
   });
 }
 
-module.exports = { enableHotspotUser, getRouterDetails, createMikrotikUser };
+module.exports = { enableHotspotUser, getRouterDetails, createMikrotikHotspotUser };
