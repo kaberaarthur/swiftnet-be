@@ -56,6 +56,8 @@ const brandRoutes = require('./brands/brandRoutes.js');
 const mikrotikPPPoEUserRoutes = require('./clients/pppoe/mikrotik/allRoutes.js');
 const mikrotikImportClients = require('./clients/pppoe/mikrotik/importClient.js');
 
+// SMS Logs
+const systemLogsRoutes = require('./systemlogs/allroutes.js');
 
 
 const app = express();
@@ -122,6 +124,9 @@ app.use(brandRoutes);
 // Mikrotik PPPoE Users
 app.use('/mikrotik', mikrotikPPPoEUserRoutes);
 app.use('/mikrotik', mikrotikImportClients);
+
+// System Logs Routes
+app.use('/systemlogs', systemLogsRoutes);
 
 // Home route
 app.get('/', (req, res) => {

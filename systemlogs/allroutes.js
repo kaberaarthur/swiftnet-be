@@ -1,0 +1,81 @@
+// routes/sms.js
+const express = require('express');
+const router = express.Router();
+const db = require('../dbPromise');
+
+
+router.post('/smslogs', async (req, res) => {
+    try {
+        const smsData = req.body.SMSMessageData;
+        const recipient = smsData.Recipients[0]; // assuming one recipient
+
+        const sql = `
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        const values = [
+            recipient.number,
+            recipient.status,
+            recipient.statusCode,
+            recipient.messageId,
+            parseFloat(recipient.cost.replace('KES ', '')),
+            recipient.messageParts,
+            smsData.Message
+        ];
+
+        await db.execute(sql, values);
+
+        res.status(200).json({ success: true, message: 'SMS log saved.' });
+    } catch (err) {
+        console.error('Error logging SMS:', err);
+        res.status(500).json({ success: false, message: 'Failed to save SMS log.' });
+    }
+});
+
+// GET: Paginated SMS logs (10 per page)
+router.get('/smslogs', async (req, res) => {
+    try {
+        let currentPage = parseInt(req.query.page, 10);
+        if (isNaN(currentPage) || currentPage < 1) currentPage = 1;
+
+        const itemsPerPage = 10;
+        const offset = (currentPage - 1) * itemsPerPage;
+
+        const [countResult] = await db.execute(`SELECT COUNT(*) AS total FROM sms_logs`);
+        const totalItems = countResult[0].total;
+        const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+
+        if (currentPage > totalPages) {
+            return res.status(200).json({
+                currentPage,
+                totalItems,
+                totalPages,
+                itemsPerPage,
+                data: []
+            });
+        }
+
+        const [rows] = await db.execute(`
+            SELECT id, number, status, created_at
+            FROM sms_logs
+            ORDER BY created_at DESC
+            LIMIT ${itemsPerPage} OFFSET ${offset}
+        `);
+
+        res.status(200).json({
+            currentPage,
+            totalItems,
+            totalPages,
+            itemsPerPage,
+            data: rows
+        });
+
+    } catch (err) {
+        console.error('Error fetching paginated SMS logs:', err);
+        res.status(500).json({ success: false, message: 'Failed to fetch SMS logs.' });
+    }
+});
+
+module.exports = router;
