@@ -59,6 +59,9 @@ const mikrotikImportClients = require('./clients/pppoe/mikrotik/importClient.js'
 // SMS Logs
 const systemLogsRoutes = require('./systemlogs/allroutes.js');
 
+// Bulk SMS Routes
+const bulkSMSRoutes = require('./bulksms/allRoutes.js');
+
 
 const app = express();
 const port = 8000;
@@ -127,6 +130,9 @@ app.use('/mikrotik', mikrotikImportClients);
 
 // System Logs Routes
 app.use('/systemlogs', systemLogsRoutes);
+
+// Bulk SMS Routes
+app.use('/bulk-sms', bulkSMSRoutes);
 
 // Home route
 app.get('/', (req, res) => {
