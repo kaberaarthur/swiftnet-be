@@ -62,6 +62,9 @@ const systemLogsRoutes = require('./systemlogs/allroutes.js');
 // Bulk SMS Routes
 const bulkSMSRoutes = require('./bulksms/allRoutes.js');
 
+// Check Transation Status Routes
+const transactionStatusRoutes = require('./transaction_status/allRoutes.js');
+
 
 const app = express();
 const port = 8000;
@@ -133,6 +136,9 @@ app.use('/systemlogs', systemLogsRoutes);
 
 // Bulk SMS Routes
 app.use('/bulk-sms', bulkSMSRoutes);
+
+// Transaction Status Routes
+app.use('/transaction-status', transactionStatusRoutes);
 
 // Home route
 app.get('/', (req, res) => {
