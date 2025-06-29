@@ -124,7 +124,7 @@ async function waitForPaymentReceipt(receipt) {
       );
 
       if (rows.length > 0) {
-        console.log('✅ Payment found:', rows[0]);
+        // console.log('✅ Payment found:', rows[0]);
         return rows[0];
       }
 

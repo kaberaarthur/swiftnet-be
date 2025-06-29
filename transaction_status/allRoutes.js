@@ -62,12 +62,14 @@ router.post('/', async (req, res) => {
       [transaction_code]
     );
 
+    /*
     if (pppoe.length > 0 || payments.length > 0) {
       return res.status(409).json({
         success: false,
         message: 'That transaction has already been consumed, you cannot use it again',
       });
     };
+    */
 
     // Collect info regarding the customer from the db
     const user = await getCustomerById(customer_id);
@@ -125,6 +127,7 @@ router.post('/', async (req, res) => {
 
     if (!payment) {
         console.log('❌ No payment found after waiting.');
+        return res.status(403).json({ success: false, message: 'We could not trace your payment' });
     };
 
     // 2. Confirm if Amount equals or doubles the required transaction fee
@@ -137,6 +140,40 @@ router.post('/', async (req, res) => {
         if (Number.isInteger(multiplier)) {
             console.log(`✅ Payment is sufficient for ${multiplier} subscription(s).`);
             // You can now process `multiplier` number of subscriptions
+
+            // Update pppoe_clients: set installation_fee = 0 and update end_date
+            const nowNairobi = moment.tz("Africa/Nairobi");
+            const clientEndDateNairobi = moment.tz(user.end_date, "Africa/Nairobi");
+
+            // Use current time if end_date expired, else use end_date
+            const baseDate = clientEndDateNairobi.isBefore(nowNairobi) ? nowNairobi : clientEndDateNairobi;
+
+            // Add one month
+            const newEndDate = baseDate.clone().add(multiplier, "month");
+
+            // Format as YYYY-MM-DD HH:mm:ss
+            const formattedNewEndDate = newEndDate.format("YYYY-MM-DD HH:mm:ss");
+
+            console.log(formattedNewEndDate);
+
+            // Set the client ID (Code copied from elsewhere)
+            const client_id = user.id;
+            const client = user;
+
+            await db.execute(
+                'UPDATE pppoe_clients SET installation_fee = 0, end_date = ? WHERE id = ?', 
+                [formattedNewEndDate, client_id]
+            );
+            console.log(`Updated pppoe_clients (installation_fee & end_date) for client_id: ${client_id}`);
+
+            // Update pppoe_payments using client.company_id
+            await db.execute(
+                'UPDATE pppoe_payments SET company_id = ?, customer_id = ?, router_id = ?, usedStatus = ? WHERE id = ?', 
+                [client.company_id, client_id, client.router_id, "used", payment.id] // Ensure correct order
+            );
+            
+            console.log(`Updated pppoe_payments (end_date) for payment ID: ${payment.id}, company_id: ${client.company_id}`);
+
         } else {
             console.log(`⚠️ Payment is more than plan fee, but not a clean multiple.`);
             // Maybe allow 1 subscription and flag the remainder?
@@ -147,7 +184,11 @@ router.post('/', async (req, res) => {
     }
 
 
-    res.json(response.data);
+    res.status(200).json({
+        success: true,
+        message: `✅ Payment has been confirmed and subscription updated successfully to ${formattedNewEndDate}.`
+    });
+
   } catch (error) {
     console.error('❌ M-Pesa transaction status error:', error.message);
     if (error.response) {
@@ -219,11 +260,13 @@ router.post('/callback', async (req, res) => {
       [receipt]
     );
 
+    /*
     if (pppoe.length > 0 || payments.length > 0) {
       return res.status(409).json({
         message: 'That transaction has already been consumed, you cannot use it again',
       });
     };
+    */
 
     const completedAt = moment(rawTimestamp, 'YYYYMMDDHHmmss').format('YYYY-MM-DD HH:mm:ss');
 
