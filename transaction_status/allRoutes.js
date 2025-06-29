@@ -11,8 +11,10 @@ const {
   getDarajaInitiatorPassword,
   getCustomerById,
   logTransactionError,
-  waitForPaymentReceipt
+  waitForPaymentReceipt,
+  sendSmsViaAfricastalking
 } = require('./functions');
+
 
 // GET /credential/:id — Example endpoint
 router.get('/credential/:id', async (req, res) => {
@@ -110,6 +112,7 @@ router.post('/', async (req, res) => {
     };
 
     // Step 7: Send request to Safaricom
+    // Daraja sends a separate callback request, so we don't need this response
     const response = await axios.post(
       'https://api.safaricom.co.ke/mpesa/transactionstatus/v1/query',
       data,
@@ -133,61 +136,95 @@ router.post('/', async (req, res) => {
     // 2. Confirm if Amount equals or doubles the required transaction fee
     const amountPaid = parseFloat(payment.Amount);
     const planFee = parseFloat(user.plan_fee);
+    const dailyRate = planFee / 30;
 
     if (amountPaid >= planFee) {
-        const multiplier = amountPaid / planFee;
+        const baseMonths = 1; // Always start with 1 full month
+        const remaining = amountPaid - planFee;
 
-        if (Number.isInteger(multiplier)) {
-            console.log(`✅ Payment is sufficient for ${multiplier} subscription(s).`);
-            // You can now process `multiplier` number of subscriptions
+        // Calculate extra days
+        const extraDays = Math.floor(remaining / dailyRate);
 
-            // Update pppoe_clients: set installation_fee = 0 and update end_date
-            const nowNairobi = moment.tz("Africa/Nairobi");
-            const clientEndDateNairobi = moment.tz(user.end_date, "Africa/Nairobi");
+        console.log(`✅ Payment covers 1 full month + ${extraDays} extra day(s)`);
 
-            // Use current time if end_date expired, else use end_date
-            const baseDate = clientEndDateNairobi.isBefore(nowNairobi) ? nowNairobi : clientEndDateNairobi;
+        // Time setup
+        const nowNairobi = moment.tz("Africa/Nairobi");
+        const clientEndDateNairobi = moment.tz(user.end_date, "Africa/Nairobi");
+        const baseDate = clientEndDateNairobi.isBefore(nowNairobi) ? nowNairobi : clientEndDateNairobi;
 
-            // Add one month
-            const newEndDate = baseDate.clone().add(multiplier, "month");
+        // Add time
+        const newEndDate = baseDate.clone().add(baseMonths, "months").add(extraDays, "days");
+        const formattedNewEndDate = newEndDate.format("YYYY-MM-DD HH:mm:ss");
 
-            // Format as YYYY-MM-DD HH:mm:ss
-            const formattedNewEndDate = newEndDate.format("YYYY-MM-DD HH:mm:ss");
+        console.log(`⏳ New subscription end date: ${formattedNewEndDate}`);
 
-            console.log(formattedNewEndDate);
+        // Update client subscription
+        const client_id = user.id;
 
-            // Set the client ID (Code copied from elsewhere)
-            const client_id = user.id;
-            const client = user;
+        await db.execute(
+            'UPDATE pppoe_clients SET installation_fee = 0, end_date = ? WHERE id = ?',
+            [formattedNewEndDate, client_id]
+        );
+        console.log(`✅ Updated pppoe_clients for client_id: ${client_id}`);
 
-            await db.execute(
-                'UPDATE pppoe_clients SET installation_fee = 0, end_date = ? WHERE id = ?', 
-                [formattedNewEndDate, client_id]
-            );
-            console.log(`Updated pppoe_clients (installation_fee & end_date) for client_id: ${client_id}`);
+        // Update payment record
+        await db.execute(
+            'UPDATE pppoe_payments SET company_id = ?, customer_id = ?, router_id = ?, usedStatus = ?, plan_id = ? WHERE id = ?',
+            [user.company_id, client_id, user.router_id, "used", user.plan_id, payment.id]
+        );
+        console.log(`✅ Updated pppoe_payments for payment ID: ${payment.id}`);
 
-            // Update pppoe_payments using client.company_id
-            await db.execute(
-                'UPDATE pppoe_payments SET company_id = ?, customer_id = ?, router_id = ?, usedStatus = ? WHERE id = ?', 
-                [client.company_id, client_id, client.router_id, "used", payment.id] // Ensure correct order
-            );
-            
-            console.log(`Updated pppoe_payments (end_date) for payment ID: ${payment.id}, company_id: ${client.company_id}`);
+        // Enable Client on Mikrotik Here
 
-        } else {
-            console.log(`⚠️ Payment is more than plan fee, but not a clean multiple.`);
-            // Maybe allow 1 subscription and flag the remainder?
+        try {
+            const enableClientResponse = await fetch("http://localhost:3001/api/enable-client", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${req.headers.authorization}` // Assuming auth token is needed
+                },
+                body: JSON.stringify({ client_id: client_id })
+            });
+        
+            const enableClientData = await enableClientResponse.json();
+        
+            if (!enableClientResponse.ok) {
+                console.error("Failed to enable client:", enableClientData);
+                return res.status(enableClientResponse.status).json({
+                    message: "Client updated, but enabling client failed.",
+                    error: enableClientData
+                });
+            }
+        
+            console.log("Client successfully enabled:", enableClientData);
+
+            // Send SMS to the customer
+            const smsResponse = await sendSmsViaAfricastalking({
+                message: `Hello, your Fibre Internet subscription has been extended, it will now expire on ${formattedNewEndDate}.`,
+                phone: user.phone_number,
+                companyId: user.company_id
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: `✅ Payment confirmed. Subscription extended to ${formattedNewEndDate}.`,
+                smsResponse
+            });
+        } catch (error) {
+            console.error("Error enabling client:", error);
+            return res.status(500).json({
+                message: "Client updated, but an error occurred while enabling client on Mikrotik.",
+                error: error.message
+            });
         }
+
     } else {
         console.log('❌ Payment is less than the required plan fee.');
-        res.status(400).json({ success: false, message: '❌ Payment is less than the required plan fee.' });
+        return res.status(400).json({
+            success: false,
+            message: '❌ Payment is less than the required plan fee.'
+        });
     }
-
-
-    res.status(200).json({
-        success: true,
-        message: `✅ Payment has been confirmed and subscription updated successfully to ${formattedNewEndDate}.`
-    });
 
   } catch (error) {
     console.error('❌ M-Pesa transaction status error:', error.message);
@@ -282,8 +319,8 @@ router.post('/callback', async (req, res) => {
 
     // Include a step to store the data inside the DB
     await db.execute(
-        `INSERT INTO pppoe_payments (Amount, Phone, MpesaReceiptNumber, timestamp) VALUES (?, ?, ?, ?)`,
-        [amount, phone, receipt, completedAt]
+        `INSERT INTO pppoe_payments (Amount, Phone, phone_number, MpesaReceiptNumber, timestamp) VALUES (?, ?, ?, ?, ?)`,
+        [amount, phone, phone, receipt, completedAt]
     );
 
 

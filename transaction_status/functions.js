@@ -140,6 +140,51 @@ async function waitForPaymentReceipt(receipt) {
   return null;
 }
 
+// Function to send one sms
+async function sendSmsViaAfricastalking({ message, phone, companyId }) {
+  try {
+    // Get Company details
+    const [rows] = await db.execute(
+        `SELECT * FROM companies WHERE id = ? LIMIT 1`,
+        [companyId]
+    );
+
+    if (rows.length > 0) {
+        console.log(rows[0].africas_talking_sender_id);
+    } else {
+        return res.status(403).json({ 
+            message: "We don't know who you represent" 
+        });
+    }
+
+    const company = rows[0];
+
+    const payload = {
+      username: company.africas_talking_username,
+      message: message,
+      senderId: company.africas_talking_sender_id,
+      phoneNumbers: [phone],
+    };
+
+    const response = await axios.post(
+      'https://api.africastalking.com/version1/messaging/bulk',
+      payload,
+      {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'apiKey': company.africas_talking_key
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error(`Error sending SMS to ${phone}:`, error.response?.data || error.message);
+    throw error;
+  }
+};
+
 // Usage
 module.exports = {
     generateDarajaAccessToken, 
@@ -147,5 +192,6 @@ module.exports = {
     getSecurityCredential,
     getCustomerById,
     logTransactionError,
-    waitForPaymentReceipt
+    waitForPaymentReceipt,
+    sendSmsViaAfricastalking
 };
