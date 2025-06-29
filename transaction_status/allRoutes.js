@@ -64,14 +64,13 @@ router.post('/', async (req, res) => {
       [transaction_code]
     );
 
-    /*
+    
     if (pppoe.length > 0 || payments.length > 0) {
       return res.status(409).json({
         success: false,
         message: 'That transaction has already been consumed, you cannot use it again',
       });
     };
-    */
 
     // Collect info regarding the customer from the db
     const user = await getCustomerById(customer_id);
@@ -127,6 +126,16 @@ router.post('/', async (req, res) => {
     // Add a way to confirm or reject the transaction
     // 1. Wait for transaction from callback
     const payment = await waitForPaymentReceipt(transaction_code);
+    const paymentDate = moment(payment.timestamp);
+    const oneWeekAgo = moment().subtract(7, 'days');
+
+    // Tries to make sure customers cannot reuse old transaction messages
+    if (paymentDate.isBefore(oneWeekAgo)) {
+        return res.status(403).json({
+            success: false,
+            message: '⛔ That payment is too old to be used. Please contact customer support.'
+        });
+    }
 
     if (!payment) {
         console.log('❌ No payment found after waiting.');
@@ -137,6 +146,8 @@ router.post('/', async (req, res) => {
     const amountPaid = parseFloat(payment.Amount);
     const planFee = parseFloat(user.plan_fee);
     const dailyRate = planFee / 30;
+
+
 
     if (amountPaid >= planFee) {
         const baseMonths = 1; // Always start with 1 full month
@@ -156,7 +167,7 @@ router.post('/', async (req, res) => {
         const newEndDate = baseDate.clone().add(baseMonths, "months").add(extraDays, "days");
         const formattedNewEndDate = newEndDate.format("YYYY-MM-DD HH:mm:ss");
 
-        console.log(`⏳ New subscription end date: ${formattedNewEndDate}`);
+        // console.log(`⏳ New subscription end date: ${formattedNewEndDate}`);
 
         // Update client subscription
         const client_id = user.id;
@@ -165,14 +176,14 @@ router.post('/', async (req, res) => {
             'UPDATE pppoe_clients SET installation_fee = 0, end_date = ? WHERE id = ?',
             [formattedNewEndDate, client_id]
         );
-        console.log(`✅ Updated pppoe_clients for client_id: ${client_id}`);
+        // console.log(`✅ Updated pppoe_clients for client_id: ${client_id}`);
 
         // Update payment record
         await db.execute(
             'UPDATE pppoe_payments SET company_id = ?, customer_id = ?, router_id = ?, usedStatus = ?, plan_id = ? WHERE id = ?',
             [user.company_id, client_id, user.router_id, "used", user.plan_id, payment.id]
         );
-        console.log(`✅ Updated pppoe_payments for payment ID: ${payment.id}`);
+        // console.log(`✅ Updated pppoe_payments for payment ID: ${payment.id}`);
 
         // Enable Client on Mikrotik Here
 
@@ -196,7 +207,7 @@ router.post('/', async (req, res) => {
                 });
             }
         
-            console.log("Client successfully enabled:", enableClientData);
+            // console.log("Client successfully enabled:", enableClientData);
 
             // Send SMS to the customer
             const smsResponse = await sendSmsViaAfricastalking({
@@ -219,15 +230,15 @@ router.post('/', async (req, res) => {
         }
 
     } else {
-        console.log('❌ Payment is less than the required plan fee.');
+        // console.log('❌ Payment is less than the required plan fee.');
         return res.status(400).json({
             success: false,
-            message: '❌ Payment is less than the required plan fee.'
+            message: '❌ Payment is less than the required plan fee. Kindly contact customer support for advice.'
         });
     }
 
   } catch (error) {
-    console.error('❌ M-Pesa transaction status error:', error.message);
+    // console.error('❌ M-Pesa transaction status error:', error.message);
     if (error.response) {
       res.status(error.response.status).json(error.response.data);
     } else {
@@ -297,13 +308,11 @@ router.post('/callback', async (req, res) => {
       [receipt]
     );
 
-    /*
     if (pppoe.length > 0 || payments.length > 0) {
       return res.status(409).json({
         message: 'That transaction has already been consumed, you cannot use it again',
       });
     };
-    */
 
     const completedAt = moment(rawTimestamp, 'YYYYMMDDHHmmss').format('YYYY-MM-DD HH:mm:ss');
 
