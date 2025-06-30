@@ -30,7 +30,9 @@ router.post('/local_logs', async (req, res) => {
 
 router.get('/local_logs', async (req, res) => {
     try {
-        const { company_id, router_id } = req.query;
+        const { company_id, router_id, page = 1, limit = 10 } = req.query;
+
+        const offset = (parseInt(page) - 1) * parseInt(limit);
         let sql = 'SELECT * FROM local_logs';
         const params = [];
 
@@ -44,8 +46,35 @@ router.get('/local_logs', async (req, res) => {
             params.push(router_id);
         }
 
-        const [results] = await db.query(sql, params); // Extracting only the first result
-        res.json(results); // Send only the actual rows
+        sql += ' ORDER BY id DESC LIMIT ? OFFSET ?';
+        params.push(parseInt(limit), offset);
+
+        const [results] = await db.query(sql, params);
+
+        // Optional: Get total count for frontend pagination
+        let countSql = 'SELECT COUNT(*) as total FROM local_logs';
+        const countParams = [];
+
+        if (company_id) {
+            countSql += ' WHERE company_id = ?';
+            countParams.push(company_id);
+        }
+
+        if (router_id) {
+            countSql += countParams.length ? ' AND router_id = ?' : ' WHERE router_id = ?';
+            countParams.push(router_id);
+        }
+
+        const [countResult] = await db.query(countSql, countParams);
+        const total = countResult[0]?.total || 0;
+
+        res.json({
+            data: results,
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total,
+            totalPages: Math.ceil(total / limit)
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

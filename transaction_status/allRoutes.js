@@ -47,12 +47,16 @@ router.get('/credential/:id', async (req, res) => {
 
 
 router.post('/', async (req, res) => {
-  const { transaction_code, company_id, customer_id } = req.body;
+  const { transaction_code, customer_id } = req.body;
 
   // Step 1: Check if both parameters have been attached
-  if (!transaction_code || !company_id || !customer_id) {
+  if (!transaction_code || !customer_id) {
     return res.status(400).json({ error: 'Your request is invalid' });
   }
+
+    // Collect info regarding the customer from the db
+    const user = await getCustomerById(customer_id);
+    const company_id = user.company_id;
 
     // Step 2: Check for duplicate in both tables
     const [pppoe] = await db.execute(
@@ -71,9 +75,6 @@ router.post('/', async (req, res) => {
         message: 'That transaction has already been consumed, you cannot use it again',
       });
     };
-
-    // Collect info regarding the customer from the db
-    const user = await getCustomerById(customer_id);
 
     if (!user) {
       return res.status(404).json({ message: 'User does not exist' });
@@ -104,8 +105,8 @@ router.post('/', async (req, res) => {
       OriginatorConversationID: `AG_${Date.now()}`, // optional unique ID
       PartyA: '4150219',
       IdentifierType: '4',
-      ResultURL: 'https://6fb8-105-163-2-212.ngrok-free.app/transaction-status/callback',
-      QueueTimeOutURL: 'https://6fb8-105-163-2-212.ngrok-free.app/transaction-status/callback',
+      ResultURL: 'http://139.59.60.20:8000/transaction-status/callback',
+      QueueTimeOutURL: 'http://139.59.60.20:8000/transaction-status/callback',
       Remarks: 'Checking transaction status',
       Occasion: 'OK',
     };
