@@ -95,6 +95,30 @@ router.get('/companies/:id', verifyToken, async (req, res) => {
     }
 });
 
+// Need Companies route to get company phone numbers for reminders and subscription termination
+// Only allowed for local requests
+// Middleware to check if request is from localhost
+const allowLocalOnly = (req, res, next) => {
+    const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
+    const allowedIPs = ['127.0.0.1', '::1', '::ffff:127.0.0.1', 'localhost'];
+    
+    if (allowedIPs.includes(clientIP)) {
+        next();
+    } else {
+        return res.status(403).json({ message: 'Access denied. Local requests only.' });
+    }
+};
+
+// Get all companies (GET), only to be used locally, no token required
+router.get('/local-companies', allowLocalOnly, async (req, res) => {
+    try {
+        const [result] = await db.execute('SELECT * FROM companies');
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ message: 'Database query error', error: err.message });
+    }
+});
+
 // Update company details by ID (PATCH)
 router.patch('/companies/:id', verifyToken, async (req, res) => {
     const companyId = req.params.id;

@@ -190,6 +190,7 @@ const generateVoucherCode = async (index, lastId) => {
 
 // Handle Payment Requests
 app.use(express.json());
+app.set('trust proxy', true);
 
 // Middleware for Processing Payment
 // Utility function for delay (10 seconds)
@@ -290,7 +291,6 @@ const checkForPayment = async (
         };
     }
 };
-
 
 // POST endpoint: payment-request-pro
 app.post('/payment-request-pro', async (req, res) => {
