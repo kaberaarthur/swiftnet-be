@@ -343,7 +343,7 @@ router.post('/activate-client', async (req, res) => {
     // Use req.ip for correct detection (especially with trust proxy)
     const clientIp = req.ip;
 
-    const allowedIps = ['127.0.0.1', '::1', '::ffff:127.0.0.1']; // Localhost variants
+    const allowedIps = ['127.0.0.1', '::1', '::ffff:127.0.0.1']; // The localhost variants
 
     /*if (!allowedIps.includes(clientIp)) {
         return res.status(403).json({
