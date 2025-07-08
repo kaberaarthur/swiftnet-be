@@ -337,6 +337,52 @@ router.get('/pppoe-clients-cron', async (req, res) => {
     }
 });
 
+// Activate client in case he paid but was not enabled
+// Activate PPPoE client by ID (only local access allowed)
+router.post('/activate-client', async (req, res) => {
+    // Use req.ip for correct detection (especially with trust proxy)
+    const clientIp = req.ip;
+
+    const allowedIps = ['127.0.0.1', '::1', '::ffff:127.0.0.1']; // Localhost variants
+
+    if (!allowedIps.includes(clientIp)) {
+        return res.status(403).json({
+            success: false,
+            message: `Access denied from IP ${clientIp}`
+        });
+    }
+
+    const { client_id } = req.body;
+
+    if (!client_id) {
+        return res.status(400).json({
+            success: false,
+            message: "client_id is required"
+        });
+    }
+
+    try {
+        const query = 'UPDATE pppoe_clients SET active = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+        const [result] = await db.execute(query, [client_id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Client not found"
+            });
+        }
+
+        res.json({
+            success: true,
+            message: `Client ${client_id} activated`
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
 
 // Get a single PPPoE client by ID
 router.get('/pppoe-clients/:id', async (req, res) => {
