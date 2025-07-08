@@ -341,6 +341,8 @@ router.get('/pppoe-clients-cron', async (req, res) => {
 router.post('/activate-client', async (req, res) => {
     const { client_id } = req.body;
 
+    console.log(`Received request to activate ${client_id}`)
+
     if (!client_id) {
         return res.status(400).json({
             success: false,
@@ -349,7 +351,7 @@ router.post('/activate-client', async (req, res) => {
     }
 
     try {
-        const query = 'UPDATE pppoe_clients SET active = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+        const query = 'UPDATE pppoe_clients SET active = 1 WHERE id = ?';
         const [result] = await db.execute(query, [client_id]);
 
         if (result.affectedRows === 0) {
