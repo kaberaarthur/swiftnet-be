@@ -345,12 +345,12 @@ router.post('/activate-client', async (req, res) => {
 
     const allowedIps = ['127.0.0.1', '::1', '::ffff:127.0.0.1']; // Localhost variants
 
-    if (!allowedIps.includes(clientIp)) {
+    /*if (!allowedIps.includes(clientIp)) {
         return res.status(403).json({
             success: false,
             message: `Access denied from IP ${clientIp}`
         });
-    }
+    }*/
 
     const { client_id } = req.body;
 
