@@ -350,21 +350,28 @@ router.post('/activate-client', async (req, res) => {
         });
     }
 
+    const connection = await db.getConnection();
+    
     try {
+        await connection.beginTransaction();
+
         // Step 1: Update the client
         const updateQuery = 'UPDATE pppoe_clients SET active = 1 WHERE id = ?';
-        const [updateResult] = await db.execute(updateQuery, [client_id]);
+        const [updateResult] = await connection.execute(updateQuery, [client_id]);
 
         if (updateResult.affectedRows === 0) {
+            await connection.rollback();
             return res.status(404).json({
                 success: false,
                 message: "Client not found"
             });
         }
 
-        // Step 2: Fetch the updated record
+        // Step 2: Fetch the updated record (on the same connection)
         const selectQuery = 'SELECT id, secret, active FROM pppoe_clients WHERE id = ?';
-        const [rows] = await db.execute(selectQuery, [client_id]);
+        const [rows] = await connection.execute(selectQuery, [client_id]);
+
+        await connection.commit();
 
         if (rows.length === 0) {
             return res.status(404).json({
@@ -381,10 +388,13 @@ router.post('/activate-client', async (req, res) => {
         });
 
     } catch (error) {
+        await connection.rollback();
         res.status(500).json({
             success: false,
             message: error.message
         });
+    } finally {
+        connection.release(); // Return connection to pool
     }
 });
 
