@@ -65,6 +65,9 @@ const bulkSMSRoutes = require('./bulksms/allRoutes.js');
 // Check Transation Status Routes
 const transactionStatusRoutes = require('./transaction_status/allRoutes.js');
 
+// B2B Transaction Routes
+const b2bTransactionRoutes = require('./transaction_status/b2bRoutes.js');
+
 
 const app = express();
 const port = 8000;
@@ -139,6 +142,9 @@ app.use('/bulk-sms', bulkSMSRoutes);
 
 // Transaction Status Routes
 app.use('/transaction-status', transactionStatusRoutes);
+
+// B2B Transaction Routes
+app.use('/b2b', b2bTransactionRoutes);
 
 // Home route
 app.get('/', (req, res) => {
