@@ -338,20 +338,7 @@ router.get('/pppoe-clients-cron', async (req, res) => {
 });
 
 // Activate client in case he paid but was not enabled
-// Activate PPPoE client by ID (only local access allowed)
 router.post('/activate-client', async (req, res) => {
-    // Use req.ip for correct detection (especially with trust proxy)
-    const clientIp = req.ip;
-
-    const allowedIps = ['127.0.0.1', '::1', '::ffff:127.0.0.1']; // The localhost variants
-
-    /*if (!allowedIps.includes(clientIp)) {
-        return res.status(403).json({
-            success: false,
-            message: `Access denied from IP ${clientIp}`
-        });
-    }*/
-
     const { client_id } = req.body;
 
     if (!client_id) {
