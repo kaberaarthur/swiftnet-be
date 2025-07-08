@@ -341,7 +341,7 @@ router.get('/pppoe-clients-cron', async (req, res) => {
 router.post('/activate-client', async (req, res) => {
     const { client_id } = req.body;
 
-    console.log(`Received request to activate ${client_id}`)
+    console.log(`Received request to activate ${client_id}`);
 
     if (!client_id) {
         return res.status(400).json({
@@ -351,20 +351,35 @@ router.post('/activate-client', async (req, res) => {
     }
 
     try {
-        const query = 'UPDATE pppoe_clients SET active = 1 WHERE id = ?';
-        const [result] = await db.execute(query, [client_id]);
+        // Step 1: Update the client
+        const updateQuery = 'UPDATE pppoe_clients SET active = 1 WHERE id = ?';
+        const [updateResult] = await db.execute(updateQuery, [client_id]);
 
-        if (result.affectedRows === 0) {
+        if (updateResult.affectedRows === 0) {
             return res.status(404).json({
                 success: false,
                 message: "Client not found"
             });
         }
 
+        // Step 2: Fetch the updated record
+        const selectQuery = 'SELECT id, secret, active FROM pppoe_clients WHERE id = ?';
+        const [rows] = await db.execute(selectQuery, [client_id]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Client found but fetch failed"
+            });
+        }
+
+        // Step 3: Return the updated fields
         res.json({
             success: true,
-            message: `Client ${client_id} activated`
+            message: `Client ${client_id} activated`,
+            client: rows[0]
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -372,6 +387,7 @@ router.post('/activate-client', async (req, res) => {
         });
     }
 });
+
 
 // Get a single PPPoE client by ID
 router.get('/pppoe-clients/:id', async (req, res) => {

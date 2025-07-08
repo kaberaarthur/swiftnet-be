@@ -171,5 +171,4 @@ router.get('/pppoe-users/:router_id', verifyToken, async (req, res) => {
   }
 });
 
-
 module.exports = router;
