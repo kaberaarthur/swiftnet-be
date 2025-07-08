@@ -31,21 +31,22 @@ router.post('/b2b-payment', async (req, res) => {
     try {
         const accessToken = await generateDarajaAccessToken();
         const securityCredential = getSecurityCredential(password);
+        // const securityCredential = getSecurityCredential(")Tr-Jzp3SP28eKG");
 
         const payload = {
-            Initiator: "Swiftnetweb",
+            Initiator: "Swiftnet",
             SecurityCredential: securityCredential,
             CommandID: "BusinessPayBill",
             SenderIdentifierType: "4",
             RecieverIdentifierType: "4",
-            Amount: "10",
+            Amount: "23",
             PartyA: "4150219", // Your shortcode
             PartyB: "247247", // Receiver shortcode
             AccountReference: "0710165089375",
             Requester: "254700000000",
             Remarks: "OK",
-            QueueTimeOutURL: "https://5f7887767b35.ngrok-free.app/b2b/b2b-result",
-            ResultURL: "https://example.com/TimeOutListener.php"
+            QueueTimeOutURL: "https://swiftnetmain.twigasoft.xyz/b2b/b2b-result",
+            ResultURL: "https://swiftnetmain.twigasoft.xyz/b2b/b2b-result"
         };
 
         const response = await axios.post(
@@ -72,8 +73,39 @@ router.post('/b2b-payment', async (req, res) => {
 });
 
 
-// Store the Obtained Result
+// Store Callback from Daraja
+// Safaricom IPs to allow
+const allowedIps = [
+  '196.201.214.200',
+  '196.201.214.206',
+  '196.201.213.114',
+  '196.201.214.207',
+  '196.201.214.208',
+  '196.201.213.44',
+  '196.201.212.127',
+  '196.201.212.138',
+  '196.201.212.129',
+  '196.201.212.136',
+  '196.201.212.74',
+  '196.201.212.69'
+];
+
+// Helper to normalize IPs (removes ::ffff: if present)
+function normalizeIp(ip) {
+  return ip.replace('::ffff:', '');
+}
+
 router.post('/b2b-result', async (req, res) => {
+  // IP validation
+  const rawIp =
+    req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
+  const clientIp = normalizeIp(rawIp);
+
+  if (!allowedIps.includes(clientIp)) {
+    console.warn(`Rejected B2B callback from disallowed IP: ${clientIp}`);
+    return res.status(403).json({ message: 'Forbidden: IP not allowed' });
+  }
+
   try {
     const result = req.body.Result;
 
@@ -93,7 +125,7 @@ router.post('/b2b-result', async (req, res) => {
 
     const status = parseInt(ResultCode) === 0 ? 'success' : 'failed';
 
-    // Parse ResultParameters
+    // Parse Result Parameters
     const resultParams = Array.isArray(ResultParameters?.ResultParameter)
       ? ResultParameters.ResultParameter
       : ResultParameters?.ResultParameter
@@ -105,7 +137,7 @@ router.post('/b2b-result', async (req, res) => {
       paramsMap[param.Key] = param.Value;
     }
 
-    // Parse ReferenceData
+    // Parse Reference Items
     const refItems = Array.isArray(ReferenceData?.ReferenceItem)
       ? ReferenceData.ReferenceItem
       : ReferenceData?.ReferenceItem
@@ -117,6 +149,7 @@ router.post('/b2b-result', async (req, res) => {
       refMap[item.Key] = item.Value;
     }
 
+    // Insert into DB
     const sql = `
       INSERT INTO pppoe_b2b_payments (
         originator_conversation_id,
@@ -161,7 +194,7 @@ router.post('/b2b-result', async (req, res) => {
 
     await db.execute(sql, values);
 
-    res.status(200).json({ message: 'B2B result processed' });
+    res.status(200).json({ message: 'B2B result processed successfully' });
   } catch (err) {
     console.error('Error saving B2B result:', err);
     res.status(500).json({ message: 'Internal server error' });
