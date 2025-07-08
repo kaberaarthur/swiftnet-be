@@ -44,7 +44,7 @@ router.post('/b2b-payment', async (req, res) => {
             AccountReference: "0710165089375",
             Requester: "254700000000",
             Remarks: "OK",
-            QueueTimeOutURL: "https://example.com/ResultsListener.php",
+            QueueTimeOutURL: "https://5f7887767b35.ngrok-free.app/b2b/b2b-result",
             ResultURL: "https://example.com/TimeOutListener.php"
         };
 
