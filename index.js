@@ -68,6 +68,9 @@ const transactionStatusRoutes = require('./transaction_status/allRoutes.js');
 // B2B Transaction Routes
 const b2bTransactionRoutes = require('./transaction_status/b2bRoutes.js');
 
+// All Paybill Transaction Routes
+const allTransactionRoutes = require('./alltransactions/allRoutes.js');
+
 
 const app = express();
 const port = 8000;
@@ -145,6 +148,9 @@ app.use('/transaction-status', transactionStatusRoutes);
 
 // B2B Transaction Routes
 app.use('/b2b', b2bTransactionRoutes);
+
+// B2B Transaction Routes
+app.use('/', allTransactionRoutes);
 
 // Home route
 app.get('/', (req, res) => {
