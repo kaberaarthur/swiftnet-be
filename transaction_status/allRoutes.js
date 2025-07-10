@@ -59,6 +59,7 @@ router.post('/', async (req, res) => {
     const company_id = user.company_id;
 
     // Step 2: Check for duplicate in both tables
+    // This feature is targeted at ensuring the user does not use a payment from hotspot to try and cheat the system
     const [pppoe] = await db.execute(
       'SELECT id FROM pppoe_payments WHERE MpesaReceiptNumber = ? LIMIT 1',
       [transaction_code]
@@ -177,14 +178,16 @@ router.post('/', async (req, res) => {
             'UPDATE pppoe_clients SET installation_fee = 0, end_date = ? WHERE id = ?',
             [formattedNewEndDate, client_id]
         );
-        // console.log(`✅ Updated pppoe_clients for client_id: ${client_id}`);
+        console.log(`✅ Updated pppoe_clients table for client_id: ${client_id}`);
 
         // Update payment record
         await db.execute(
             'UPDATE pppoe_payments SET company_id = ?, customer_id = ?, router_id = ?, usedStatus = ?, plan_id = ? WHERE id = ?',
             [user.company_id, client_id, user.router_id, "used", user.plan_id, payment.id]
         );
-        // console.log(`✅ Updated pppoe_payments for payment ID: ${payment.id}`);
+        console.log(`✅ Updated pppoe_payments table for payment ID: ${payment.id}`);
+
+        console.log("Now enabling client on mikrotik.")
 
         // Enable Client on Mikrotik Here
 

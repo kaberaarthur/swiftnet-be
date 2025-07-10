@@ -95,15 +95,24 @@ router.get('/all-mpesa-transactions', verifyToken, async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching MPESA transactions:', error);
-    console.error('Error details:', {
-      code: error.code,
-      errno: error.errno,
-      sqlState: error.sqlState,
-      sqlMessage: error.sqlMessage,
-      sql: error.sql
-    });
-    res.status(500).json({ message: 'Server error' });
-  }
+
+    const errorDetails = {
+        message: 'Server error',
+        error: error.message || 'Unknown error',
+        code: error.code,
+        errno: error.errno,
+        sqlState: error.sqlState,
+        sqlMessage: error.sqlMessage,
+        sql: error.sql,
+    };
+
+    // Log full details for the server
+    console.error('Error details:', errorDetails);
+
+    // Respond with details (safe for dev, strip for production)
+    res.status(500).json(errorDetails);
+    }
+
 });
 
 module.exports = router;
