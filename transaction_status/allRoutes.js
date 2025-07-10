@@ -73,7 +73,7 @@ router.post('/', async (req, res) => {
     if (pppoe.length > 0 || payments.length > 0) {
       return res.status(409).json({
         success: false,
-        message: 'That transaction has already been consumed, you cannot use it again',
+        message: 'That transaction has already been consumed, you cannot use it again.',
       });
     };
 
