@@ -33,4 +33,4 @@ jobs:
             cd /root/swiftnet-be
             git pull origin production
             npm install
-            pm2 restart swiftnet-be
+            pm2 restart swiftnet
