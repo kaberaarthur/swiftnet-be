@@ -44,47 +44,55 @@ router.post('/daraja-callback', async (req, res) => {
       return res.status(400).json({ error: "Invalid callback structure" });
     }
 
-    const checkoutRequestID = stkCallback.CheckoutRequestID;
-    console.log("CheckoutRequestID:", checkoutRequestID);
+    const CheckoutRequestID = stkCallback.CheckoutRequestID;
+    console.log("CheckoutRequestID:", CheckoutRequestID);
 
     const items = stkCallback.CallbackMetadata?.Item;
 
     // Extract values
-    let amount, receipt, date, phone;
+    let Amount, MpesaReceiptNumber, TransactionDate, PhoneNumber;
 
     if (Array.isArray(items)) {
       items.forEach(item => {
-        if (item.Name === 'Amount') amount = item.Value;
-        else if (item.Name === 'MpesaReceiptNumber') receipt = item.Value;
-        else if (item.Name === 'TransactionDate') date = item.Value;
-        else if (item.Name === 'PhoneNumber') phone = item.Value;
+        if (item.Name === 'Amount') Amount = item.Value;
+        else if (item.Name === 'MpesaReceiptNumber') MpesaReceiptNumber = item.Value;
+        else if (item.Name === 'TransactionDate') TransactionDate = item.Value;
+        else if (item.Name === 'PhoneNumber') PhoneNumber = item.Value;
 
         console.log(`${item.Name}: ${item.Value}`);
       });
-    } else {
-      console.log("No CallbackMetadata.Items found or not an array.");
     }
 
-    // Format date if needed (optional)
-    const formattedDate = moment(date, 'YYYYMMDDHHmmss').format('YYYY-MM-DD HH:mm:ss');
+    // Convert date format
+    const formattedDate = moment(TransactionDate, 'YYYYMMDDHHmmss').format('YYYY-MM-DD HH:mm:ss');
 
-    // Insert into the `payments` table
-    const query = `
-      INSERT INTO payments (transaction_code, phone_number, amount, transaction_date, checkout_request_id)
-      VALUES (?, ?, ?, ?, ?)
+    // Insert into DB (use same field names)
+    const insertQuery = `
+      INSERT INTO payments (
+        Amount,
+        MpesaReceiptNumber,
+        TransactionDate,
+        PhoneNumber,
+        CheckoutRequestID
+      ) VALUES (?, ?, ?, ?, ?)
     `;
 
-    await db.execute(query, [receipt, phone, amount, formattedDate, checkoutRequestID]);
+    await db.execute(insertQuery, [
+      Amount,
+      MpesaReceiptNumber,
+      formattedDate,
+      PhoneNumber,
+      CheckoutRequestID
+    ]);
 
-    console.log("Payment inserted into DB successfully.");
+    console.log("Payment record inserted into database.");
+    res.status(200).json({ message: "Callback received and saved." });
 
-    res.status(200).json({ message: "Callback received and stored successfully" });
   } catch (error) {
-    console.error("Error processing callback:", error);
+    console.error("Error processing STK callback:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
 
 // This should initiate mpesa, save req, check payment, create voucher, 
 // enable user, return username & password, create user ifnotexist
