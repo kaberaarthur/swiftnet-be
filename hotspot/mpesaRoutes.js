@@ -13,7 +13,7 @@ router.get('/get-access-token', async (req, res) => {
     if (token) {
         res.json({ access_token: token });
     } else {
-        res.status(500).json({ error: 'Failed to retrieve access token' });
+        res.status(500).json({ error: 'Operation has failed' });
     }
 });
 
