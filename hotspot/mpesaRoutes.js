@@ -41,7 +41,20 @@ router.post('/daraja-callback', (req, res) => {
             return res.status(400).json({ error: "Invalid callback structure" });
         }
 
-        console.log(stkCallback);
+        
+        // console.log(stkCallback);
+        console.log("CheckoutRequestID:", stkCallback.CheckoutRequestID);
+
+        // Safely access CallbackMetadata.Item array
+        const items = stkCallback.CallbackMetadata?.Item;
+
+        if (Array.isArray(items)) {
+          items.forEach(item => {
+            console.log(`${item.Name}: ${item.Value}`);
+          });
+        } else {
+          console.log("No CallbackMetadata.Items found or not an array.");
+        }
 
         // Respond to Safaricom with 200 OK
         res.status(200).json({ message: "Callback received successfully" });
