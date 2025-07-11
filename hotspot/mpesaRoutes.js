@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const db = require('../dbPromise');
 
 const { initiateSTKPush, confirmPaymentByTransactionCode, findPaymentByCheckoutRequestID, getAccessToken, initiateDarajaStkPush } = require('./mpesaFunctions');
 
@@ -25,6 +26,8 @@ router.post('/daraja-stk', async (req, res) => {
     const result = await initiateDarajaStkPush(phone_number);
 
     if (result) {
+      // Wait two seconds for Callback & Hotspot Payments Tables to be populated
+      const CheckoutRequestID = result.CheckoutRequestID
         res.json(result);
     } else {
         res.status(500).json({ error: 'STK Push failed' });
@@ -32,37 +35,56 @@ router.post('/daraja-stk', async (req, res) => {
 });
 
 // ✅ POST - Receive and process the callback response
-router.post('/daraja-callback', (req, res) => {
-    try {
-        const stkCallback = req.body?.Body?.stkCallback;
+router.post('/daraja-callback', async (req, res) => {
+  try {
+    const stkCallback = req.body?.Body?.stkCallback;
 
-        if (!stkCallback) {
-            console.error("Invalid callback structure");
-            return res.status(400).json({ error: "Invalid callback structure" });
-        }
-
-        
-        // console.log(stkCallback);
-        console.log("CheckoutRequestID:", stkCallback.CheckoutRequestID);
-
-        // Safely access CallbackMetadata.Item array
-        const items = stkCallback.CallbackMetadata?.Item;
-
-        if (Array.isArray(items)) {
-          items.forEach(item => {
-            console.log(`${item.Name}: ${item.Value}`);
-          });
-        } else {
-          console.log("No CallbackMetadata.Items found or not an array.");
-        }
-
-        // Respond to Safaricom with 200 OK
-        res.status(200).json({ message: "Callback received successfully" });
-    } catch (error) {
-        console.error("Error processing callback:", error);
-        res.status(500).json({ error: "Internal server error" });
+    if (!stkCallback) {
+      console.error("Invalid callback structure");
+      return res.status(400).json({ error: "Invalid callback structure" });
     }
+
+    const checkoutRequestID = stkCallback.CheckoutRequestID;
+    console.log("CheckoutRequestID:", checkoutRequestID);
+
+    const items = stkCallback.CallbackMetadata?.Item;
+
+    // Extract values
+    let amount, receipt, date, phone;
+
+    if (Array.isArray(items)) {
+      items.forEach(item => {
+        if (item.Name === 'Amount') amount = item.Value;
+        else if (item.Name === 'MpesaReceiptNumber') receipt = item.Value;
+        else if (item.Name === 'TransactionDate') date = item.Value;
+        else if (item.Name === 'PhoneNumber') phone = item.Value;
+
+        console.log(`${item.Name}: ${item.Value}`);
+      });
+    } else {
+      console.log("No CallbackMetadata.Items found or not an array.");
+    }
+
+    // Format date if needed (optional)
+    const formattedDate = moment(date, 'YYYYMMDDHHmmss').format('YYYY-MM-DD HH:mm:ss');
+
+    // Insert into the `payments` table
+    const query = `
+      INSERT INTO payments (transaction_code, phone_number, amount, transaction_date, checkout_request_id)
+      VALUES (?, ?, ?, ?, ?)
+    `;
+
+    await db.execute(query, [receipt, phone, amount, formattedDate, checkoutRequestID]);
+
+    console.log("Payment inserted into DB successfully.");
+
+    res.status(200).json({ message: "Callback received and stored successfully" });
+  } catch (error) {
+    console.error("Error processing callback:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
+
 
 // This should initiate mpesa, save req, check payment, create voucher, 
 // enable user, return username & password, create user ifnotexist
