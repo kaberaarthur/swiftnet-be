@@ -74,7 +74,7 @@ router.post('/daraja-callback', async (req, res) => {
         Amount,
         MpesaReceiptNumber,
         timestamp,
-        PhoneNumber,
+        Phone,
         CheckoutRequestID
       ) VALUES (?, ?, ?, ?, ?)
     `;
@@ -87,7 +87,7 @@ router.post('/daraja-callback', async (req, res) => {
       CheckoutRequestID
     ]);
 
-    console.log("Payment record inserted into database.");
+    console.log("Payment record inserted into database");
     res.status(200).json({ message: "Callback received and saved." });
 
   } catch (error) {
