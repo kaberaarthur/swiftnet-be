@@ -3,10 +3,103 @@ const router = express.Router();
 const db = require('../dbPromise');
 const axios = require('axios');
 const moment = require('moment-timezone');
+const base64 = require('base-64');
+
 
 const userFunctions = require('./userFunctions');
 const { generatePassword } = require('./actionFunctions');
 const createOrUpdateUser = userFunctions.createOrUpdateUser;
+
+// STK PUSH Code for Hotspot
+const consumerKey = process.env.DARAJA_CONSUMER_KEY;
+const consumerSecret = process.env.DARAJA_CONSUMER_SECRET;
+const swiftnetShortcode = process.env.SWIFTNET_MPESA_SHORTCODE;
+const swiftnetPasskey = process.env.DARAJA_PASSKEY;
+const darajaTimestamp = moment().tz('Africa/Nairobi').format('YYYYMMDDHHmmss');
+
+const stringToEncode = swiftnetShortcode + swiftnetPasskey + darajaTimestamp;
+const encodedPassword = Buffer.from(stringToEncode, 'utf8').toString('base64');
+// console.log(`Encoded Password (Node.js Base64): ${encodedPassword}`);
+
+// ACCESS TOKEN URL
+const access_token_url = 'https://api.safaricom.co.ke/oauth/v2/generate?grant_type=client_credentials';
+
+async function getAccessToken() {
+    const credentials = `${consumerKey}:${consumerSecret}`;
+    const encodedCredentials = base64.encode(credentials);
+
+    const headers = {
+        Authorization: `Basic ${encodedCredentials}`
+    };
+
+    try {
+        const response = await axios.get(access_token_url, { headers });
+
+        return {
+          access_token: response.data.access_token,
+          timestamp: darajaTimestamp
+        }
+    } catch (error) {
+        console.error("Failed to get access token.");
+        if (error.response) {
+            console.error("Status:", error.response.status);
+            console.error("Data:", error.response.data);
+        } else {
+            console.error("Error:", error.message);
+        }
+        return null;
+    }
+}
+
+// Intiates STK Push Directly Through Daraja
+async function initiateDarajaStkPush(myPhoneNumber) {
+    const accessData = await getAccessToken();
+    if (!accessData || !accessData.access_token) {
+        console.error("Failed to initiate STK Push due to missing token.");
+        return null;
+    }
+
+    const accessToken = accessData.access_token;
+
+    const stkHeaders = {
+        Authorization: `Bearer ${accessToken}`
+    };
+
+    const stkPayload = {
+        "BusinessShortCode": swiftnetShortcode,
+        "Password": encodedPassword,
+        "Timestamp": darajaTimestamp,
+        "TransactionType": "CustomerPayBillOnline",
+        "Amount": 1,
+        "PartyA": myPhoneNumber,
+        "PartyB": swiftnetShortcode,
+        "PhoneNumber": myPhoneNumber,
+        "CallBackURL": "https://example.com/callback",
+        "AccountReference": "Hotspot",
+        "TransactionDesc": "Payment of X"
+    };
+
+    try {
+        const response = await axios.post(
+            'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
+            stkPayload,
+            { headers: stkHeaders }
+        );
+
+        console.log("STK Push response:", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("STK Push failed.");
+        if (error.response) {
+            console.error("Status:", error.response.status);
+            console.error("Data:", error.response.data);
+        } else {
+            console.error("Error:", error.message);
+        }
+        return null;
+    }
+}
+
 
 // Initiates STK Push via PayHero
 // Include a plan_id
@@ -312,5 +405,7 @@ async function findPaymentByCheckoutRequestID(checkoutRequestID) {
 module.exports = { 
     initiateSTKPush,
     confirmPaymentByTransactionCode,
-    findPaymentByCheckoutRequestID
+    findPaymentByCheckoutRequestID,
+    getAccessToken,
+    initiateDarajaStkPush
 };
