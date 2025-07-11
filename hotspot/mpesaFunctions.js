@@ -16,6 +16,7 @@ const consumerSecret = process.env.DARAJA_CONSUMER_SECRET;
 const swiftnetShortcode = process.env.SWIFTNET_MPESA_SHORTCODE;
 const swiftnetPasskey = process.env.DARAJA_PASSKEY;
 const darajaTimestamp = moment().tz('Africa/Nairobi').format('YYYYMMDDHHmmss');
+const coreURL = process.env.PROD_BASE_URL
 
 const stringToEncode = swiftnetShortcode + swiftnetPasskey + darajaTimestamp;
 const encodedPassword = Buffer.from(stringToEncode, 'utf8').toString('base64');
@@ -74,7 +75,7 @@ async function initiateDarajaStkPush(myPhoneNumber) {
         "PartyA": myPhoneNumber,
         "PartyB": swiftnetShortcode,
         "PhoneNumber": myPhoneNumber,
-        "CallBackURL": "https://example.com/callback",
+        "CallBackURL": coreURL + "/hotspot-mpesa/daraja-callback",
         "AccountReference": "Hotspot",
         "TransactionDesc": "Payment of X"
     };
