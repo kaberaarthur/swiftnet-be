@@ -41,17 +41,7 @@ router.post('/daraja-callback', (req, res) => {
             return res.status(400).json({ error: "Invalid callback structure" });
         }
 
-        const checkoutRequestID = stkCallback.CheckoutRequestID;
-        const items = stkCallback.CallbackMetadata?.Item || [];
-
-        console.log("====== DARAJA CALLBACK RECEIVED ======");
-        console.log("CheckoutRequestID:", checkoutRequestID);
-
-        items.forEach(item => {
-            console.log(`${item.Name}: ${item.Value}`);
-        });
-
-        console.log("======================================");
+        console.log(stkCallback);
 
         // Respond to Safaricom with 200 OK
         res.status(200).json({ message: "Callback received successfully" });
