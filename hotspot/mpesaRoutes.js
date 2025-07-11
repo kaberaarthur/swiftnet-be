@@ -73,7 +73,7 @@ router.post('/daraja-callback', async (req, res) => {
       INSERT INTO payments (
         Amount,
         MpesaReceiptNumber,
-        TransactionDate,
+        timestamp,
         PhoneNumber,
         CheckoutRequestID
       ) VALUES (?, ?, ?, ?, ?)
