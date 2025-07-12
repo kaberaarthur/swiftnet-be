@@ -53,7 +53,7 @@ async function getAccessToken() {
 }
 
 // Intiates STK Push Directly Through Daraja
-async function initiateDarajaStkPush(myPhoneNumber) {
+async function initiateDarajaStkPush(myPhoneNumber, planPrice) {
     const accessData = await getAccessToken();
     if (!accessData || !accessData.access_token) {
         console.error("Failed to initiate STK Push due to missing token.");
@@ -71,7 +71,7 @@ async function initiateDarajaStkPush(myPhoneNumber) {
         "Password": encodedPassword,
         "Timestamp": darajaTimestamp,
         "TransactionType": "CustomerPayBillOnline",
-        "Amount": 1,
+        "Amount": planPrice,
         "PartyA": myPhoneNumber,
         "PartyB": swiftnetShortcode,
         "PhoneNumber": myPhoneNumber,

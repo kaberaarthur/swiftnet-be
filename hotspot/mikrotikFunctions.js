@@ -95,12 +95,12 @@ async function getRouterDetails(router_id) {
   }
 }
 
-async function createMikrotikHotspotUser(ip, username, password, phone_number, userPassword) {
+async function createMikrotikHotspotUser(ip, username, password, phone_number, userPassword, plan_name) {
   return new Promise((resolve, reject) => {
     const conn = new Client();
 
     conn.on('ready', () => {
-      const command = `/ip hotspot user add name="${phone_number}" password="${userPassword}" profile=default`;
+      const command = `/ip hotspot user add name="${phone_number}" password="${userPassword}" profile="${plan_name}"`;
 
       conn.exec(command, (err, stream) => {
         if (err) {
@@ -148,4 +148,130 @@ async function createMikrotikHotspotUser(ip, username, password, phone_number, u
   });
 }
 
-module.exports = { enableHotspotUser, getRouterDetails, createMikrotikHotspotUser };
+async function createOrResetMikrotikHotspotUser(ip, username, password, phone_number, userPassword, plan_name) {
+  return new Promise((resolve, reject) => {
+    const conn = new Client();
+
+    conn.on('ready', () => {
+      const checkCommand = `/ip hotspot user print where name="${phone_number}"`;
+
+      conn.exec(checkCommand, (err, stream) => {
+        if (err) {
+          conn.end();
+          return reject({ success: false, message: 'SSH command failed', error: err.message });
+        }
+
+        let output = '';
+        let errorOutput = '';
+
+        stream
+          .on('close', () => {
+            if (errorOutput) {
+              conn.end();
+              return reject({
+                success: false,
+                message: 'Error checking user existence',
+                error: errorOutput,
+              });
+            }
+
+            if (output.includes(phone_number)) {
+              // User exists — reset password
+              const resetCommand = `/ip hotspot user set [find where name="${phone_number}"] password="${userPassword}" profile="${plan_name}"`;
+
+              conn.exec(resetCommand, (err, resetStream) => {
+                if (err) {
+                  conn.end();
+                  return reject({ success: false, message: 'Failed to reset password', error: err.message });
+                }
+
+                let resetError = '';
+                resetStream
+                  .on('close', () => {
+                    conn.end();
+                    if (resetError) {
+                      return reject({
+                        success: false,
+                        message: 'Error resetting password',
+                        error: resetError,
+                      });
+                    }
+
+                    return resolve({
+                      success: true,
+                      message: 'User already existed — password reset successfully',
+                      data: {
+                        username: phone_number,
+                        password: userPassword,
+                      },
+                    });
+                  })
+                  .on('data', () => {}); // Ignore output
+
+                resetStream.stderr.on('data', (data) => {
+                  resetError += data.toString();
+                });
+              });
+
+              return;
+            }
+
+            // User doesn't exist — create
+            const createCommand = `/ip hotspot user add name="${phone_number}" password="${userPassword}" profile=default`;
+            conn.exec(createCommand, (err, createStream) => {
+              if (err) {
+                conn.end();
+                return reject({ success: false, message: 'Failed to create user', error: err.message });
+              }
+
+              let createError = '';
+              createStream
+                .on('close', () => {
+                  conn.end();
+                  if (createError) {
+                    return reject({
+                      success: false,
+                      message: 'Error creating user',
+                      error: createError,
+                    });
+                  }
+                  resolve({
+                    success: true,
+                    message: 'User created successfully',
+                    data: {
+                      username: phone_number,
+                      password: userPassword,
+                    },
+                  });
+                })
+                .on('data', () => {}); // Ignore output
+
+              createStream.stderr.on('data', (data) => {
+                createError += data.toString();
+              });
+            });
+          })
+          .on('data', (data) => {
+            output += data.toString();
+          });
+
+        stream.stderr.on('data', (data) => {
+          errorOutput += data.toString();
+        });
+      });
+    });
+
+    conn.on('error', (err) => {
+      reject({ success: false, message: 'SSH connection error', error: err.message });
+    });
+
+    conn.connect({
+      host: ip,
+      port: 22,
+      username,
+      password,
+    });
+  });
+}
+
+module.exports = { enableHotspotUser, getRouterDetails, createMikrotikHotspotUser, createOrResetMikrotikHotspotUser };

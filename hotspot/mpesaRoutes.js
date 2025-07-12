@@ -5,6 +5,8 @@ const moment = require('moment');
 
 
 const { initiateSTKPush, confirmPaymentByTransactionCode, findPaymentByCheckoutRequestID, getAccessToken, initiateDarajaStkPush } = require('./mpesaFunctions');
+const { deleteOldRedeemedVouchers, createVoucher, generatePassword, handleHotspotClient, getPlanDetails, finalizePaymentById, finalizeVoucherCodeById } = require('./actionFunctions');
+const { createOrResetMikrotikHotspotUser, getRouterDetails } = require('./mikrotikFunctions');
 
 // Endpoint to get the access token
 router.get('/get-access-token', async (req, res) => {
@@ -19,21 +21,189 @@ router.get('/get-access-token', async (req, res) => {
 
 // ✅ POST - Initiate Direct STK Push Via Daraja
 router.post('/daraja-stk', async (req, res) => {
-    const { phone_number } = req.body;
+  const { phone_number, plan_id, router_id } = req.body;
 
-    if (!phone_number) {
-        return res.status(400).json({ error: 'Missing Phone Number' });
+  // Validate request body
+  if (!phone_number || !plan_id || !router_id) {
+    return res.status(400).json({ error: 'Missing critical details: phone_number, plan_id, or router_id is required' });
+  }
+
+  // Fetch plan details
+  const thePlan = await getPlanDetails(plan_id);
+  if (!thePlan) {
+    console.log('Plan not found for plan_id:', plan_id);
+    return res.status(400).json({ error: 'Could not trace the specified plan' });
+  }
+
+  // Initiate STK Push
+  const result = await initiateDarajaStkPush(phone_number, parseInt(thePlan.plan_price));
+  if (!result || !result.CheckoutRequestID) {
+    console.error('STK Push failed or no CheckoutRequestID returned:', result);
+    return res.status(500).json({ error: 'Failed to initiate STK Push' });
+  }
+
+  const CheckoutRequestID = result.CheckoutRequestID;
+
+  try {
+    let MpesaReceiptNumber = null;
+    let bill_ref_number = null;
+
+    for (let attempt = 1; attempt <= 60; attempt++) {
+      console.log(`🔁 Attempt ${attempt} to find payment record for CheckoutRequestID: ${CheckoutRequestID}`);
+
+      // 🔍 Query payments table
+      let paymentRows;
+      try {
+        [paymentRows] = await db.execute(
+          `SELECT id, MpesaReceiptNumber FROM payments WHERE CheckoutRequestID = ? LIMIT 1`,
+          [CheckoutRequestID]
+        );
+      } catch (dbError) {
+        console.error(`❌ Database error querying payments table (attempt ${attempt}):`, dbError);
+        return res.status(500).json({
+          ...result,
+          error: `Database error while querying payment records: ${dbError.message}`
+        });
+      }
+
+      if (!paymentRows || paymentRows.length === 0) {
+        console.log(`No payment record found for CheckoutRequestID: ${CheckoutRequestID}`);
+      } else {
+        const paymentId = paymentRows[0].id;
+        console.log("Fruher Mpesa Transaction ID: ", paymentId);
+        MpesaReceiptNumber = paymentRows[0].MpesaReceiptNumber;
+        console.log(`Found MpesaReceiptNumber: ${MpesaReceiptNumber}`);
+
+        // 🔍 Query all_mpesa_transactions table
+        let transactionRows;
+        try {
+          [transactionRows] = await db.execute(
+            `SELECT bill_ref_number FROM all_mpesa_transactions WHERE trans_id = ? LIMIT 1`,
+            [MpesaReceiptNumber]
+          );
+        } catch (dbError) {
+          console.error(`❌ Database error querying all_mpesa_transactions table (attempt ${attempt}):`, dbError);
+          return res.status(500).json({
+            ...result,
+            error: `Database error while querying transaction records: ${dbError.message}`
+          });
+        }
+
+        if (!transactionRows || transactionRows.length === 0) {
+          console.log(`No transaction record found for MpesaReceiptNumber: ${MpesaReceiptNumber}`);
+        } else {
+          bill_ref_number = transactionRows[0].bill_ref_number;
+          console.log(`Found bill_ref_number: ${bill_ref_number}`);
+
+          // Confirm if this is a Hotspot Payment
+          if (bill_ref_number === "Hotspot") {
+            // ✅ Found both, proceed with processing
+            const thisRouterResponse = await getRouterDetails(router_id);
+            if (!thisRouterResponse.success) {
+              console.error('Failed to fetch router details:', thisRouterResponse.message);
+              return res.status(400).json({ success: false, error: thisRouterResponse.message });
+            }
+            const thisRouter = thisRouterResponse.data;
+            console.log('Router details:', thisRouter);
+
+            // Generate a Password
+            const newPassword = generatePassword();
+
+            // Delete old Redeemed Vouchers
+            try {
+              await deleteOldRedeemedVouchers();
+            } catch (voucherError) {
+              console.error('Error deleting old redeemed vouchers:', voucherError);
+              return res.status(500).json({ success: false, error: 'Failed to delete old redeemed vouchers' });
+            }
+
+            // Create Voucher
+            const createVoucherResult = await createVoucher(plan_id, phone_number);
+            if (!createVoucherResult.success) {
+              console.error('Failed to create voucher:', createVoucherResult.message);
+              return res.status(400).json({ success: false, error: createVoucherResult.message });
+            }
+
+            // Log input values for MikroTik Hotspot User
+            console.log('Creating MikroTik Hotspot User with:', {
+              IP: thisRouter.ip_address,
+              RouterUsername: thisRouter.username,
+              RouterPassword: thisRouter.router_secret,
+              HotspotUsername: phone_number,
+              HotspotPassword: newPassword,
+              HotspotPlan: thePlan.plan_name
+            });
+
+            // Create or Reset MikroTik Hotspot User
+            const mikrotikResult = await createOrResetMikrotikHotspotUser(
+              thisRouter.ip_address,
+              thisRouter.username,
+              thisRouter.router_secret,
+              phone_number,
+              newPassword,
+              thePlan.plan_name
+            );
+
+            if (!mikrotikResult.success) {
+              console.error('Failed to create/reset MikroTik hotspot user:', mikrotikResult.message);
+              return res.status(400).json({ success: false, error: mikrotikResult.message });
+            }
+
+            console.log(mikrotikResult);
+
+            // Store/Update Hotspot Client in DB
+            const handleHotspotClientResult = await handleHotspotClient(
+              thisRouter.id,
+              phone_number,
+              newPassword,
+              createVoucherResult
+            );
+
+            if (!handleHotspotClientResult.success) {
+              console.error('Failed to handle hotspot client:', handleHotspotClientResult.message);
+              return res.status(400).json({ success: false, error: handleHotspotClientResult.message });
+            }
+
+            // Update Vouchers & Mpesa Transaction Rows
+            const voucher_id = createVoucherResult.voucher_id;
+            finalizeVoucherCodeById(voucher_id);
+            
+
+            const mpesa_transaction_id = paymentId;
+            console.log("Mpesa Transaction ID: ", mpesa_transaction_id);
+            finalizePaymentById(mpesa_transaction_id, phone_number, createVoucherResult);
+
+            // ✅ Success Response
+            return res.json({
+              success: true,
+              // ...result,
+              MpesaReceiptNumber,
+              // bill_ref_number,
+              phone_number,
+              newPassword
+            });
+          }
+        }
+      }
+
+      // ⏱ Wait 5 seconds before next attempt
+      await new Promise(resolve => setTimeout(resolve, 5000));
     }
 
-    const result = await initiateDarajaStkPush(phone_number);
+    // ❌ Not found after 10 tries
+    console.log(`Transaction not found after 10 attempts for CheckoutRequestID: ${CheckoutRequestID}`);
+    return res.status(404).json({
+      ...result,
+      error: 'Transaction not found after waiting 50 seconds'
+    });
 
-    if (result) {
-      // Wait two seconds for Callback & Hotspot Payments Tables to be populated
-      const CheckoutRequestID = result.CheckoutRequestID
-        res.json(result);
-    } else {
-        res.status(500).json({ error: 'STK Push failed' });
-    }
+  } catch (error) {
+    console.error('❌ Error during STK follow-up logic:', error);
+    return res.status(500).json({
+      ...result,
+      error: `Internal server error during follow-up check: ${error.message}`
+    });
+  }
 });
 
 // ✅ POST - Receive and process the callback response
