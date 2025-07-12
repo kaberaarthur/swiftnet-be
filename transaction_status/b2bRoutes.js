@@ -21,7 +21,7 @@ router.get('/hello', (req, res) => {
 
 // POST endpoint to send BusinessPayBill request
 router.post('/b2b-payment', async (req, res) => {
-    const { company_id } = req.body;
+    const { company_id, amount } = req.body;
     const password = await getDarajaInitiatorPassword(company_id);
 
     if (!password) {
@@ -39,7 +39,7 @@ router.post('/b2b-payment', async (req, res) => {
             CommandID: "BusinessPayBill",
             SenderIdentifierType: "4",
             RecieverIdentifierType: "4",
-            Amount: "300",
+            Amount: amount,
             PartyA: "4150219", // Your shortcode
             PartyB: "247247", // Receiver shortcode
             AccountReference: "0710165089375",
