@@ -1,4 +1,4 @@
-import { Client } from 'ssh2';
+const { Client } = require('ssh2');
 
 function runSSHCommand(command, ip_address, username, password) {
   console.log("Start Creating the Plan on Mikrotik!");
