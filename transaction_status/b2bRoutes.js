@@ -39,7 +39,7 @@ router.post('/b2b-payment', async (req, res) => {
             CommandID: "BusinessPayBill",
             SenderIdentifierType: "4",
             RecieverIdentifierType: "4",
-            Amount: "22",
+            Amount: "300",
             PartyA: "4150219", // Your shortcode
             PartyB: "247247", // Receiver shortcode
             AccountReference: "0710165089375",
