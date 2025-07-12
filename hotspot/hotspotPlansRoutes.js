@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../dbPromise'); // Ensure dbPromise is promise-based
-const { runSSHCommand } = require('./sshCommand').default;
+const { runSSHCommand } = require('./sshCommand');
 
 const router = express.Router();
 const jwt = require('jsonwebtoken');

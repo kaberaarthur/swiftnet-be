@@ -47,4 +47,4 @@ function runSSHCommand(command, ip_address, username, password) {
   });
 }
 
-export default { runSSHCommand };
+module.exports = { runSSHCommand };
