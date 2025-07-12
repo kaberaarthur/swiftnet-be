@@ -1,42 +1,50 @@
-const { Client } = require('ssh2');
+import { Client } from 'ssh2';
 
-function runSSHCommand(command) {
-    const conn = new Client();
-    
-    return new Promise((resolve, reject) => {
-        conn.on('ready', () => {
-            conn.exec(command, (err, stream) => {
-                if (err) {
-                    reject('SSH connection error: ' + err.message);
-                    conn.end();
-                    return;
-                }
+function runSSHCommand(command, ip_address, username, password) {
+  console.log("Start Creating the Plan on Mikrotik!");
+  const conn = new Client();
 
-                let data = '';
-                let errorData = '';
+  return new Promise((resolve, reject) => {
+    conn.on('ready', () => {
+      conn.exec(command, (err, stream) => {
+        if (err) {
+          conn.end();
+          return reject(new Error('SSH connection error: ' + err.message));
+        }
 
-                stream.on('close', (code, signal) => {
-                    conn.end();
-                    if (data.toLowerCase().includes('failure')) {
-                        reject('SSH command failed: ' + errorData || data);
-                    } else {
-                        resolve(data);
-                    }
-                }).on('data', (chunk) => {
-                    data += chunk.toString();
-                }).stderr.on('data', (chunk) => {
-                    errorData += chunk.toString();
-                });
-            });
-        }).on('error', (err) => {
-            reject('SSH connection error: ' + err.message);
-        }).connect({
-            host: '102.0.5.26', // MikroTik router IP
-            port: 22,
-            username: 'Arthur',
-            password: 'Arthur'
+        let stdout = '';
+        let stderr = '';
+
+        stream.on('close', (code, signal) => {
+          conn.end();
+
+          // Log the outputs for debugging
+          console.log('SSH STDOUT:', stdout.trim());
+          console.log('SSH STDERR:', stderr.trim());
+
+          // If Mikrotik returned a !trap, consider it a warning unless critical
+          const failureKeywords = ['invalid', 'failure', 'not allowed', 'already exists'];
+
+          if (stderr && failureKeywords.some(k => stderr.toLowerCase().includes(k))) {
+            return reject(new Error(`Router returned error: ${stderr.trim()}`));
+          }
+
+          resolve(stdout.trim());
+        }).on('data', (chunk) => {
+          stdout += chunk.toString();
+        }).stderr.on('data', (chunk) => {
+          stderr += chunk.toString();
         });
+      });
+    }).on('error', (err) => {
+      reject(new Error('SSH connection failed: ' + err.message));
+    }).connect({
+      host: ip_address,
+      port: 22,
+      username,
+      password
     });
+  });
 }
 
-module.exports = { runSSHCommand };
+export default { runSSHCommand };

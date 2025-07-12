@@ -1,11 +1,14 @@
 const express = require('express');
 const db = require('../dbPromise'); // Ensure dbPromise is promise-based
-const { runSSHCommand } = require('./sshCommand');
+const { runSSHCommand } = require('./sshCommand').default;
 
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 
 const jwtSecret = process.env.JWT_SECRET;
+
+const { getRouterDetails } = require('./mikrotikFunctions');
+
 
 // Middleware to verify token
 function verifyToken(req, res, next) {
@@ -36,13 +39,53 @@ function verifyToken(req, res, next) {
 }
 
 // CREATE a new Hotspot Plan
-router.post('/hotspot-plans', async (req, res) => {
+router.post('/hotspot-plans', verifyToken, async (req, res) => {
+  console.log("Creating Hotspot Plan");
 
-    const {
+  const {
+    plan_name, plan_type, limit_type, data_limit,
+    bandwidth, plan_price, shared_users, plan_validity,
+    company_username, company_id, router_id, router_name
+  } = req.body;
+
+  try {
+    // Step 1: Check if plan already exists
+    const [existingPlans] = await db.execute(
+      `SELECT id FROM hotspot_plans WHERE plan_name = ? AND router_id = ? LIMIT 1`,
+      [plan_name, router_id]
+    );
+
+    if (existingPlans.length > 0) {
+      return res.status(400).json({ error: 'A plan with the same name already exists on this router.' });
+    }
+
+    // Step 2: Get router info
+    const thisRouterResponse = await getRouterDetails(router_id);
+    const thisRouter = thisRouterResponse.data;
+
+    // Step 3: Prepare and run SSH command
+    const sshCommand = `/ip hotspot user profile add name="${plan_name}" shared-users=${shared_users} rate-limit=${bandwidth}M/${bandwidth}M`;
+    console.log('SSH Command:', sshCommand);
+
+    const sshOutput = await runSSHCommand(sshCommand, thisRouter.ip_address, thisRouter.username, thisRouter.router_secret);
+    console.log('SSH Output:', sshOutput);
+
+    // Step 4: Save to DB
+    // Apply defaults
+    const final_limit_type = limit_type ?? 'Time Limit';
+    const final_data_limit = data_limit ?? 0;
+
+    const insertQuery = `
+      INSERT INTO hotspot_plans 
+      (plan_name, plan_type, limit_type, data_limit, bandwidth, plan_price, shared_users, plan_validity, company_username, company_id, router_id, router_name) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    console.log({
         plan_name,
         plan_type,
-        limit_type,
-        data_limit,
+        final_limit_type,
+        final_data_limit,
         bandwidth,
         plan_price,
         shared_users,
@@ -51,34 +94,22 @@ router.post('/hotspot-plans', async (req, res) => {
         company_id,
         router_id,
         router_name
-    } = req.body;
+    });
 
-    const sshCommand = `/ip hotspot user profile add name=${plan_validity}hours shared-users=${shared_users} rate-limit=${bandwidth}M/${bandwidth}M`;
 
-    try {
-        // Run SSH command
-        const sshOutput = await runSSHCommand(sshCommand);
+    const [results] = await db.execute(insertQuery, [
+      plan_name, plan_type, final_limit_type, final_data_limit, bandwidth, plan_price,
+      shared_users, plan_validity, company_username, company_id, router_id, router_name
+    ]);
 
-        if (sshOutput.includes('failure')) {
-            return res.status(500).json({ error: 'Failed to execute SSH command' });
-        }
-
-        const query = `
-            INSERT INTO hotspot_plans 
-            (plan_name, plan_type, limit_type, data_limit, bandwidth, plan_price, shared_users, plan_validity, company_username, company_id, router_id, router_name) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
-
-        const [results] = await db.execute(query, [
-            plan_name, plan_type, limit_type, data_limit, bandwidth, plan_price,
-            shared_users, plan_validity, company_username, company_id, router_id, router_name
-        ]);
-
-        res.status(201).json({ message: 'Hotspot Plan created successfully!', plan_id: results.insertId });
-    } catch (err) {
-        return res.status(500).json({ error: 'Failed to execute SSH command or insert into database: ' + err.message });
-    }
+    res.status(201).json({ message: 'Hotspot Plan created successfully!', plan_id: results.insertId });
+    
+  } catch (err) {
+    console.error('Error creating hotspot plan:', err);
+    res.status(500).json({ error: err.message || 'Unexpected server error' });
+  }
 });
+
 
 // READ all Hotspot Plans filtered by company_id and router_id
 router.get('/hotspot-plans', async (req, res) => {
