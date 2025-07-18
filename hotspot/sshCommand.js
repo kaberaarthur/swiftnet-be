@@ -1,7 +1,7 @@
 const { Client } = require('ssh2');
 
 function runSSHCommand(command, ip_address, username, password, port = 22) {
-  console.log("Start Creating the Plan on Mikrotik!");
+  // console.log("Start Creating the Plan on Mikrotik!");
   const conn = new Client();
 
   return new Promise((resolve, reject) => {

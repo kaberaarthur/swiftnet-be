@@ -151,7 +151,7 @@ router.get('/hotspot-plans/:id', async (req, res) => {
 });
 
 // UPDATE a Hotspot Plan by ID
-router.put('/hotspot-plans/:id', async (req, res) => {
+router.put('/hotspot-plans/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
     const {
         plan_name,
@@ -167,6 +167,14 @@ router.put('/hotspot-plans/:id', async (req, res) => {
         router_id,
         router_name
     } = req.body;
+
+    console.log("Updating Hotspot Plan with ID:", id);
+
+    const routerDetails = await getRouterDetails(router_id);
+    if (!routerDetails.success) {
+        return res.status(404).json({ success: false, message: 'Router not found' });
+    }
+    thisRouter = routerDetails.data;
 
     try {
         const [existingPlans] = await db.execute(`SELECT * FROM hotspot_plans WHERE id = ?`, [id]);
@@ -185,7 +193,7 @@ router.put('/hotspot-plans/:id', async (req, res) => {
             sshCommand = `/ip hotspot user profile set [find name="${currentPlan.plan_name}"] ` +
                 `name=${updatedPlanName} shared-users=${shared_users || currentPlan.shared_users} rate-limit=${bandwidth || currentPlan.bandwidth}M/${bandwidth || currentPlan.bandwidth}M`;
 
-            const sshOutput = await runSSHCommand(sshCommand);
+            const sshOutput = await runSSHCommand(sshCommand, thisRouter.ip_address, thisRouter.username, thisRouter.router_secret, thisRouter.port);
             if (sshOutput.includes('failure')) {
                 return res.status(500).json({ error: 'Failed to update MikroTik profile' });
             }
@@ -230,8 +238,15 @@ router.delete('/hotspot-plans/:id', async (req, res) => {
         const [existingPlans] = await db.execute(`SELECT plan_name FROM hotspot_plans WHERE id = ?`, [id]);
         if (existingPlans.length === 0) return res.status(404).json({ message: 'Hotspot Plan not found' });
 
+        const routerDetails = await getRouterDetails(existingPlans[0].router_id);
+        if (!routerDetails.success) {
+            return res.status(404).json({ success: false, message: 'Router not found' });
+        }
+        thisRouter = routerDetails.data;
+
         const sshCommand = `/ip hotspot user profile remove [find name="${existingPlans[0].plan_name}"]`;
-        const sshOutput = await runSSHCommand(sshCommand);
+        const sshOutput = await runSSHCommand(sshCommand, thisRouter.ip_address, thisRouter.username, thisRouter.router_secret, thisRouter.port);
+
 
         if (sshOutput.includes('failure')) {
             return res.status(500).json({ error: 'Failed to remove MikroTik profile' });
