@@ -11,6 +11,45 @@ const fetchUser = userFunctions.fetchUser;
 const createOrUpdateUser = userFunctions.createOrUpdateUser;
 const { enableHotspotUser, createMikrotikHotspotUser, getRouterDetails } = require('./mikrotikFunctions');
 
+// Test if Router is reachable
+router.post('/ping-router', verifyToken, async (req, res) => {
+  const { router_id, ip_address, username, router_secret, port } = req.body;
+
+  let credentials;
+
+  if (router_id) {
+    const routerDetails = await getRouterDetails(router_id);
+    if (!routerDetails.success) {
+      return res.status(404).json({ success: false, message: 'Router not found' });
+    }
+    credentials = routerDetails.data;
+  } else {
+    if (!ip_address || !username || !router_secret) {
+      return res.status(400).json({ success: false, error: 'Missing required router fields' });
+    }
+    credentials = { ip_address, username, router_secret, port };
+  }
+
+  const { ip_address: host, username: user, router_secret: password, port: sshPort } = credentials;
+
+  const conn = new Client();
+  conn
+    .on('ready', () => {
+      conn.end();
+      return res.json({ success: true, message: 'Connection successful' });
+    })
+    .on('error', (err) => {
+      return res.status(500).json({ success: false, error: `SSH connection failed: ${err.message}` });
+    })
+    .connect({
+      host,
+      port: sshPort ?? 22,
+      username: user,
+      password,
+    });
+});
+
+
 // POST /mikrotik/create-user
 router.post('/create-mikrotik-user', async (req, res) => {
   const { router_id, phone_number, password } = req.body;
@@ -26,14 +65,15 @@ router.post('/create-mikrotik-user', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Router not found' });
     }
 
-    const { ip_address, username, router_secret } = routerDetails.data;
+    const { ip_address, username, router_secret, port } = routerDetails.data;
 
     const result = await createMikrotikHotspotUser(
       ip_address,
       username,
       router_secret,
       phone_number,
-      password
+      password,
+      port
     );
 
     return res.status(result.success ? 200 : 500).json(result);

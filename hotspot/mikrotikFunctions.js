@@ -9,7 +9,7 @@ async function enableHotspotUser(router_id, hotspot_user) {
   try {
     // Fetch router details
     const [rows] = await db.execute(
-      'SELECT ip_address, username, router_secret FROM routers WHERE id = ? LIMIT 1',
+      'SELECT ip_address, username, router_secret, port FROM routers WHERE id = ? LIMIT 1',
       [router_id]
     );
 
@@ -17,7 +17,7 @@ async function enableHotspotUser(router_id, hotspot_user) {
       return { success: false, message: 'Router not found.' };
     }
 
-    const { ip_address, username, router_secret } = rows[0];
+    const { ip_address, username, router_secret, port } = rows[0];
 
     // SSH connection
     return new Promise((resolve) => {
@@ -54,7 +54,7 @@ async function enableHotspotUser(router_id, hotspot_user) {
         })
         .connect({
           host: ip_address,
-          port: 22,
+          port: port || 22,
           username: username,
           password: router_secret
         });
@@ -72,7 +72,7 @@ async function getRouterDetails(router_id) {
 
   try {
     const [rows] = await db.execute(
-      'SELECT ip_address, router_secret, username FROM routers WHERE id = ? LIMIT 1',
+      'SELECT ip_address, router_secret, username, port FROM routers WHERE id = ? LIMIT 1',
       [router_id]
     );
 
@@ -95,7 +95,7 @@ async function getRouterDetails(router_id) {
   }
 }
 
-async function createMikrotikHotspotUser(ip, username, password, phone_number, userPassword, plan_name) {
+async function createMikrotikHotspotUser(ip, username, password, phone_number, userPassword, plan_name, port = 22) {
   return new Promise((resolve, reject) => {
     const conn = new Client();
 
@@ -141,14 +141,14 @@ async function createMikrotikHotspotUser(ip, username, password, phone_number, u
 
     conn.connect({
       host: ip,
-      port: 22,
+      port: port || 22,
       username: username,
       password: password,
     });
   });
 }
 
-async function createOrResetMikrotikHotspotUser(ip, username, password, phone_number, userPassword, plan_name) {
+async function createOrResetMikrotikHotspotUser(ip, username, password, phone_number, userPassword, plan_name, port = 22) {
   return new Promise((resolve, reject) => {
     const conn = new Client();
 
@@ -267,7 +267,7 @@ async function createOrResetMikrotikHotspotUser(ip, username, password, phone_nu
 
     conn.connect({
       host: ip,
-      port: 22,
+      port: port || 22,
       username,
       password,
     });

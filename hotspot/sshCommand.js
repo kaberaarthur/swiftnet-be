@@ -1,6 +1,6 @@
 const { Client } = require('ssh2');
 
-function runSSHCommand(command, ip_address, username, password) {
+function runSSHCommand(command, ip_address, username, password, port = 22) {
   console.log("Start Creating the Plan on Mikrotik!");
   const conn = new Client();
 
@@ -40,7 +40,7 @@ function runSSHCommand(command, ip_address, username, password) {
       reject(new Error('SSH connection failed: ' + err.message));
     }).connect({
       host: ip_address,
-      port: 22,
+      port,
       username,
       password
     });

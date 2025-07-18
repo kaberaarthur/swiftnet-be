@@ -51,12 +51,13 @@ router.post('/routers', verifyToken, async (req, res) => {
         description,
         company_username,
         created_by,
+        port,
     } = req.body;
 
     const query = `
         INSERT INTO routers 
-        (router_name, ip_address, username, interface, router_secret, description, company_username, company_id, created_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (router_name, ip_address, username, interface, router_secret, description, company_username, company_id, created_by, port)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     try {
@@ -70,6 +71,7 @@ router.post('/routers', verifyToken, async (req, res) => {
             company_username,
             company_id,
             created_by,
+            port,
         ]);
         res.status(201).json({ message: 'Router added successfully', id: result.insertId });
     } catch (err) {
@@ -143,6 +145,7 @@ router.put('/routers/:id', verifyToken, async (req, res) => {
         company_id,
         created_by,
         status,
+        port,
     } = req.body;
 
     try {
@@ -174,6 +177,7 @@ router.put('/routers/:id', verifyToken, async (req, res) => {
             company_id: companyIdFromToken, // Enforce token's companyId, ignoring body value
             created_by,
             status,
+            port,
         };
 
         // Build query dynamically for non-undefined fields

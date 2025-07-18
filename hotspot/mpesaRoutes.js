@@ -141,7 +141,8 @@ router.post('/daraja-stk', async (req, res) => {
               thisRouter.router_secret,
               phone_number,
               newPassword,
-              thePlan.plan_name
+              thePlan.plan_name,
+              thisRouter.port
             );
 
             if (!mikrotikResult.success) {

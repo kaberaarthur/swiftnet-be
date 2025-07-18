@@ -67,7 +67,7 @@ router.post('/hotspot-plans', verifyToken, async (req, res) => {
     const sshCommand = `/ip hotspot user profile add name="${plan_name}" shared-users=${shared_users} rate-limit=${bandwidth}M/${bandwidth}M`;
     console.log('SSH Command:', sshCommand);
 
-    const sshOutput = await runSSHCommand(sshCommand, thisRouter.ip_address, thisRouter.username, thisRouter.router_secret);
+    const sshOutput = await runSSHCommand(sshCommand, thisRouter.ip_address, thisRouter.username, thisRouter.router_secret, thisRouter.port);
     console.log('SSH Output:', sshOutput);
 
     // Step 4: Save to DB
@@ -220,6 +220,8 @@ router.put('/hotspot-plans/:id', async (req, res) => {
     }
 });
 
+
+// Need to be Corrected esp for SSH Command ***
 // DELETE a Hotspot Plan by ID
 router.delete('/hotspot-plans/:id', async (req, res) => {
     const { id } = req.params;

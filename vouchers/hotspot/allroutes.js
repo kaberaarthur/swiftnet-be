@@ -93,7 +93,7 @@ router.get('/captive-portals', async (req, res) => {
         );
 
         if (results.length === 0) {
-            return res.status(404).json({ message: 'No captive portal found for the specified router.' });
+            return res.status(404).json({ success: false, message: 'No captive portal found for the specified router.' });
         }
 
         res.status(200).json(results[0]);

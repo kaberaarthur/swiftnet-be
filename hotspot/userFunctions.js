@@ -111,13 +111,15 @@ async function createOrUpdateUser({ phone_number, password, router_id, plan_id }
           const the_router_ip_address = routerResults.data.ip_address;
           const the_router_username = routerResults.data.username;
           const the_router_secret = routerResults.data.router_secret;
+          const the_router_port = routerResults.data.port;
 
           console.log(JSON.stringify({
             the_router_ip_address,
             the_router_username,
             the_router_secret,
             phone_number,
-            password
+            password,
+            the_router_port
           }, null, 2));
 
           const mikrotik_result = await createMikrotikHotspotUser(
@@ -125,7 +127,8 @@ async function createOrUpdateUser({ phone_number, password, router_id, plan_id }
             the_router_username,
             the_router_secret,
             phone_number,
-            password
+            password,
+            the_router_port
           );
 
           if (mikrotik_result.success) {
