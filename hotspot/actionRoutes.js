@@ -163,7 +163,6 @@ router.post('/create-voucher', verifyToken, async (req, res) => {
 
 router.patch('/redeem-voucher', async (req, res) => {
   const { code_voucher } = req.body;
-
   const password = generatePassword();
 
   if (!code_voucher || typeof code_voucher !== 'string' || code_voucher.trim() === '') {
@@ -182,76 +181,80 @@ router.patch('/redeem-voucher', async (req, res) => {
 
     const voucher = rows[0];
 
-    // Check if already redeemed
     if (voucher.redeemed === 1) {
       return res.status(400).json({ success: false, message: 'Voucher has already been redeemed.' });
     }
 
-    // Use moment-timezone to get time in UTC+3 (Africa/Nairobi)
     const startDate = moment().tz('Africa/Nairobi');
     const endDate = moment(startDate).add(voucher.plan_validity, 'hours');
-
-    // Format dates as strings
     const formattedStart = startDate.format('YYYY-MM-DD HH:mm:ss');
     const formattedEnd = endDate.format('YYYY-MM-DD HH:mm:ss');
 
-    // Update the voucher row
+    // Step 1: Create or update user
+    const userCreationResult = await createOrUpdateUser({
+      phone_number: voucher.customer.trim(),
+      router_id: voucher.router_id,
+      plan_id: voucher.plan_id,
+      password
+    });
+
+    if (!userCreationResult.success) {
+      return res.status(500).json({
+        success: false,
+        message: userCreationResult.message || 'Failed to create or update user.'
+      });
+    }
+
+    const finalPassword = userCreationResult.userPassword;
+
+    // Step 2: Retry enableHotspotUser up to 5 times
+    let enableSuccess = false;
+    let lastEnableResult = null;
+
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      lastEnableResult = await enableHotspotUser(voucher.router_id, voucher.customer);
+      if (lastEnableResult.success) {
+        enableSuccess = true;
+        break;
+      }
+      console.warn(`Enable attempt ${attempt} failed:`, lastEnableResult.message);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1s between attempts
+    }
+
+    if (!enableSuccess) {
+      return res.status(500).json({
+        success: false,
+        message: `Failed to enable hotspot user after 5 attempts: ${lastEnableResult.message}`
+      });
+    }
+
+    // Step 3: Only now update the voucher as redeemed
     await db.execute(
       'UPDATE vouchers SET redeemed = ?, start_date = ?, end_date = ? WHERE id = ?',
       [1, formattedStart, formattedEnd, voucher.id]
     );
 
-    // Call createOrUpdateUser
-    const userCreationResult = await createOrUpdateUser({
-        phone_number: voucher.customer.trim(),
-        router_id: voucher.router_id,
-        plan_id: voucher.plan_id,
-        password // This 'password' is the one passed into createOrUpdateUser for new users
-    });
-
-    // Check if the user creation/update was successful
-    if (!userCreationResult.success) {
-        return res.status(500).json({
-            success: false,
-            message: userCreationResult.message || 'Failed to create or update user.'
-        });
-    }
-
-    // Use the password returned from createOrUpdateUser
-    const finalPassword = userCreationResult.userPassword;
-
-    // Enable the user on the router
-    const enableResult = await enableHotspotUser(voucher.router_id, voucher.customer);
-
-    // Optional: handle failure to enable the user
-    if (!enableResult.success) {
-        return res.status(500).json({
-            success: false,
-            message: `Voucher redeemed, but failed to enable hotspot user: ${enableResult.message}`,
-        });
-    } else {
-        console.log("Mikrotik enable user successful!");
-    }
-
-    // Return response after successful enable
+    // Final response
     return res.status(200).json({
-    success: true,
-    message: 'Voucher has been redeemed successfully.',
-    data: {
+      success: true,
+      message: 'Voucher has been redeemed successfully.',
+      data: {
         id: voucher.id,
         voucher_code: code_voucher,
         plan_validity: voucher.plan_validity,
         start_date: formattedStart,
         end_date: formattedEnd,
         phone_number: voucher.customer,
-        password: finalPassword // Use the password returned from the function
-    }
+        password: finalPassword
+      }
     });
+
   } catch (error) {
     console.error('Error redeeming voucher:', error);
     return res.status(500).json({ success: false, message: 'Internal server error.' });
   }
 });
+
 
 router.get('/user', async (req, res) => {
   const { customer } = req.body;
