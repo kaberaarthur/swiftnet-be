@@ -197,6 +197,8 @@ async function createOrResetMikrotikHotspotUser(ip, username, password, phone_nu
                       });
                     }
 
+                    console.log(`✅ Password for user "${phone_number}" was reset successfully on MikroTik router ${ip}.`);
+
                     return resolve({
                       success: true,
                       message: 'User already existed — password reset successfully',
@@ -235,6 +237,9 @@ async function createOrResetMikrotikHotspotUser(ip, username, password, phone_nu
                       error: createError,
                     });
                   }
+
+                  console.log(`✅ New hotspot user "${phone_number}" created successfully on MikroTik router ${ip}.`);
+
                   resolve({
                     success: true,
                     message: 'User created successfully',
