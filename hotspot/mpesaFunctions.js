@@ -339,10 +339,10 @@ async function confirmPaymentByTransactionCode(transactionCode, router_id) {
       };
     }
 
-    // Get user
+    // Get user by phone number and router_id
     const [users] = await db.execute(
-      'SELECT * FROM hotspot_clients WHERE phone_number = ? LIMIT 1',
-      [payment.Phone]
+      'SELECT * FROM hotspot_clients WHERE phone_number = ? AND router_id = ? LIMIT 1',
+      [payment.Phone, router_id]
     );
 
     if (users.length === 0) {
