@@ -251,7 +251,7 @@ router.patch('/redeem-voucher', async (req, res) => {
 
   } catch (error) {
     console.error('Error redeeming voucher:', error);
-    return res.status(500).json({ success: false, message: 'Internal server error.' });
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
 
