@@ -231,6 +231,7 @@ router.post('/', async (req, res) => {
 
             if (companyDetailsResult.success) {
               const { paybill_no, account_no } = companyDetailsResult.data;
+              console.log("Forwarding payment to company:", paybill_no, account_no, amountPaid);
               forwardPayments(paybill_no, account_no, amountPaid)
             }
 
