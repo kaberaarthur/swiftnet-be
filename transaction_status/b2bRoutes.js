@@ -21,7 +21,7 @@ router.get('/hello', (req, res) => {
 
 // POST endpoint to send BusinessPayBill request
 router.post('/b2b-payment', async (req, res) => {
-    const { company_id, amount } = req.body;
+    const { company_id, paybill_no, account_no, amount } = req.body;
     const password = await getDarajaInitiatorPassword(company_id);
 
     if (!password) {
@@ -41,8 +41,8 @@ router.post('/b2b-payment', async (req, res) => {
             RecieverIdentifierType: "4",
             Amount: amount,
             PartyA: "4150219", // Your shortcode
-            PartyB: "247247", // Receiver shortcode
-            AccountReference: "0710165089375",
+            PartyB: String(paybill_no), // Receiver shortcode
+            AccountReference: String(account_no),
             Requester: "254700000000",
             Remarks: "OK",
             QueueTimeOutURL: "https://swiftnetmain.twigasoft.xyz/b2b/b2b-result",

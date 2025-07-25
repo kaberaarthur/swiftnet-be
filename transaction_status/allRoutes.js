@@ -12,7 +12,9 @@ const {
   getCustomerById,
   logTransactionError,
   waitForPaymentReceipt,
-  sendSmsViaAfricastalking
+  sendSmsViaAfricastalking,
+  checkCompanyPaymentDetails,
+  forwardPayments
 } = require('./functions');
 
 
@@ -57,6 +59,7 @@ router.post('/', async (req, res) => {
     // Collect info regarding the customer from the db
     const user = await getCustomerById(customer_id);
     const company_id = user.company_id;
+
 
     // Step 2: Check for duplicate in both tables
     // This feature is targeted at ensuring the user does not use a payment from hotspot to try and cheat the system
@@ -220,11 +223,17 @@ router.post('/', async (req, res) => {
                 companyId: user.company_id
             });
 
-            return res.status(200).json({
-                success: true,
-                message: `✅ Payment confirmed. Subscription extended to ${formattedNewEndDate}.`,
-                smsResponse
-            });
+            
+            // Transfer Funds to Recipient Company Here
+            currentCompanyId = user.company_id;
+
+            const companyDetailsResult = await checkCompanyPaymentDetails(currentCompanyId);
+
+            if (companyDetailsResult.success) {
+              const { paybill_no, account_no } = companyDetailsResult.data;
+              forwardPayments(paybill_no, account_no, amountPaid)
+            }
+
         } catch (error) {
             console.error("Error enabling client:", error);
             return res.status(500).json({

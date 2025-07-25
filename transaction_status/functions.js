@@ -185,6 +185,134 @@ async function sendSmsViaAfricastalking({ message, phone, companyId }) {
   }
 };
 
+
+async function checkCompanyPaymentDetails(recipient_company_id) {
+  try {
+    // Fetch company info
+    const [rows] = await db.execute(
+      'SELECT paybill_no, account_no, forward_payment FROM companies WHERE id = ?',
+      [recipient_company_id]
+    );
+
+    // No company found
+    if (rows.length === 0) {
+      return {
+        success: false,
+        message: 'Company not found',
+      };
+    }
+
+    const { paybill_no, account_no, forward_payment } = rows[0];
+
+    // Case: forward_payment is 0
+    if (forward_payment === 0) {
+      return {
+        success: true,
+        message: 'This organization does not require payments to be forwarded',
+      };
+    }
+
+    // Case: forward_payment is 1 but some data is missing
+    if (forward_payment === 1) {
+      if (!paybill_no || !account_no) {
+        return {
+          success: false,
+          message: 'Missing paybill_no or account_no',
+          data: {
+            paybill_no,
+            account_no,
+          },
+        };
+      }
+
+      // All valid, return the details
+      return {
+        success: true,
+        message: 'Forwarding required',
+        data: {
+          paybill_no,
+          account_no,
+        },
+      };
+    }
+
+    // Unexpected forward_payment value
+    return {
+      success: false,
+      message: `Unexpected forward_payment value: ${forward_payment}`,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: 'Error fetching company details',
+      error: err.message,
+    };
+  }
+}
+
+async function forwardPayments(paybill_no, account_no, amountPaid) {
+  const amountToTransfer = parseFloat(amountPaid);
+
+  const developerPaybillNumber = "247247";
+  const developerAccountNumber = "0710165089375";
+
+  // CASE: amountPaid < 100, send full amount to company
+  if (amountToTransfer < 100) {
+    console.log('Amount < 100: Sending full amount to company only');
+
+    try {
+      const companyResponse = await axios.post('http://localhost:8000/b2b/b2b-payment', {
+        company_id: 2,
+        paybill_no: String(paybill_no),
+        account_no: String(account_no),
+        amount: Math.floor(amountToTransfer)  // Ensure it's a whole number
+      });
+
+      console.log('Company payment response:', companyResponse.data);
+    } catch (error) {
+      console.error('Error sending full payment to company:', error.message);
+    }
+
+    return;
+  }
+
+  // CASE: amountPaid >= 100, split payment
+  const finalAmountToTransfer = Math.floor(amountToTransfer * 0.99); // 99%
+  const developerCommission = Math.floor(amountToTransfer * 0.01);    // 1%
+
+  console.log('Amount to Transfer:', finalAmountToTransfer);
+  console.log('Developer Commission:', developerCommission);
+
+  // Company transfer
+  try {
+    const companyResponse = await axios.post('http://localhost:8000/b2b/b2b-payment', {
+      company_id: 2,
+      paybill_no: String(paybill_no),
+      account_no: String(account_no),
+      amount: finalAmountToTransfer
+    });
+
+    console.log('Company payment response:', companyResponse.data);
+  } catch (error) {
+    console.error('Error sending payment to company:', error.message);
+  }
+
+  // Developer commission
+  try {
+    const devResponse = await axios.post('http://localhost:8000/b2b/b2b-payment', {
+      company_id: 2,
+      paybill_no: developerPaybillNumber,
+      account_no: developerAccountNumber,
+      amount: developerCommission
+    });
+
+    console.log('Developer payment response:', devResponse.data);
+  } catch (error) {
+    console.error('Error sending payment to developer:', error.message);
+  }
+}
+
+
 // Usage
 module.exports = {
     generateDarajaAccessToken, 
@@ -193,5 +321,7 @@ module.exports = {
     getCustomerById,
     logTransactionError,
     waitForPaymentReceipt,
-    sendSmsViaAfricastalking
+    sendSmsViaAfricastalking,
+    checkCompanyPaymentDetails,
+    forwardPayments
 };

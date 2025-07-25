@@ -48,7 +48,7 @@ router.post('/daraja-stk', async (req, res) => {
     let MpesaReceiptNumber = null;
     let bill_ref_number = null;
 
-    for (let attempt = 1; attempt <= 60; attempt++) {
+    for (let attempt = 1; attempt <= 30; attempt++) {
       console.log(`🔁 Attempt ${attempt} to find payment record for CheckoutRequestID: ${CheckoutRequestID}`);
 
       // 🔍 Query payments table
