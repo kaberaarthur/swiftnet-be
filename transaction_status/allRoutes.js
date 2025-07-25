@@ -199,6 +199,19 @@ router.post('/', async (req, res) => {
         // Enable Client on Mikrotik Here
 
         try {
+            // Transfer Funds to Recipient Company Here
+            /* */
+            currentCompanyId = user.company_id;
+
+            const companyDetailsResult = await checkCompanyPaymentDetails(currentCompanyId);
+
+            if (companyDetailsResult.success) {
+              const { paybill_no, account_no } = companyDetailsResult.data;
+              console.log("Forwarding payment to company:", paybill_no, account_no, amountPaid);
+              forwardPayments(paybill_no, account_no, amountPaid)
+            }
+            /* */
+
             const enableClientResponse = await fetch("http://localhost:3001/api/enable-client", {
                 method: "POST",
                 headers: {
@@ -226,20 +239,6 @@ router.post('/', async (req, res) => {
                 phone: user.phone_number,
                 companyId: user.company_id
             });
-
-            
-            // Transfer Funds to Recipient Company Here
-            /* */
-            currentCompanyId = user.company_id;
-
-            const companyDetailsResult = await checkCompanyPaymentDetails(currentCompanyId);
-
-            if (companyDetailsResult.success) {
-              const { paybill_no, account_no } = companyDetailsResult.data;
-              console.log("Forwarding payment to company:", paybill_no, account_no, amountPaid);
-              forwardPayments(paybill_no, account_no, amountPaid)
-            }
-            /* */
 
         } catch (error) {
             console.error("Error enabling client:", error);
