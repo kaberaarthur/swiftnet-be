@@ -50,6 +50,7 @@ router.get('/credential/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   const { transaction_code, customer_id } = req.body;
+  console.log("Processing Transaction with Mpesa Code: ", transaction_code);
 
   // Step 1: Check if both parameters have been attached
   if (!transaction_code || !customer_id) {
