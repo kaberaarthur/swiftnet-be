@@ -225,6 +225,7 @@ router.post('/', async (req, res) => {
 
             
             // Transfer Funds to Recipient Company Here
+            /*
             currentCompanyId = user.company_id;
 
             const companyDetailsResult = await checkCompanyPaymentDetails(currentCompanyId);
@@ -234,6 +235,7 @@ router.post('/', async (req, res) => {
               console.log("Forwarding payment to company:", paybill_no, account_no, amountPaid);
               forwardPayments(paybill_no, account_no, amountPaid)
             }
+            */
 
         } catch (error) {
             console.error("Error enabling client:", error);
