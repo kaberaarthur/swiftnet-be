@@ -206,6 +206,8 @@ async function checkCompanyPaymentDetails(recipient_company_id) {
 
     // Case: forward_payment is 0
     if (forward_payment === 0) {
+      console.log('Forward payment is not required for this organization');
+
       return {
         success: true,
         message: 'This organization does not require payments to be forwarded',
@@ -215,6 +217,8 @@ async function checkCompanyPaymentDetails(recipient_company_id) {
     // Case: forward_payment is 1 but some data is missing
     if (forward_payment === 1) {
       if (!paybill_no || !account_no) {
+        console.log('Missing paybill_no or account_no');
+
         return {
           success: false,
           message: 'Missing paybill_no or account_no',
@@ -224,6 +228,8 @@ async function checkCompanyPaymentDetails(recipient_company_id) {
           },
         };
       }
+
+      console.log('All values are valid, forwarding required');
 
       // All valid, return the details
       return {
