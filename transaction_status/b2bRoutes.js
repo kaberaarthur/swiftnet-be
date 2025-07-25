@@ -24,6 +24,8 @@ router.post('/b2b-payment', async (req, res) => {
     const { company_id, paybill_no, account_no, amount } = req.body;
     const password = await getDarajaInitiatorPassword(company_id);
 
+    console.log('Received B2B payment request:');
+
     if (!password) {
       return res.status(404).json({ error: 'Initiator password not found for company_id' });
     }
@@ -96,6 +98,7 @@ function normalizeIp(ip) {
 }
 
 router.post('/b2b-result', async (req, res) => {
+  console.log('Start Processing B2B result callback');
   // IP validation
   const rawIp =
     req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
@@ -108,6 +111,8 @@ router.post('/b2b-result', async (req, res) => {
 
   try {
     const result = req.body.Result;
+
+    console.log('Received B2B result:', result);
 
     if (!result) {
       return res.status(400).json({ message: 'Invalid payload' });
