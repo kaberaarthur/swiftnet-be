@@ -57,40 +57,42 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'Your request is invalid' });
   }
 
-    // Collect info regarding the customer from the db
-    const user = await getCustomerById(customer_id);
-    const company_id = user.company_id;
+  // Collect info regarding the customer from the db
+  const user = await getCustomerById(customer_id);
+  const company_id = user.company_id;
 
 
-    // Step 2: Check for duplicate in both tables
-    // This feature is targeted at ensuring the user does not use a payment from hotspot to try and cheat the system
-    const [pppoe] = await db.execute(
-      'SELECT id FROM pppoe_payments WHERE MpesaReceiptNumber = ? LIMIT 1',
-      [transaction_code]
-    );
-    const [payments] = await db.execute(
-      'SELECT id FROM payments WHERE MpesaReceiptNumber = ? LIMIT 1',
-      [transaction_code]
-    );
+  // Step 2: Check for duplicate in both tables
+  // This feature is targeted at ensuring the user does not use a payment from hotspot to try and cheat the system
+  const [pppoe] = await db.execute(
+    'SELECT id FROM pppoe_payments WHERE MpesaReceiptNumber = ? LIMIT 1',
+    [transaction_code]
+  );
+  const [payments] = await db.execute(
+    'SELECT id FROM payments WHERE MpesaReceiptNumber = ? LIMIT 1',
+    [transaction_code]
+  );
 
-    
-    if (pppoe.length > 0 || payments.length > 0) {
-      return res.status(409).json({
-        success: false,
-        message: 'That transaction has already been consumed, you cannot use it again.',
-      });
-    };
+  
+  if (pppoe.length > 0 || payments.length > 0) {
+    return res.status(409).json({
+      success: false,
+      message: 'That transaction has already been consumed, you cannot use it again.',
+    });
+  };
 
-    if (!user) {
-      return res.status(404).json({ message: 'User does not exist' });
-    } else {
-        // This is where that phone number is getting printed
-        console.log(user.secret);
-    }
+  if (!user) {
+    return res.status(404).json({ message: 'User does not exist' });
+  } else {
+      // This is where that phone number is getting printed
+      console.log(user.secret);
+  }
 
   try {
     // Step 3: Fetch initiator password from DB
-    const password = await getDarajaInitiatorPassword(company_id);
+    // const password = await getDarajaInitiatorPassword(company_id);
+    // use manual company_id to get the password
+    const password = await getDarajaInitiatorPassword(2);
 
     if (!password) {
       return res.status(404).json({ error: 'Initiator password not found for company_id' });
@@ -227,7 +229,7 @@ router.post('/', async (req, res) => {
 
             
             // Transfer Funds to Recipient Company Here
-            /*
+            /* */
             currentCompanyId = user.company_id;
 
             const companyDetailsResult = await checkCompanyPaymentDetails(currentCompanyId);
@@ -237,7 +239,7 @@ router.post('/', async (req, res) => {
               console.log("Forwarding payment to company:", paybill_no, account_no, amountPaid);
               forwardPayments(paybill_no, account_no, amountPaid)
             }
-            */
+            /* */
 
         } catch (error) {
             console.error("Error enabling client:", error);

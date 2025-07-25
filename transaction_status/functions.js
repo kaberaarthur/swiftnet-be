@@ -276,6 +276,8 @@ async function forwardPayments(paybill_no, account_no, amountPaid) {
     return;
   }
 
+  console.log('Amount greater than 100: Sending full amount to company plus developer commission');
+
   // CASE: amountPaid >= 100, split payment
   const finalAmountToTransfer = Math.floor(amountToTransfer * 0.99); // 99%
   const developerCommission = Math.floor(amountToTransfer * 0.01);    // 1%
