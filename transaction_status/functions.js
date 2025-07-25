@@ -209,7 +209,7 @@ async function checkCompanyPaymentDetails(recipient_company_id) {
       console.log('Forward payment is not required for this organization');
 
       return {
-        success: true,
+        success: false,
         message: 'This organization does not require payments to be forwarded',
       };
     }
