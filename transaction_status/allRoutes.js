@@ -84,6 +84,7 @@ router.post('/', async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User does not exist' });
     } else {
+        // This is where that phone number is getting printed
         console.log(user.secret);
     }
 
@@ -153,7 +154,7 @@ router.post('/', async (req, res) => {
     const planFee = parseFloat(user.plan_fee);
     const dailyRate = planFee / 30;
 
-
+    console.log(`💰 Amount Paid: ${amountPaid}, Plan Fee: ${planFee}, Daily Rate: ${dailyRate}`);
 
     if (amountPaid >= planFee) {
         const baseMonths = 1; // Always start with 1 full month
