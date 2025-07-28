@@ -177,7 +177,7 @@ async function createOrResetMikrotikHotspotUser(ip, username, password, phone_nu
 
             if (output.includes(phone_number)) {
               // User exists — reset password
-              const resetCommand = `/ip hotspot user set [find where name="${phone_number}"] password="${userPassword}" profile="${plan_name}"`;
+              const resetCommand = `/ip hotspot user set [find where name="${phone_number}"] password="${userPassword}" profile="${plan_name}" disabled=no`;
 
               conn.exec(resetCommand, (err, resetStream) => {
                 if (err) {
