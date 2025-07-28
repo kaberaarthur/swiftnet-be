@@ -200,7 +200,8 @@ router.post('/', async (req, res) => {
 
         try {
             // Transfer Funds to Recipient Company Here
-            /* */
+            console.log("Forwarding payment to Recipient Company if required...");
+            
             currentCompanyId = user.company_id;
 
             const companyDetailsResult = await checkCompanyPaymentDetails(currentCompanyId);

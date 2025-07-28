@@ -68,6 +68,10 @@ router.get('/message', (req, res) => {
     res.send('Hello, this is your message!');
 });
 
+function generateRandomNumber() {
+  return Math.floor(Math.random() * 100) + 1;
+}
+
 // Helper function to generate a unique username
 const generateUniqueUsername = async (company_name, maxRetries = 10) => {
     const baseUsername = `@${company_name.toLowerCase().replace(/\s+/g, '')}`;
@@ -114,9 +118,37 @@ router.post('/signup', async (req, res) => {
         const company_username = await generateUniqueUsername(company_name);
 
         // Insert company into companies table
+        // Fetch default values from company with id = 2
+        const [defaultCompanyRows] = await connection.execute(
+            'SELECT africas_talking_key, africas_talking_username, africas_talking_sender_id, mpesa_initiator_password FROM companies WHERE id = ?',
+            [2]
+        );
+
+        if (defaultCompanyRows.length === 0) {
+            await connection.rollback();
+            return res.status(500).json({ message: 'Default company config not found' });
+        }
+
+        const defaultCompany = defaultCompanyRows[0];
+
+        // Insert new company using default values from id = 2
         const [companyResult] = await connection.execute(
-            'INSERT INTO companies (company_name, username, active, phone_number, logo, address) VALUES (?, ?, ?, ?, ?, ?)',
-            [company_name, company_username, 0, phone, 'default.png', 'Nairobi']
+            `INSERT INTO companies 
+                (company_name, username, active, phone_number, logo, address, 
+                africas_talking_key, africas_talking_username, africas_talking_sender_id, mpesa_initiator_password)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                company_name,
+                company_username,
+                0,
+                phone,
+                'default.png',
+                'Nairobi',
+                defaultCompany.africas_talking_key,
+                defaultCompany.africas_talking_username,
+                defaultCompany.africas_talking_sender_id,
+                defaultCompany.mpesa_initiator_password
+            ]
         );
 
         const companyId = companyResult.insertId;

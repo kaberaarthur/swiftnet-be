@@ -214,6 +214,8 @@ async function checkCompanyPaymentDetails(recipient_company_id) {
       };
     }
 
+    console.log('Forward payment is required');
+
     // Case: forward_payment is 1 but some data is missing
     if (forward_payment === 1) {
       if (!paybill_no || !account_no) {
