@@ -8,6 +8,9 @@ const { initiateSTKPush, confirmPaymentByTransactionCode, findPaymentByCheckoutR
 const { deleteOldRedeemedVouchers, createVoucher, generatePassword, handleHotspotClient, getPlanDetails, finalizePaymentById, finalizeVoucherCodeById } = require('./actionFunctions');
 const { createOrResetMikrotikHotspotUser, getRouterDetails } = require('./mikrotikFunctions');
 
+// Import Forward Payment Function
+const { checkCompanyPaymentDetails, forwardPayments } = require('../transaction_status/functions');
+
 // Endpoint to get the access token
 router.get('/get-access-token', async (req, res) => {
     const token = await getAccessToken();
@@ -55,7 +58,7 @@ router.post('/daraja-stk', async (req, res) => {
       let paymentRows;
       try {
         [paymentRows] = await db.execute(
-          `SELECT id, MpesaReceiptNumber FROM payments WHERE CheckoutRequestID = ? LIMIT 1`,
+          `SELECT id, MpesaReceiptNumber, Amount FROM payments WHERE CheckoutRequestID = ? LIMIT 1`,
           [CheckoutRequestID]
         );
       } catch (dbError) {
@@ -105,6 +108,21 @@ router.post('/daraja-stk', async (req, res) => {
             }
             const thisRouter = thisRouterResponse.data;
             console.log('Router details:', thisRouter);
+
+            // Payment Received, Forward to Recipient Company
+            console.log("Payment is for Hotspot, proceeding with further processing...");
+            const theAmount = paymentRows[0].Amount;
+            const thisCompanyID = thisRouter.company_id;
+                        
+            const companyDetailsResult = await checkCompanyPaymentDetails(thisCompanyID);
+
+            // Here, only Hotspot payments are being forwarded
+            if (companyDetailsResult.success) {
+              const { paybill_no, account_no } = companyDetailsResult.data;
+              console.log("Forwarding payment to company:", paybill_no, account_no, theAmount);
+              forwardPayments(paybill_no, account_no, theAmount)
+            }
+
 
             // Generate a Password
             const newPassword = generatePassword();

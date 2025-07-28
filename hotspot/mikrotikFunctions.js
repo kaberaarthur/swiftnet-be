@@ -72,7 +72,7 @@ async function getRouterDetails(router_id) {
 
   try {
     const [rows] = await db.execute(
-      'SELECT ip_address, router_secret, username, port FROM routers WHERE id = ? LIMIT 1',
+      'SELECT ip_address, router_secret, username, port, company_id FROM routers WHERE id = ? LIMIT 1',
       [router_id]
     );
 
