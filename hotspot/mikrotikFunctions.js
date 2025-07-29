@@ -219,7 +219,7 @@ async function createOrResetMikrotikHotspotUser(ip, username, password, phone_nu
             }
 
             // User doesn't exist — create
-            const createCommand = `/ip hotspot user add name="${phone_number}" password="${userPassword}" profile=default`;
+            const createCommand = `/ip hotspot user add name="${phone_number}" password="${userPassword}" profile=${plan_name}`;
             conn.exec(createCommand, (err, createStream) => {
               if (err) {
                 conn.end();
