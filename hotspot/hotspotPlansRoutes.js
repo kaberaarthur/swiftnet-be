@@ -90,6 +90,27 @@ router.get('/hotspot-profiles', verifyToken, async (req, res) => {
   }
 });
 
+// Import Hotspot Plans already present in the router
+router.post('/import-hotspot-plans', verifyToken, (req, res) => {
+  const { plans, router_id } = req.body;
+
+  if (!Array.isArray(plans)) {
+    return res.status(400).json({ success: false, message: 'Plans should be an array.' });
+  }
+
+  console.log(`Received ${plans.length} hotspot plans for router ID: ${router_id}\n`);
+
+  plans.forEach((plan, index) => {
+    console.log(`Plan #${index + 1}:`, plan);
+  });
+
+  res.status(200).json({
+    success: true,
+    message: `${plans.length} plans received and logged for router ${router_id}.`
+  });
+});
+
+
 
 // CREATE a new Hotspot Plan
 router.post('/hotspot-plans', verifyToken, async (req, res) => {
