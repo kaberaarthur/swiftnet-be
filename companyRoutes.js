@@ -19,6 +19,7 @@ function verifyToken(req, res, next) {
 
         req.userId = decoded.id;
         req.userType = decoded.user_type;
+        req.company_id = decoded.company_id;
         next();
     });
 }
@@ -67,15 +68,20 @@ router.post('/companies', verifyToken, async (req, res) => {
 // Get all companies (GET)
 router.get('/companies', verifyToken, async (req, res) => {
     try {
-        // Check if user is admin
-        if (req.userType !== 'superadmin') {
-            return res.status(403).json({ 
-                message: 'Access denied: Administrator privileges required' 
-            });
+        if (req.userType === 'superadmin') {
+            // Superadmin can view all companies
+            const [result] = await db.execute('SELECT * FROM companies');
+            res.json(result);
+        } else {
+            // Non-superadmin users can only view their own company
+            const [result] = await db.execute('SELECT * FROM companies WHERE id = ?', [req.company_id]);
+            
+            if (result.length === 0) {
+                return res.status(404).json({ message: 'Company not found' });
+            }
+            
+            res.json(result);
         }
-
-        const [result] = await db.execute('SELECT * FROM companies');
-        res.json(result);
     } catch (err) {
         res.status(500).json({ message: 'Database query error', error: err.message });
     }
@@ -86,11 +92,29 @@ router.get('/companies/:id', verifyToken, async (req, res) => {
     const companyId = req.params.id;
 
     try {
-        const [result] = await db.execute('SELECT * FROM companies WHERE id = ?', [companyId]);
-        if (result.length === 0) {
-            return res.status(404).json({ message: 'Company not found' });
+        if (req.userType === 'superadmin') {
+            // Superadmin can view any company
+            const [result] = await db.execute('SELECT * FROM companies WHERE id = ?', [companyId]);
+            
+            if (result.length === 0) {
+                return res.status(404).json({ message: 'Company not found' });
+            }
+            
+            res.json(result[0]);
+        } else {
+            // Non-superadmin users can only view their own company
+            if (parseInt(companyId) !== req.company_id) {
+                return res.status(403).json({ message: 'Access denied: You can only view your own company' });
+            }
+            
+            const [result] = await db.execute('SELECT * FROM companies WHERE id = ?', [req.company_id]);
+            
+            if (result.length === 0) {
+                return res.status(404).json({ message: 'Company not found' });
+            }
+            
+            res.json(result[0]);
         }
-        res.json(result[0]);
     } catch (err) {
         res.status(500).json({ message: 'Database query error', error: err.message });
     }
@@ -123,17 +147,17 @@ router.get('/local-companies', allowLocalOnly, async (req, res) => {
 // Update company details by ID (PATCH)
 router.patch('/companies/:id', verifyToken, async (req, res) => {
     const companyId = req.params.id;
-    const { company_name, address, phone_number, logo } = req.body;
+    const { address, phone_number, logo, paybill_no, account_no, forward_payment } = req.body;
     
     try {
+        if (req.userType !== 'superadmin' && req.company_id !== parseInt(companyId)) {
+            return res.status(403).json({ message: 'Access denied: You can only update your own company' });
+        }
+
         // Build dynamic query based on provided fields
         const updates = [];
         const values = [];
         
-        if (company_name !== undefined) {
-            updates.push('company_name = ?');
-            values.push(company_name);
-        }
         if (address !== undefined) {
             updates.push('address = ?');
             values.push(address);
@@ -146,9 +170,26 @@ router.patch('/companies/:id', verifyToken, async (req, res) => {
             updates.push('logo = ?');
             values.push(logo);
         }
+        if (paybill_no !== undefined) {
+            updates.push('paybill_no = ?');
+            values.push(paybill_no);
+        }
+        if (account_no !== undefined) {
+            updates.push('account_no = ?');
+            values.push(account_no);
+        }
+        if (forward_payment !== undefined) {
+            updates.push('forward_payment = ?');
+            values.push(forward_payment);
+        }
 
         if (updates.length === 0) {
             return res.status(400).json({ message: 'No fields provided to update' });
+        }
+
+        // Additional validation for forward_payment
+        if (forward_payment === 1 && (!paybill_no || !account_no)) {
+            return res.status(400).json({ message: 'Paybill number and Account number are required when Forward Payment is selected' });
         }
 
         values.push(companyId);
@@ -171,6 +212,10 @@ router.delete('/companies/:id', verifyToken, async (req, res) => {
     const companyId = req.params.id;
 
     try {
+        if (req.userType !== 'superadmin' && req.company_id !== parseInt(companyId)) {
+            return res.status(403).json({ message: 'Access denied: You can only delete your own company' });
+        }
+
         const [result] = await db.execute('DELETE FROM companies WHERE id = ?', [companyId]);
 
         if (result.affectedRows === 0) {
