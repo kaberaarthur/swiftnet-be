@@ -1,7 +1,6 @@
 const { Client } = require('ssh2');
 
 function runSSHCommand(command, ip_address, username, password, port = 22) {
-  // console.log("Start Creating the Plan on Mikrotik!");
   const conn = new Client();
 
   return new Promise((resolve, reject) => {
@@ -18,21 +17,23 @@ function runSSHCommand(command, ip_address, username, password, port = 22) {
         stream.on('close', (code, signal) => {
           conn.end();
 
-          // Log the outputs for debugging
-          console.log('SSH STDOUT:', stdout.trim());
-          console.log('SSH STDERR:', stderr.trim());
+          // console.log('SSH STDOUT:', stdout.trim());
+          // console.log('SSH STDERR:', stderr.trim());
 
-          // If Mikrotik returned a !trap, consider it a warning unless critical
-          const failureKeywords = ['invalid', 'failure', 'not allowed', 'already exists'];
+          const failureKeywords = ['invalid', 'failure', 'not allowed', 'already exists', 'error', '!trap'];
 
-          if (stderr && failureKeywords.some(k => stderr.toLowerCase().includes(k))) {
-            return reject(new Error(`Router returned error: ${stderr.trim()}`));
+          const failed =
+            failureKeywords.some(k => stdout.toLowerCase().includes(k)) ||
+            failureKeywords.some(k => stderr.toLowerCase().includes(k));
+
+          if (failed) {
+            return reject(new Error(`Router error:\nSTDOUT: ${stdout.trim()}\nSTDERR: ${stderr.trim()}`));
           }
 
           resolve(stdout.trim());
-        }).on('data', (chunk) => {
+        }).on('data', chunk => {
           stdout += chunk.toString();
-        }).stderr.on('data', (chunk) => {
+        }).stderr.on('data', chunk => {
           stderr += chunk.toString();
         });
       });

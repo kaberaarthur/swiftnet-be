@@ -9,6 +9,7 @@ const jwtSecret = process.env.JWT_SECRET;
 
 const { getRouterDetails } = require('./mikrotikFunctions');
 
+const { getHotspotProfiles } = require('./getHotspotProfiles');
 
 // Middleware to verify token
 function verifyToken(req, res, next) {
@@ -37,6 +38,58 @@ function verifyToken(req, res, next) {
     });
     
 }
+
+// Get Hotspot Plans from the Mikrotik Router
+router.get('/hotspot-profiles', verifyToken, async (req, res) => {
+  const router_id = req.query.router_id;
+  const userCompanyId = req.companyId;
+  const userType = req.userType;
+
+  try {
+    // Fetch router details
+    const routerResponse = await getRouterDetails(router_id);
+
+    if (!routerResponse.success) {
+      return res.status(404).json({ success: false, message: 'Router not found' });
+    }
+
+    const router = routerResponse.data;
+
+    // Check access permissions
+    if (userType !== 'superadmin' && router.company_id !== userCompanyId) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Access denied: You can only view profiles for routers belonging to your company' 
+      });
+    }
+
+    // Prepare the connection object
+    const connectionData = {
+      host: router.ip_address,
+      port: router.port || 22,
+      username: router.username,
+      password: router.router_secret
+    };
+
+    // Fetch hotspot profiles
+    const profiles = await getHotspotProfiles(connectionData);
+
+    res.status(200).json({ 
+      success: true, 
+      message: 'Hotspot profiles retrieved successfully', 
+      data: profiles 
+    });
+
+  } catch (error) {
+    console.error('Error fetching hotspot profiles:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'An error occurred while fetching hotspot profiles', 
+      error: error.message 
+    });
+  }
+});
+
 
 // CREATE a new Hotspot Plan
 router.post('/hotspot-plans', verifyToken, async (req, res) => {
@@ -152,81 +205,124 @@ router.get('/hotspot-plans/:id', async (req, res) => {
 
 // UPDATE a Hotspot Plan by ID
 router.put('/hotspot-plans/:id', verifyToken, async (req, res) => {
-    const { id } = req.params;
-    const {
-        plan_name,
-        plan_type,
-        limit_type,
-        data_limit,
-        bandwidth,
-        plan_price,
-        shared_users,
-        plan_validity,
-        company_username,
-        company_id,
-        router_id,
-        router_name
-    } = req.body;
+  const { id } = req.params;
+  const userCompanyId = req.companyId; // Extracted from the token by verifyToken middleware
+  const {
+    plan_name,
+    plan_type,
+    limit_type,
+    data_limit,
+    bandwidth,
+    plan_price,
+    shared_users,
+    plan_validity,
+    company_username,
+    company_id,
+    router_id,
+    router_name
+  } = req.body;
 
-    console.log("Updating Hotspot Plan with ID:", id);
+  console.log("Updating Hotspot Plan with ID:", id);
 
-    const routerDetails = await getRouterDetails(router_id);
+  try {
+    // Fetch existing plan
+    const [existingPlans] = await db.execute(`SELECT * FROM hotspot_plans WHERE id = ?`, [id]);
+    if (existingPlans.length === 0) return res.status(404).json({ message: 'Hotspot Plan not found' });
+
+    const currentPlan = existingPlans[0];
+
+    // Check if the plan belongs to the user's company
+    if (currentPlan.company_id !== userCompanyId) {
+      return res.status(403).json({ message: 'Access denied: You can only update plans for your company' });
+    }
+
+    // Fetch router details
+    const routerDetails = await getRouterDetails(router_id ?? currentPlan.router_id);
     if (!routerDetails.success) {
-        return res.status(404).json({ success: false, message: 'Router not found' });
+      return res.status(404).json({ success: false, message: 'Router not found' });
     }
-    thisRouter = routerDetails.data;
+    const thisRouter = routerDetails.data;
 
-    try {
-        const [existingPlans] = await db.execute(`SELECT * FROM hotspot_plans WHERE id = ?`, [id]);
-        if (existingPlans.length === 0) return res.status(404).json({ message: 'Hotspot Plan not found' });
+    // Check if the profile exists
+    const checkProfileCommand = `/ip hotspot user profile print where name="${currentPlan.plan_name}"`;
+    const checkProfileOutput = await runSSHCommand(
+      checkProfileCommand,
+      thisRouter.ip_address,
+      thisRouter.username,
+      thisRouter.router_secret,
+      thisRouter.port
+    );
+    console.log("Check Profile Output:", checkProfileOutput);
 
-        const currentPlan = existingPlans[0];
-        let sshCommand = '';
+    const profileExists = checkProfileOutput.includes(currentPlan.plan_name);
 
-        if (
-            plan_name !== currentPlan.plan_name ||
-            shared_users !== currentPlan.shared_users ||
-            bandwidth !== currentPlan.bandwidth ||
-            plan_validity !== currentPlan.plan_validity
-        ) {
-            const updatedPlanName = plan_validity ? `${plan_validity}hours` : currentPlan.plan_name;
-            sshCommand = `/ip hotspot user profile set [find name="${currentPlan.plan_name}"] ` +
-                `name=${updatedPlanName} shared-users=${shared_users || currentPlan.shared_users} rate-limit=${bandwidth || currentPlan.bandwidth}M/${bandwidth || currentPlan.bandwidth}M`;
+    // Use nullish coalescing to preserve values like 0
+    const newPlanName = plan_name ?? currentPlan.plan_name;
+    const newSharedUsers = shared_users ?? currentPlan.shared_users;
+    const newBandwidth = `${parseInt(bandwidth ?? currentPlan.bandwidth)}M`; // always force Mbps format
+    const newPlanValidity = plan_validity ?? currentPlan.plan_validity;
 
-            const sshOutput = await runSSHCommand(sshCommand, thisRouter.ip_address, thisRouter.username, thisRouter.router_secret, thisRouter.port);
-            if (sshOutput.includes('failure')) {
-                return res.status(500).json({ error: 'Failed to update MikroTik profile' });
-            }
-        }
-
-        const updateQuery = `
-            UPDATE hotspot_plans SET 
-            plan_name = ?, plan_type = ?, limit_type = ?, data_limit = ?, bandwidth = ?, plan_price = ?, 
-            shared_users = ?, plan_validity = ?, company_username = ?, company_id = ?, router_id = ?, router_name = ?
-            WHERE id = ?
-        `;
-
-        await db.execute(updateQuery, [
-            plan_name || currentPlan.plan_name,
-            plan_type || currentPlan.plan_type,
-            limit_type || currentPlan.limit_type,
-            data_limit || currentPlan.data_limit,
-            bandwidth || currentPlan.bandwidth,
-            plan_price || currentPlan.plan_price,
-            shared_users || currentPlan.shared_users,
-            plan_validity || currentPlan.plan_validity,
-            company_username || currentPlan.company_username,
-            company_id || currentPlan.company_id,
-            router_id || currentPlan.router_id,
-            router_name || currentPlan.router_name,
-            id
-        ]);
-
-        res.status(200).json({ message: 'Hotspot Plan updated successfully' });
-    } catch (err) {
-        return res.status(500).json({ error: err.message });
+    // Construct SSH command
+    let sshCommand = '';
+    if (!profileExists) {
+      sshCommand = `/ip hotspot user profile add name="${newPlanName}" shared-users=${newSharedUsers} rate-limit=${newBandwidth}/${newBandwidth}`;
+      if (newPlanValidity) {
+        sshCommand += ` session-timeout=${newPlanValidity}h`;
+      }
+    } else {
+      sshCommand = `/ip hotspot user profile set [find name="${currentPlan.plan_name}"] name="${newPlanName}" shared-users=${newSharedUsers} rate-limit=${newBandwidth}/${newBandwidth}`;
+      if (newPlanValidity) {
+        sshCommand += ` session-timeout=${newPlanValidity}h`;
+      }
     }
+
+    console.log("Running SSH Command:", sshCommand);
+    await runSSHCommand(sshCommand, thisRouter.ip_address, thisRouter.username, thisRouter.router_secret, thisRouter.port);
+
+    // Update the database
+    const updateQuery = `
+      UPDATE hotspot_plans SET 
+        plan_name = ?, 
+        plan_type = ?, 
+        limit_type = ?, 
+        data_limit = ?, 
+        bandwidth = ?, 
+        plan_price = ?, 
+        shared_users = ?, 
+        plan_validity = ?, 
+        company_username = ?, 
+        company_id = ?, 
+        router_id = ?, 
+        router_name = ?
+      WHERE id = ?
+    `;
+
+    const updateValues = [
+      newPlanName,
+      plan_type ?? currentPlan.plan_type,
+      limit_type ?? currentPlan.limit_type,
+      data_limit ?? currentPlan.data_limit,
+      parseInt(bandwidth ?? currentPlan.bandwidth),
+      plan_price ?? currentPlan.plan_price,
+      newSharedUsers,
+      newPlanValidity,
+      company_username ?? currentPlan.company_username,
+      company_id ?? currentPlan.company_id,
+      router_id ?? currentPlan.router_id,
+      router_name ?? currentPlan.router_name,
+      id
+    ];
+
+    console.log("Updating DB with:", updateValues);
+    await db.execute(updateQuery, updateValues);
+
+    return res.status(200).json({ message: 'Hotspot Plan updated successfully' });
+  } catch (err) {
+    console.error('Error updating hotspot plan:', err);
+    return res.status(500).json({ error: err.message });
+  }
 });
+
 
 
 // Need to be Corrected esp for SSH Command ***
