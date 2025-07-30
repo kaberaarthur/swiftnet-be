@@ -90,27 +90,84 @@ router.get('/hotspot-profiles', verifyToken, async (req, res) => {
   }
 });
 
-// Import Hotspot Plans already present in the router
-router.post('/import-hotspot-plans', verifyToken, (req, res) => {
+// Import Hotspot Plans from the Router
+router.post('/import-hotspot-plans', verifyToken, async (req, res) => {
   const { plans, router_id } = req.body;
 
-  if (!Array.isArray(plans)) {
-    return res.status(400).json({ success: false, message: 'Plans should be an array.' });
+  try {
+    const thisRouterResponse = await getRouterDetails(router_id);
+    const thisRouter = thisRouterResponse.data;
+    const userCompanyId = req.companyId;
+
+    // console.log("Router Details:", thisRouter);
+
+    if (thisRouter.company_id !== userCompanyId) {
+      return res.status(400).json({ success: false, message: 'You cannot import plans here.' });
+    }
+
+    if (!Array.isArray(plans)) {
+      return res.status(400).json({ success: false, message: 'Plans should be an array.' });
+    }
+
+    console.log(`Received ${plans.length} hotspot plans for router ID: ${router_id}\n`);
+
+    for (const [index, plan] of plans.entries()) {
+        console.log(`Plan #${index + 1}:`, plan);
+
+        const plan_name = plan.name || 'Unnamed Plan';
+        const plan_type = 'Limited';
+        const limit_type = 'Both Limit';
+        const data_limit = 0;
+        const bandwidth = parseInt(plan.bandwidth) || 1;
+        const plan_price = parseFloat(plan.plan_price) || 1000.00;
+        const shared_users = plan.shared_users === 'unlimited'
+            ? 9999
+            : parseInt(plan.shared_users) || 1;
+        const plan_validity = parseInt(plan.plan_validity) || 1;
+
+        const company_username = thisRouter.company_username;
+        const company_id = thisRouter.company_id;
+        const router_name = thisRouter.router_name;
+
+        const insertQuery = `
+            INSERT INTO hotspot_plans 
+            (plan_name, plan_type, limit_type, data_limit, bandwidth, plan_price, shared_users, plan_validity, router_name, company_username, company_id, router_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE
+                plan_type = VALUES(plan_type),
+                limit_type = VALUES(limit_type),
+                data_limit = VALUES(data_limit),
+                bandwidth = VALUES(bandwidth),
+                plan_price = VALUES(plan_price),
+                shared_users = VALUES(shared_users),
+                plan_validity = VALUES(plan_validity),
+                router_name = VALUES(router_name),
+                company_username = VALUES(company_username),
+                company_id = VALUES(company_id)
+        `;
+
+        if ([plan_name, plan_type, limit_type, bandwidth, plan_price, shared_users, plan_validity, router_name, company_username, company_id, router_id].includes(undefined)) {
+            console.error('One or more required values are undefined!');
+        }
+
+        
+        await db.execute(insertQuery, [
+            plan_name, plan_type, limit_type, data_limit, bandwidth, plan_price,
+            shared_users, plan_validity, router_name, company_username, company_id, router_id
+        ]);
+    }
+
+
+    res.status(200).json({
+      success: true,
+      message: `${plans.length} plans inserted for router ${router_id}.`
+    });
+
+  } catch (error) {
+    console.error('Error importing plans:', error);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
   }
-
-  console.log(`Received ${plans.length} hotspot plans for router ID: ${router_id}\n`);
-
-  plans.forEach((plan, index) => {
-    console.log(`Plan #${index + 1}:`, plan);
-  });
-
-  res.status(200).json({
-    success: true,
-    message: `${plans.length} plans received and logged for router ${router_id}.`
-  });
 });
-
-
 
 // CREATE a new Hotspot Plan
 router.post('/hotspot-plans', verifyToken, async (req, res) => {
