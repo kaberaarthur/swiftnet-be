@@ -399,6 +399,11 @@ router.patch('/pppoe-plans/:id', async (req, res) => {
 // DELETE: Remove a pppoe plan by id
 router.delete('/pppoe-plans/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
+  const user_type = req.userType;
+
+  if (user_type !== 'admin' && user_type !== 'superadmin') {
+    return res.status(403).json({ message: 'Unauthorized: Only admin or super_admin can delete plans.' });
+  }
 
   try {
     // Step 1: Retrieve the PPPoE plan details from the database to check existence
