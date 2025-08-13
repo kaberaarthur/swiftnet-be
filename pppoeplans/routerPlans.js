@@ -5,7 +5,27 @@ const db = require('../dbPromise');
 const router = express.Router();
 const getRouterById = require('./getRouterById');
 
+// Middleware to verify token
+function verifyToken(req, res, next) {
+    const token = req.headers['authorization'];
 
+    if (!token) {
+        return res.status(403).json({ message: 'No token provided' });
+    }
+
+    const bearerToken = token.split(' ')[1];
+    
+    jwt.verify(bearerToken, 'your_jwt_secret', (err, decoded) => {
+        if (err) {
+            return res.status(500).json({ message: 'Failed to authenticate token' });
+        }
+
+        req.userId = decoded.id;
+        req.userType = decoded.user_type;
+        req.company_id = decoded.company_id;
+        next();
+    });
+}
 
 // Utility function to parse and clean MikroTik output
 function parsePPPProfiles(output) {
@@ -194,9 +214,13 @@ router.get('/router-pppoe-plans', async (req, res) => {
     return profiles;
   }
 
+
   // Import PPPOE Plans from router
-  router.post('/router-import-pppoe-plans', async (req, res) => {
+  router.post('/router-import-pppoe-plans', verifyToken, async (req, res) => {
       const plansToImport = req.body;
+      const this_user_id = req.userId;
+      const this_company_id = req.company_id;
+      let processedRouterId = null;
   
       // --- Input Validation ---
       if (!Array.isArray(plansToImport)) {
@@ -226,6 +250,11 @@ router.get('/router-pppoe-plans', async (req, res) => {
                   rate_limit, // Frontend sends 'rate_limit', DB uses 'rate_limit_string'
                   brand
               } = plan;
+
+              // Store the router_id (assuming all plans are from the same router)
+              if (!processedRouterId) {
+                  processedRouterId = router_id;
+              }
   
               // Basic validation for required fields from frontend payload
               if (!name || !plan_price || !plan_validity || !router_id || !company_id || !rate_limit || !company_username) {
@@ -321,11 +350,22 @@ router.get('/router-pppoe-plans', async (req, res) => {
                   errors: errors // Include details about failed plans
               });
       } else {
+        
+          // All plans processed successfully
+          const comment = `imported of PPPOE plans from router ${processedRouterId} for company ${company_id}`;
+        
+          // Add a log of successful Imports
+          const [plansImportsResult] = await db.execute(
+              `INSERT INTO import_pppoe_plans_logs (comment, user_id, company_id) VALUES (?, ?, ?)`,
+              [comment, this_user_id, this_company_id]
+          );
+
           // Complete success
           res.status(200).json({
               message: `Successfully processed ${plansToImport.length} plans.`,
               created: createdCount,
-              updated: updatedCount
+              updated: updatedCount,
+              log_id: plansImportsResult.insertId // Return the ID of the log entry
           });
       }
   });

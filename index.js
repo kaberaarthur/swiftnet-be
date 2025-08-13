@@ -71,6 +71,9 @@ const b2bTransactionRoutes = require('./transaction_status/b2bRoutes.js');
 // All Paybill Transaction Routes
 const allTransactionRoutes = require('./alltransactions/allRoutes.js');
 
+// All Paybill Transaction Routes
+const importPppoePlansLogs = require('./import_pppoe_plans_logs/allRoutes.js');
+
 
 const app = express();
 const port = 8000;
@@ -132,6 +135,9 @@ app.use(pppoeReminderRoute);
 
 // Brands
 app.use(brandRoutes);
+
+// Import PPPoe Plans Logs
+app.use(importPppoePlansLogs);
 
 // Mikrotik PPPoE Users
 app.use('/mikrotik', mikrotikPPPoEUserRoutes);
