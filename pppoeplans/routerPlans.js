@@ -220,7 +220,13 @@ router.get('/router-pppoe-plans', async (req, res) => {
       const plansToImport = req.body;
       const this_user_id = req.userId;
       const this_company_id = req.company_id;
+      const this_user_type = req.userType;
       let processedRouterId = null;
+
+      // --- Authorization: Limit PPPoE Plans Imports to admins and superadmins ---
+      if (this_user_type !== 'admin' && this_user_type !== 'superadmin') {
+          return res.status(403).json({ message: 'Unauthorized: Only admin or super_admin can import plans.' });
+      }
   
       // --- Input Validation ---
       if (!Array.isArray(plansToImport)) {
