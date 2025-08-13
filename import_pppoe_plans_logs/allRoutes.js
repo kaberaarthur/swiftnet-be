@@ -27,6 +27,11 @@ function verifyToken(req, res, next) {
 
 // GET logs with pagination
 router.get('/import-pppoe-plans-logs', verifyToken, async (req, res) => {
+    const company_id = req.company_id; // from token
+    if (!company_id) {
+        return res.status(400).json({ error: 'company_id is required' });
+    }
+    
     try {
         const DEFAULT_PAGE = 1;
         const DEFAULT_LIMIT = 10;
@@ -43,13 +48,16 @@ router.get('/import-pppoe-plans-logs', verifyToken, async (req, res) => {
 
         const offset = (page - 1) * limit;
 
-        // Get total count
+        // Get total count with company_id filter
         const [countResult] = await db.query(
-            `SELECT COUNT(*) as total FROM import_pppoe_plans_logs`
+            `SELECT COUNT(*) as total 
+             FROM import_pppoe_plans_logs
+             WHERE company_id = ?`,
+            [company_id]
         );
         const total = countResult[0].total;
 
-        // Fetch paginated logs with user details
+        // Fetch paginated logs with user details and company_id filter
         const sql = `
             SELECT 
                 l.id, 
@@ -60,11 +68,12 @@ router.get('/import-pppoe-plans-logs', verifyToken, async (req, res) => {
                 l.created_at
             FROM import_pppoe_plans_logs l
             JOIN users u ON l.user_id = u.id
+            WHERE l.company_id = ?
             ORDER BY l.created_at DESC
             LIMIT ${db.escape(limit)} OFFSET ${db.escape(offset)}
         `;
 
-        const [rows] = await db.query(sql);
+        const [rows] = await db.query(sql, [company_id]);
 
         res.json({
             page,
