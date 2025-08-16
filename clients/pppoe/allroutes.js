@@ -67,7 +67,7 @@ const getRouterById = async (id) => {
 
   // Function to create a PPPoE user
 async function createPPPoEUser(routerIp, routerUsername, routerPassword, phoneNumber, password, planName) {
-    const command = `/ppp secret add name="${phoneNumber}" password="${password}" profile="${planName}"`;
+    const command = `/ppp secret add name="${phoneNumber}" password="${password}" profile="${planName}" service=pppoe`;
 
     return new Promise((resolve, reject) => {
         const ssh = new Client();
