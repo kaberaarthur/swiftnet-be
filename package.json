@@ -28,6 +28,7 @@
     "pg": "^8.12.0",
     "routeros-node": "^0.1.0",
     "ssh2": "^1.16.0",
+    "ssh2-sftp-client": "^12.0.1",
     "ws": "^8.18.0"
   },
   "devDependencies": {

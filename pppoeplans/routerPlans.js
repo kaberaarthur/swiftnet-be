@@ -5,6 +5,10 @@ const db = require('../dbPromise');
 const router = express.Router();
 const getRouterById = require('./getRouterById');
 
+const SFTPClient = require("ssh2-sftp-client");
+const fs = require("fs");
+const path = require("path");
+
 // Middleware to verify token
 function verifyToken(req, res, next) {
     const token = req.headers['authorization'];
@@ -27,39 +31,112 @@ function verifyToken(req, res, next) {
     });
 }
 
-// Utility function to parse and clean MikroTik output
-function parsePPPProfiles(output) {
-    const profiles = [];
-    let profile = {};
+// V3 Code Starts Here
+const REMOTE_FILE = "pppoe_profiles.rsc";
 
-    const lines = output.split('\n');
-
-    for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith('Flags:')) continue;
-
-        // New profile starts with line like: "0 name=My Profile ..."
-        if (/^\d+\s/.test(trimmed) && trimmed.includes('name=')) {
-            if (Object.keys(profile).length) profiles.push(profile);
-            profile = {};
-        }
-
-        // Extract key=value pairs
-        const parts = trimmed.split(/\s+/);
-        for (const part of parts) {
-            if (part.includes('=')) {
-                const [key, rawValue] = part.split('=');
-                const value = key === 'name' ? rawValue : rawValue?.replace(/^"+|"+$/g, '').replace(/\\"/g, '');
-                profile[key] = value;
-            }
-        }
-    }
-
-    if (Object.keys(profile).length) profiles.push(profile);
-    return profiles;
+// Generate PPPoE profile export file on MikroTik
+async function generateExportFile(routerIP, username, password, port) {
+  return new Promise((resolve, reject) => {
+    const conn = new Client();
+    conn
+      .on("ready", () => {
+        // ⚡ Export PPP profiles, not secrets
+        conn.exec(`/ppp profile export file=${REMOTE_FILE.split(".")[0]}`, (err) => {
+          if (err) return reject(err);
+          conn.end();
+          resolve();
+        });
+      })
+      .connect({
+        host: routerIP,
+        port: port || 22,
+        username,
+        password,
+      });
+  });
 }
 
-// Write a function to get Router details by ID
+// Download the exported file via SFTP
+async function downloadExportFile(routerIP, username, password, port) {
+  const localFile = path.join(__dirname, REMOTE_FILE);
+  const sftp = new SFTPClient();
+
+  await sftp.connect({
+    host: routerIP,
+    port: port || 22,
+    username,
+    password,
+  });
+
+  await sftp.get(REMOTE_FILE, localFile);
+  await sftp.end();
+
+  return localFile;
+}
+
+// Parse .rsc into JSON
+function parseRscToJson(localFile) {
+  const data = fs.readFileSync(localFile, "utf-8");
+  const lines = data.split("\n");
+  const profiles = [];
+
+  for (let line of lines) {
+    line = line.trim();
+    if (line.startsWith("add ")) {
+      const entry = {};
+      const parts = [...line.matchAll(/(\S+)=("[^"]*"|\S+)/g)];
+      for (const match of parts) {
+        // Normalize key names by replacing "-" with "_"
+        const key = match[1].replace(/-/g, "_");
+        const value = match[2].replace(/"/g, "");
+        entry[key] = value;
+      }
+      if (!entry["disabled"]) entry["disabled"] = "no";
+      profiles.push(entry);
+    }
+  }
+
+  return profiles;
+}
+
+// GET endpoint for PPPoE profiles
+router.get("/router-pppoe-profiles", async (req, res) => {
+  const id = req.query.id;
+
+  if (!id || isNaN(id)) {
+    return res.status(400).json({ message: 'Missing or invalid "id" query parameter.' });
+  }
+
+  try {
+    const response = await getRouterById(Number(id)); // assumes you already have this function
+
+    if (!response.success) {
+      return res.status(404).json({ message: "Router not found." });
+    }
+
+    const routerIP = response.data.ip_address;
+    const username = response.data.username;
+    const password = response.data.router_secret;
+    const port = response.data.port ? response.data.port : 22;
+
+    await generateExportFile(routerIP, username, password, port);
+
+    // Wait for MikroTik to finish writing the export file
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const localFile = await downloadExportFile(routerIP, username, password, port);
+    const profiles = parseRscToJson(localFile);
+
+    // Clean up local file
+    fs.unlinkSync(localFile);
+
+    res.json(profiles);
+  } catch (error) {
+    console.error("❌ Error fetching PPPoE profiles:", error);
+    res.status(500).json({ error: "Failed to fetch PPPoE profiles", message: error.message });
+  }
+});
+// V3 Code Ends Here
 
 
 // Route to get PPPoE plans using ID from query parameter
@@ -91,13 +168,6 @@ router.get('/router-pppoe-plans', async (req, res) => {
 });
 
 
-  /**
-   * Connect to MikroTik router and list all PPP profiles
-   * @param {string} ipAddress - Router IP address
-   * @param {string} username - SSH username
-   * @param {string} password - SSH password
-   * @returns {Promise<Array>} - Array of profile objects
-   */
   function listPPPoEPlans(ipAddress, username, password) {
     return new Promise((resolve, reject) => {
       const conn = new Client();
@@ -151,11 +221,6 @@ router.get('/router-pppoe-plans', async (req, res) => {
     });
   }
   
-  /**
-   * Parse the MikroTik router output to extract PPP profiles
-   * @param {string} output - Raw output from router
-   * @returns {Array} - Array of parsed profile objects
-   */
   function parsePPPProfiles(output) {
     const profiles = [];
     
