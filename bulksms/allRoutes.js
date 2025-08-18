@@ -102,41 +102,41 @@ router.post('/send', verifyToken, async (req, res) => {
     let failureCount = 0;
 
     for (const item of data) {
-    try {
-        const response = await sendSmsViaAfricastalking({
-            apiKey: company.africas_talking_key,
-            username: company.africas_talking_username,
-            senderId: company.africas_talking_sender_id,
-            message: item.sms,
-            phone: item.phone.trim(),
-        });
+      try {
+          const response = await sendSmsViaAfricastalking({
+              apiKey: company.africas_talking_key,
+              username: company.africas_talking_username,
+              senderId: company.africas_talking_sender_id,
+              message: item.sms,
+              phone: item.phone.trim(),
+          });
 
-        // console.log(response["SMSMessageData"]["Recipients"][0]["statusCode"]);
+          // console.log(response["SMSMessageData"]["Recipients"][0]["statusCode"]);
 
-        const recipient = response["SMSMessageData"]["Recipients"][0];
-        const smsStatusCode = parseInt(response["SMSMessageData"]["Recipients"][0]["statusCode"]);
-        const isSuccess = smsStatusCode < 103;
+          const recipient = response["SMSMessageData"]["Recipients"][0];
+          const smsStatusCode = parseInt(response["SMSMessageData"]["Recipients"][0]["statusCode"]);
+          const isSuccess = smsStatusCode < 103;
 
-        console.log("isSuccess: ", isSuccess);
+          // console.log(`Sent to : ${item.phone.trim()}`, isSuccess);
 
-        if (isSuccess) successCount++;
-        else failureCount++;
+          if (isSuccess) successCount++;
+          else failureCount++;
 
-        sendResults.push({
-            id: item.id,
-            phone: item.phone,
-            status: isSuccess ? 'success' : 'failed',
-            africasTalkingResponse: recipient
-        });
-    } catch (err) {
-            failureCount++;
-            sendResults.push({
-            id: item.id,
-            phone: item.phone,
-            status: 'failed',
-            error: err.message
-        });
-     }
+          sendResults.push({
+              id: item.id,
+              phone: item.phone,
+              status: isSuccess ? 'success' : 'failed',
+              africasTalkingResponse: recipient
+          });
+      } catch (err) {
+              failureCount++;
+              sendResults.push({
+              id: item.id,
+              phone: item.phone,
+              status: 'failed',
+              error: err.message
+          });
+      }
     };
 
 

@@ -43,7 +43,7 @@ router.get('/smslogs', async (req, res) => {
         const itemsPerPage = 10;
         const offset = (currentPage - 1) * itemsPerPage;
 
-        const [countResult] = await db.execute(`SELECT COUNT(*) AS total FROM sms_logs`);
+        const [countResult] = await db.execute(`SELECT COUNT(*) AS total FROM bulk_sms_logs`);
         const totalItems = countResult[0].total;
         const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
 
@@ -58,11 +58,13 @@ router.get('/smslogs', async (req, res) => {
         }
 
         const [rows] = await db.execute(`
-            SELECT id, number, status, created_at
-            FROM sms_logs
+            SELECT id, user_id, total_messages, log_data, created_at
+            FROM bulk_sms_logs
             ORDER BY id DESC
             LIMIT ${itemsPerPage} OFFSET ${offset}
         `);
+
+        console.log('Fetched SMS logs:', rows.length, 'Data: ', rows);
 
         res.status(200).json({
             currentPage,
