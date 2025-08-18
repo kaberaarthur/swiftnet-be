@@ -75,18 +75,20 @@ async function downloadExportFile(routerIP, username, password, port) {
 }
 
 // Parse .rsc into JSON
+// Parse .rsc into JSON with id and underscore keys
 function parseRscToJson(localFile) {
   const data = fs.readFileSync(localFile, "utf-8");
   const lines = data.split("\n");
   const profiles = [];
+  let counter = 1;
 
   for (let line of lines) {
     line = line.trim();
     if (line.startsWith("add ")) {
-      const entry = {};
+      const entry = { id: counter++ }; // add index as id
       const parts = [...line.matchAll(/(\S+)=("[^"]*"|\S+)/g)];
       for (const match of parts) {
-        // Normalize key names by replacing "-" with "_"
+        // Normalize key names (replace dashes with underscores)
         const key = match[1].replace(/-/g, "_");
         const value = match[2].replace(/"/g, "");
         entry[key] = value;
