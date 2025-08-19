@@ -4,6 +4,8 @@ const { Client } = require('ssh2');
 const db = require('../dbPromise');
 const router = express.Router();
 const getRouterById = require('./getRouterById');
+const jwt = require('jsonwebtoken');
+
 
 const SFTPClient = require("ssh2-sftp-client");
 const fs = require("fs");
