@@ -47,7 +47,7 @@ router.get('/credential/:id', async (req, res) => {
   }
 });
 
-
+// Process Customer Transaction for PPPoE Subscription Renewal
 router.post('/', async (req, res) => {
   const { transaction_code, customer_id } = req.body;
   console.log("Processing Transaction with Mpesa Code: ", transaction_code);
@@ -83,6 +83,7 @@ router.post('/', async (req, res) => {
 
   if (!user) {
     return res.status(404).json({ message: 'User does not exist' });
+    // Payments with billrefnumber/accountnumber 'Hotspot' fail here
   } else {
       // This is where that phone number is getting printed
       console.log(user.secret);

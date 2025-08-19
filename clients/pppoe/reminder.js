@@ -21,6 +21,7 @@ router.patch('/reminder/:customer_id', async (req, res) => {
     const reminderValue = status === 'enable' ? 1 : 0;
 
     try {
+        console.log(`Updating reminder status for customer_id ${customer_id} to ${status}`);
         // Update the reminder field in the pppoe_clients table
         const [result] = await db.execute(
             'UPDATE pppoe_clients SET reminder = ? WHERE id = ?',
