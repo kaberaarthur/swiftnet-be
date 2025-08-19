@@ -30,6 +30,7 @@ router.patch('/reminder/:customer_id', async (req, res) => {
 
         // Check if any rows were affected
         if (result.affectedRows === 0) {
+            console.log(`No client found with customer_id ${customer_id}`);
             return res.status(404).json({
                 message: `No client found with customer_id ${customer_id}`
             });
