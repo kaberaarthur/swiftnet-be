@@ -90,6 +90,7 @@ router.post('/', async (req, res) => {
   }
 
   try {
+    console.log("Now checking transaction status with Safaricom...");
     // Step 3: Fetch initiator password from DB
     // const password = await getDarajaInitiatorPassword(company_id);
     // use manual company_id to get the password
@@ -298,6 +299,8 @@ router.post('/callback', async (req, res) => {
 
   try {
     const result = req.body.Result;
+
+    console.log("Received Callback Result from Transaction Status Check: ", result);
 
     // Step 1: Validate ResultCode
     if (!result || result.ResultCode !== 0) {
