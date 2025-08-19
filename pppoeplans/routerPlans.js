@@ -429,7 +429,7 @@ router.get('/router-pppoe-plans', async (req, res) => {
       } else {
         
           // All plans processed successfully
-          const comment = `imported of PPPOE plans from router ${processedRouterId} for company ${company_id}`;
+          const comment = `imported of PPPOE plans from router ${processedRouterId} for company ${this_company_id}`;
         
           // Add a log of successful Imports
           const [plansImportsResult] = await db.execute(
