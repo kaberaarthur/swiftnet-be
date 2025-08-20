@@ -235,7 +235,7 @@ router.post('/', async (req, res) => {
                 });
             }
         
-            // console.log("Client successfully enabled:", enableClientData);
+            console.log("Client successfully enabled:", enableClientData);
 
             // Send SMS to the customer
             const smsResponse = await sendSmsViaAfricastalking({
@@ -243,6 +243,8 @@ router.post('/', async (req, res) => {
                 phone: user.phone_number,
                 companyId: user.company_id
             });
+
+            console.log("Response from Africas Talking: ", smsResponse);
 
         } catch (error) {
             console.error("Error enabling client:", error);
