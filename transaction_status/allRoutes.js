@@ -235,7 +235,7 @@ router.post('/', async (req, res) => {
                 });
             }
         
-            console.log("Client successfully enabled:", enableClientData);
+            console.log("Client successfully updated:", enableClientData);
 
             // Send SMS to the customer
             const smsResponse = await sendSmsViaAfricastalking({
