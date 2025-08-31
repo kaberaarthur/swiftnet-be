@@ -351,7 +351,7 @@ router.get('/router-pppoe-plans', async (req, res) => {
   
               // --- Check for Existing Plan ---
               // Check by name AND company_id to ensure uniqueness within a company
-              const checkQuery = 'SELECT id FROM pppoe_plans WHERE plan_name = ? AND company_id = ?';
+              const checkQuery = 'SELECT id FROM pppoe_plans WHERE plan_name = ? AND company_id = ? AND router_id = ?';
               const [existingPlans] = await db.query(checkQuery, [name, company_id]);
   
               const planExists = existingPlans.length > 0;
