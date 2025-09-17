@@ -2,3 +2,7 @@ node_modules
 npm-debug.log
 .git
 .DS_Store
+.github
+.vscode
+.env
+env.local

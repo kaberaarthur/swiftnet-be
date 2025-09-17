@@ -72,11 +72,14 @@ router.post('/send', verifyToken, async (req, res) => {
   }
   
   // Ensure only admin/superadmin can proceed
+  // Design a Special Permission for Bulk SMS.
+  /*
   if (req.userType !== 'admin' && req.userType !== 'superadmin') {
     return res.status(403).json({ 
       message: 'Access denied: Admin privileges required' 
     });
   }
+    */
 
   try {
     const data = req.body;

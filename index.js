@@ -160,7 +160,7 @@ app.use('/', allTransactionRoutes);
 
 // Home route
 app.get('/', (req, res) => {
-    res.send('Welcome to the Home Page of our Node.js Application!');
+    res.send('Swiftnet is Alive!');
 });
 
 
