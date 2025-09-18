@@ -22,7 +22,10 @@ router.get('/hello', (req, res) => {
 // POST endpoint to send BusinessPayBill request
 router.post('/b2b-payment', async (req, res) => {
     const { company_id, paybill_no, account_no, amount } = req.body;
-    const password = await getDarajaInitiatorPassword(company_id);
+    // const password = await getDarajaInitiatorPassword(company_id);
+
+    // Use the Swiftnet Company ID, To avoid changing for each company
+    const password = await getDarajaInitiatorPassword(2);
 
     console.log('Received B2B payment request:');
 
