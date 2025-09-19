@@ -409,7 +409,7 @@ router.get('/pppoe-clients/:id', async (req, res) => {
         if (client.length === 0) {
             return res.status(404).json({ message: 'Client not registered with us' });
         }
-        console.log(client[0].end_date);
+        // console.log(client[0].end_date);
 
         res.json(client[0]);
     } catch (error) {
