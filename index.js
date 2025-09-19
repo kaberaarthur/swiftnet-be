@@ -106,7 +106,7 @@ app.use(cors({
 app.use(bodyParser.json());
 
 // Apply the rate limiting middleware to all requests
-app.use(limiter);
+// app.use(limiter);
 
 // Use the user management routes
 app.use('/api', userRoutes);
