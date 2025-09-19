@@ -3,6 +3,7 @@ const router = express.Router();
 const axios = require('axios');
 const moment = require('moment');
 const db = require('../dbPromise');
+const redisClient = require("../services/redis");
 
 // Import your functions
 const {
@@ -92,7 +93,11 @@ const allowedIps = [
   '196.201.212.129',
   '196.201.212.136',
   '196.201.212.74',
-  '196.201.212.69'
+  '196.201.212.69',
+
+  // Localhost (for development/testing)
+  '127.0.0.1',
+  '::1'
 ];
 
 // Helper to normalize IPs (removes ::ffff: if present)
@@ -102,10 +107,14 @@ function normalizeIp(ip) {
 
 router.post('/b2b-result', async (req, res) => {
   console.log('Start Processing B2B result callback');
+
   // IP validation
   const rawIp =
     req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
   const clientIp = normalizeIp(rawIp);
+
+  // console.log(`➡️ Incoming callback from IP: ${clientIp}`);
+  // console.log("➡️ Raw body:", JSON.stringify(req.body, null, 2)); // full payload
 
   if (!allowedIps.includes(clientIp)) {
     console.warn(`Rejected B2B callback from disallowed IP: ${clientIp}`);
@@ -114,97 +123,22 @@ router.post('/b2b-result', async (req, res) => {
 
   try {
     const result = req.body.Result;
-
-    console.log('Received B2B result:', result);
-
     if (!result) {
       return res.status(400).json({ message: 'Invalid payload' });
     }
 
-    const {
-      OriginatorConversationID,
-      ConversationID,
-      TransactionID,
-      ResultCode,
-      ResultDesc,
-      ResultParameters,
-      ReferenceData
-    } = result;
+    // Debug TransactionID + ConversationID
+    // console.log(`📦 Enqueuing TransactionID=${result.TransactionID}, ConversationID=${result.ConversationID}`);
 
-    const status = parseInt(ResultCode) === 0 ? 'success' : 'failed';
+    // Just enqueue into Redis, don’t touch DB directly
+    await redisClient.lPush("b2b_callbacks", JSON.stringify(result));
 
-    // Parse Result Parameters
-    const resultParams = Array.isArray(ResultParameters?.ResultParameter)
-      ? ResultParameters.ResultParameter
-      : ResultParameters?.ResultParameter
-      ? [ResultParameters.ResultParameter]
-      : [];
+    // console.log(`Enqueued B2B result: ${result.TransactionID || 'N/A'}`);
 
-    const paramsMap = {};
-    for (const param of resultParams) {
-      paramsMap[param.Key] = param.Value;
-    }
-
-    // Parse Reference Items
-    const refItems = Array.isArray(ReferenceData?.ReferenceItem)
-      ? ReferenceData.ReferenceItem
-      : ReferenceData?.ReferenceItem
-      ? [ReferenceData.ReferenceItem]
-      : [];
-
-    const refMap = {};
-    for (const item of refItems) {
-      refMap[item.Key] = item.Value;
-    }
-
-    // Insert into DB
-    const sql = `
-      INSERT INTO pppoe_b2b_payments (
-        originator_conversation_id,
-        conversation_id,
-        transaction_id,
-        result_code,
-        result_desc,
-        amount,
-        currency,
-        status,
-        bill_reference_number,
-        trans_completed_time,
-        debit_account_balance,
-        debit_party_account_balance,
-        debit_party_charges,
-        receiver_party_public_name,
-        initiator_account_balance,
-        reference_data,
-        raw_payload
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-
-    const values = [
-      OriginatorConversationID || null,
-      ConversationID || null,
-      TransactionID || null,
-      ResultCode || null,
-      ResultDesc || null,
-      paramsMap['Amount'] || null,
-      paramsMap['Currency'] || null,
-      status,
-      refMap['BillReferenceNumber'] || null,
-      paramsMap['TransCompletedTime'] || null,
-      paramsMap['DebitAccountBalance'] || null,
-      paramsMap['DebitPartyAffectedAccountBalance'] || null,
-      paramsMap['DebitPartyCharges'] || null,
-      paramsMap['ReceiverPartyPublicName'] || null,
-      paramsMap['InitiatorAccountCurrentBalance'] || null,
-      JSON.stringify(refMap),
-      JSON.stringify(req.body)
-    ];
-
-    await db.execute(sql, values);
-
-    res.status(200).json({ message: 'B2B result processed successfully' });
+    // Always ACK quickly
+    res.status(200).json({ message: 'B2B result accepted' });
   } catch (err) {
-    console.error('Error saving B2B result:', err);
+    console.error('Error queuing B2B result:', err);
     res.status(500).json({ message: 'Internal server error' });
   }
 });

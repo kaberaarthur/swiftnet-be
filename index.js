@@ -1,11 +1,24 @@
 // Import Dependencies
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 const db = require('./dbPromise');
 const bodyParser = require('body-parser');
 const { Client } = require('ssh2');
 
+const { startWorker } = require('./transaction_status/workers/b2bWorker');
+startWorker(); // Start the B2B worker
+
 require('dotenv').config();
+
+// Define rate limiter
+const limiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 50, // Max 50 requests per IP
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // const jwtSecret = process.env.JWT_SECRET;
 // console.log("JWT Secret:", jwtSecret);
@@ -90,6 +103,9 @@ app.use(cors({
 
 // Middleware to parse JSON bodies
 app.use(bodyParser.json());
+
+// Apply the rate limiting middleware to all requests
+app.use(limiter);
 
 // Use the user management routes
 app.use('/api', userRoutes);
