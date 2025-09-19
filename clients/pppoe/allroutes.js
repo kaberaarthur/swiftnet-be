@@ -7,7 +7,7 @@ const ssh = new Client();
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 
-const { sendSMS } = require('./functions');
+const { sendSMS, executeSSHCommand, changePppoePlan, getRouterDetails } = require('./functions');
 
 require('dotenv').config();
 
@@ -418,118 +418,115 @@ router.get('/pppoe-clients/:id', async (req, res) => {
 });
 
 
-// Send to Microservice
-async function changePppoePlan(secret_name, new_plan, router, customer_id) {
-    const url = 'http://localhost:3001/api/change-pppoe-plan';
-  
-    const requestBody = {
-      secret_name,
-      new_plan,
-      router,
-      customer_id
-    };
-  
-    console.log(secret_name,
-        new_plan,
-        router,
-        customer_id);
-
-    try {
-      const response = await axios.post(url, requestBody);
-      console.log('Response:', response.data);
-      return { status: 'success', message: 'Plan changed successfully' };  // Return success
-    } catch (error) {
-      console.error('Error making request:', error);
-      // Customize error message based on error response
-      if (error.response) {
-        // Request made and server responded with a status other than 2xx
-        return { status: 'failure', message: `Microservice error: ${error.response.data || error.response.statusText}` };
-      } else if (error.request) {
-        // Request made but no response received
-        return { status: 'failure', message: 'No response received from microservice' };
-      } else {
-        // Something went wrong in setting up the request
-        return { status: 'failure', message: `Error: ${error.message}` };
-      }
-    }
-  }
-
-  
+  // Update PPPoE client details (PATCH) with plan change and MikroTik update
   router.patch('/edit-pppoe-client/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
-    const company_id = req.companyId;
 
-  
+    // Include a check here to ensure only admin/superadmin user can update clients
+
     // console.log(id);
     console.log("Update Client: ", updates);
   
-    // Step 3: Generate dynamic SQL query for updating other fields
-    let query = 'UPDATE pppoe_clients SET ';
+    // Step 3: Generate dynamic SQL query for updating allowed fields only
+    const allowedFields = ["sms_group", "end_date", "plan_fee", "brand", "full_name", "location", "plan_name", "plan_id", "active", "installation_fee", "comments", "phone_number"]; // <-- add only what you want to allow
+    let query = "UPDATE pppoe_clients SET ";
     const params = [];
-  
-    for (const key in updates) {
-        if (updates.hasOwnProperty(key)) {
+
+    for (const key of allowedFields) {
+        if (updates[key] !== undefined) {
             query += `${key} = ?, `;
             params.push(updates[key]);
-          }          
+        }
+    }
+
+    // If nothing allowed is being updated
+    if (params.length === 0) {
+        return res.status(400).json({ message: "No valid fields provided for update" });
     }
   
     // Add timestamp and id to the query
     query = query.slice(0, -2) + ', updated_at = CURRENT_TIMESTAMP() WHERE id = ?';
     params.push(id);
+
+    // console.log("Update Query: ", query, params);
   
     try {
       // Step 4: Execute the update query in the database
       const result = await db.execute(query, params);
-  
-      // Call changePppoePlan function and handle success/failure
-      const change_result = await changePppoePlan(updates.secret, updates.plan_name, updates.router_id, id);
-  
-      if (change_result.status === 'failure') {
-        return res.status(500).json({
-          message: 'Client updated, but failed to change PPPoE plan.',
-          affectedRows: result.affectedRows,
-          error: change_result.message
-        });
-      }
 
-      // Update Client Status on Mikrotik
-      // http://localhost:3001/api/enable-client
-        // Update Client Status on MikroTik
-        try {
-            const enableClientResponse = await fetch("http://localhost:3001/api/enable-client", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${req.headers.authorization}` // Assuming auth token is needed
-                },
-                body: JSON.stringify({ client_id: id })
-            });
-        
-            const enableClientData = await enableClientResponse.json();
-        
-            if (!enableClientResponse.ok) {
-            console.error("Failed to enable client:", enableClientData);
-            return res.status(enableClientResponse.status).json({
-                message: "Client updated, but enabling client failed.",
-                error: enableClientData
-            });
+      // Get Router Details
+      const routerDetails = await getRouterDetails(updates.router_id);
+      if (!routerDetails || !routerDetails.ip_address) {
+            console.error("Error: Router Connection Impaired");
+            return res.status(404).json({ error: "Router Connection Impaired" });
+        }
+  
+      // If plan_name is being updated, call changePppoePlan
+      // We no longer need to change pppoe plan since we are already changing it in the patch /pppoe-clients/:id
+      if (updates.plan_name) {
+            // Call changePppoePlan function and handle success/failure
+            // console.log("Change Plan Requested to: ", updates.plan_name)
+            const change_result = await changePppoePlan(
+                routerDetails.ip_address, 
+                routerDetails.username, 
+                routerDetails.router_secret, 
+                updates.secret, 
+                updates.plan_name
+            );
+
+            if (change_result.status !== 'success') {
+                return res.status(500).json({
+                message: 'Client updated, but failed to change PPPoE plan.',
+                affectedRows: result.affectedRows,
+                error: change_result.message
+                });
             }
-        
-            console.log("Client successfully enabled:", enableClientData);
+        }
+
+        // Update Client Status on MikroTik
+        // This should only happen if we are extending the date or activating the client
+        try {
+            if (updates.active) {
+                // Do away with the call to the microservice
+                // Just run execute ssh command right here
+
+                // Check if the client needs to be activated/deactivated on MikroTik
+                const command = updates.active == 1 ? "enable" : "disable";
+                /*console.log(
+                    command === "enable"
+                        ? "Activating Client on MikroTik as well"
+                        : "Deactivating Client on MikroTik as well"
+                );*/
+
+                const mikrotikResult = await executeSSHCommand(
+                    routerDetails.ip_address,
+                    routerDetails.username,
+                    routerDetails.router_secret,
+                    updates.secret,
+                    command
+                );
+
+                if (mikrotikResult.status !== 'success') {
+                    console.error("Failed to enable client:", mikrotikResult.message);
+                    return res.status(500).json({
+                        message: "Client updated, but enabling client failed."
+                    });
+                } else {
+                    console.log("Client successfully enabled:", mikrotikResult);
+                }
+            }
         } catch (error) {
             console.error("Error enabling client:", error);
             return res.status(500).json({
-            message: "Client updated, but an error occurred while enabling client.",
-            error: error.message
+                message: "Client updated, but an error occurred while enabling client.",
+                error: error.message
             });
         } 
 
-  
       // Successful response
       return res.json({
-        message: 'Client updated and plan changed successfully.',
+        message: 'Client updated successfully.',
         affectedRows: result.affectedRows,
       });
   
