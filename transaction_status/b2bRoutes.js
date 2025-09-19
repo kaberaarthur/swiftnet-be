@@ -96,8 +96,8 @@ const allowedIps = [
   '196.201.212.69',
 
   // Localhost (for development/testing)
-  '127.0.0.1',
-  '::1'
+  // '127.0.0.1',
+  // '::1'
 ];
 
 // Helper to normalize IPs (removes ::ffff: if present)
