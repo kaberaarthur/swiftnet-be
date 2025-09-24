@@ -59,7 +59,26 @@ router.post('/', async (req, res) => {
 
   // Collect info regarding the customer from the db
   const user = await getCustomerById(customer_id);
+
+  // Add null check before accessing company_id
+  if (!user) {
+    console.error('User not found for customer_id:', customer_id);
+    return res.status(404).json({ 
+      success: false, 
+      message: 'Customer not found' 
+    });
+  }
+
   const company_id = user.company_id;
+
+  // Optional: Add additional validation for company_id
+  if (!company_id) {
+    console.error('User has no company_id:', { customer_id, user_id: user.id });
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Customer has no associated company' 
+    });
+  }
 
 
   // Step 2: Check for duplicate in both tables
