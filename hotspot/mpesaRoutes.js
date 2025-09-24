@@ -38,6 +38,11 @@ router.post('/daraja-stk', async (req, res) => {
     return res.status(400).json({ error: 'Could not trace the specified plan' });
   }
 
+  // If Plan is Premium, Generate a Voucher Code and return it as part of the response
+  if(thePlan.premium == 1){
+    console.log("This is a Premium Plan, a voucher will be generated upon successful payment.");
+  }
+
   // Initiate STK Push
   const result = await initiateDarajaStkPush(phone_number, parseInt(thePlan.plan_price));
   if (!result || !result.CheckoutRequestID) {
@@ -136,6 +141,7 @@ router.post('/daraja-stk', async (req, res) => {
             }
 
             // Create Voucher
+            console.log('Creating voucher for:', { plan_id, phone_number });
             const createVoucherResult = await createVoucher(plan_id, phone_number);
             if (!createVoucherResult.success) {
               console.error('Failed to create voucher:', createVoucherResult.message);
@@ -184,8 +190,13 @@ router.post('/daraja-stk', async (req, res) => {
             }
 
             // Update Vouchers & Mpesa Transaction Rows
-            const voucher_id = createVoucherResult.voucher_id;
-            finalizeVoucherCodeById(voucher_id);
+            // This immediately marks the voucher as used
+            if(thePlan.premium == 1){
+              console.log("This is a Premium Plan, voucher will be finalized after first redemption.");
+            } else {
+              const voucher_id = createVoucherResult.voucher_id;
+              finalizeVoucherCodeById(voucher_id);
+            }
             
 
             const mpesa_transaction_id = paymentId;
@@ -199,7 +210,8 @@ router.post('/daraja-stk', async (req, res) => {
               MpesaReceiptNumber,
               // bill_ref_number,
               phone_number,
-              newPassword
+              newPassword,
+              voucher: createVoucherResult.voucher_code,
             });
           }
         }
