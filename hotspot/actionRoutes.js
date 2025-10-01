@@ -228,9 +228,14 @@ router.patch('/redeem-voucher', async (req, res) => {
       });
     }
 
-    // Step 3: Only now update the voucher as redeemed
+    // Step 3: Update the voucher as redeemed and increment current_users
     await db.execute(
-      'UPDATE vouchers SET redeemed = ?, start_date = ?, end_date = ? WHERE id = ?',
+      `UPDATE vouchers 
+      SET redeemed = ?, 
+          start_date = ?, 
+          end_date = ?, 
+          current_users = current_users + 1 
+      WHERE id = ?`,
       [1, formattedStart, formattedEnd, voucher.id]
     );
 

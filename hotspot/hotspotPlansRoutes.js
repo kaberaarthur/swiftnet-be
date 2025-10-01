@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../dbPromise'); // Ensure dbPromise is promise-based
 const { runSSHCommand } = require('./sshCommand');
+const moment = require('moment-timezone');
 
 const router = express.Router();
 const jwt = require('jsonwebtoken');
@@ -243,7 +244,7 @@ router.post('/hotspot-plans', verifyToken, async (req, res) => {
 
 
 // READ all Hotspot Plans filtered by company_id and router_id
-router.get('/hotspot-plans', async (req, res) => {
+/*router.get('/hotspot-plans', async (req, res) => {
     const { company_id, router_id } = req.query;
 
     // ✅ Check if company_id is provided
@@ -265,8 +266,173 @@ router.get('/hotspot-plans', async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
+});*/
+
+// Test endpoint to separate plans by offer, premium, and normal
+router.get('/hotspot-plans', async (req, res) => {
+    const { company_id, router_id } = req.query;
+
+    if (!company_id) {
+        return res.status(400).json({ error: 'company_id is required' });
+    }
+
+    let query = `SELECT * FROM hotspot_plans WHERE company_id = ?`;
+    const params = [company_id];
+
+    if (router_id) {
+        query += ` AND router_id = ?`;
+        params.push(router_id);
+    }
+
+    try {
+        const [results] = await db.execute(query, params);
+
+        // Get current time in Nairobi (UTC+3)
+        const now = moment().tz('Africa/Nairobi');
+
+        const offers = [];
+        const premium = [];
+        const normal = [];
+
+        // ✅ Formatter for plan_validity
+        const formatValidity = (hours) => {
+            if (!hours) return null;
+
+            if (hours < 24) {
+                return hours === 1 ? "1 Hour" : `${hours} Hours`;
+            }
+
+            const days = Math.floor(hours / 24);
+
+            if (days < 7) {
+                return days === 1 ? "1 Day" : `${days} Days`;
+            }
+
+            const weeks = Math.floor(days / 7);
+
+            if (weeks < 4) {
+                return weeks === 1 ? "1 Week" : `${weeks} Weeks`;
+            }
+
+            const months = Math.floor(days / 30); // approx
+            return months === 1 ? "1 Month" : `${months} Months`;
+        };
+
+        results.forEach(plan => {
+            // Add human-readable validity
+            plan.validity_readable = formatValidity(plan.plan_validity);
+
+            const isOffer = plan.offer === 1;
+            const isPremium = plan.premium === 1;
+            const hasExpiry = plan.expiry ? moment(plan.expiry) : null;
+
+            if (isOffer) {
+                // Only include valid (non-expired) offers
+                if (!hasExpiry || hasExpiry.isAfter(now)) {
+                    // 🔹 Replace expiry with fake expiry = 30 minutes from now
+                    plan.expiry = moment(now).add(30, 'minutes').format("YYYY-MM-DD HH:mm:ss");
+                    offers.push(plan);
+                }
+            } else if (isPremium) {
+                premium.push(plan);
+            } else {
+                normal.push(plan);
+            }
+        });
+
+        res.status(200).json({
+            offers,
+            premium,
+            basic: normal
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
+router.get('/hotspot-plans-v2', async (req, res) => {
+    const { company_id, router_id } = req.query;
+
+    if (!company_id) {
+        return res.status(400).json({ error: 'company_id is required' });
+    }
+
+    let query = `SELECT * FROM hotspot_plans WHERE company_id = ?`;
+    const params = [company_id];
+
+    if (router_id) {
+        query += ` AND router_id = ?`;
+        params.push(router_id);
+    }
+
+    try {
+        const [results] = await db.execute(query, params);
+
+        // Current Nairobi time
+        const now = moment().tz('Africa/Nairobi');
+
+        const offers = [];
+        const premium = [];
+        const normal = [];
+
+        // ✅ Formatter for plan_validity
+        const formatValidity = (hours) => {
+            if (!hours) return null;
+
+            if (hours < 24) {
+                return hours === 1 ? "1 Hour" : `${hours} Hours`;
+            }
+
+            const days = Math.floor(hours / 24);
+
+            if (days < 7) {
+                return days === 1 ? "1 Day" : `${days} Days`;
+            }
+
+            const weeks = Math.floor(days / 7);
+
+            if (weeks < 4) {
+                return weeks === 1 ? "1 Week" : `${weeks} Weeks`;
+            }
+
+            const months = Math.floor(days / 30); // approx
+            return months === 1 ? "1 Month" : `${months} Months`;
+        };
+
+        results.forEach(plan => {
+            // Add human-readable validity
+            plan.validity_readable = formatValidity(plan.plan_validity);
+
+            const isOffer = plan.offer === 1;
+            const isPremium = plan.premium === 1;
+            const hasExpiry = plan.expiry ? moment(plan.expiry) : null;
+
+            // ✅ Add expired field
+            if (hasExpiry) {
+                plan.expired = hasExpiry.isBefore(now);
+            } else {
+                plan.expired = false;
+            }
+
+            if (isOffer) {
+                // 🔹 Keep expiry as original, but add expired flag
+                offers.push(plan);
+            } else if (isPremium) {
+                premium.push(plan);
+            } else {
+                normal.push(plan);
+            }
+        });
+
+        res.status(200).json({
+            offers,
+            premium,
+            basic: normal
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // READ a single Hotspot Plan by ID
 router.get('/hotspot-plans/:id', async (req, res) => {
@@ -276,6 +442,42 @@ router.get('/hotspot-plans/:id', async (req, res) => {
         const [results] = await db.execute(`SELECT * FROM hotspot_plans WHERE id = ?`, [id]);
         if (results.length === 0) return res.status(404).json({ message: 'Hotspot Plan not found' });
         res.status(200).json(results[0]);
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// READ one Premium Hotspot Plan by ID along with other premium plans for the same router
+router.get('/premium-plans/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Fetch the requested plan (must be premium) and all other premium plans for the same router
+        const [results] = await db.execute(
+            `
+            SELECT hp.*, 
+                   CASE WHEN hp.id = ? THEN 1 ELSE 0 END as is_target
+            FROM hotspot_plans hp
+            WHERE (hp.id = ? AND hp.premium = 1)
+               OR (hp.router_id = (SELECT router_id FROM hotspot_plans WHERE id = ?) 
+                   AND hp.premium = 1 AND hp.id != ?)
+            `,
+            [id, id, id, id]
+        );
+
+        if (results.length === 0) {
+            return res.status(404).json({ message: 'Premium Hotspot Plan not found' });
+        }
+
+        // Separate the main plan and other premium plans
+        const plan = results.find(r => r.is_target === 1);
+        const otherPremiumPlans = results.filter(r => r.is_target === 0);
+
+        res.status(200).json({
+            plan,
+            otherPremiumPlans
+        });
+
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }

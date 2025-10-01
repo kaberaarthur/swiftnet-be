@@ -113,7 +113,7 @@ async function createVoucher(plan_id, customer) {
     try {
         // Query to select plan details
         const [rows] = await db.execute(
-            'SELECT company_id, router_id, company_username, plan_name, plan_validity FROM hotspot_plans WHERE id = ?',
+            'SELECT company_id, router_id, company_username, plan_name, plan_validity, shared_users FROM hotspot_plans WHERE id = ?',
             [plan_id]
         );
 
@@ -130,7 +130,7 @@ async function createVoucher(plan_id, customer) {
         
         // Insert voucher into database
         const [result] = await db.execute(
-            'INSERT INTO vouchers (code_voucher, plan_id, company_id, router_id, company_username, plan_name, plan_validity, customer, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+            'INSERT INTO vouchers (code_voucher, plan_id, company_id, router_id, company_username, plan_name, plan_validity, customer, total_users, current_users, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
             [
                 voucherCode,
                 plan_id,
@@ -139,7 +139,9 @@ async function createVoucher(plan_id, customer) {
                 plan.company_username,
                 plan.plan_name,
                 plan.plan_validity,
-                customer
+                customer,
+                plan.shared_users,
+                0, // current_users is initially 0
             ]
         );
 
@@ -382,13 +384,14 @@ async function finalizeVoucherCodeById(id) {
       redeemed: 1
     });
 
-    // Update vouchers table with start_date, end_date, and redeemed
+    // Update vouchers table with start_date, end_date, redeemed, and increment current_users
     const [result] = await db.execute(
       `UPDATE vouchers
-       SET start_date = ?,
-           end_date = ?,
-           redeemed = ?
-       WHERE id = ?`,
+      SET start_date = ?,
+          end_date = ?,
+          redeemed = ?,
+          current_users = current_users + 1
+      WHERE id = ?`,
       [
         start_date.format('YYYY-MM-DD HH:mm:ss'), // Format for MySQL DATETIME/TIMESTAMP
         end_date.format('YYYY-MM-DD HH:mm:ss'),

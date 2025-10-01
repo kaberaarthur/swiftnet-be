@@ -88,6 +88,9 @@ const allTransactionRoutes = require('./alltransactions/allRoutes.js');
 // All Paybill Transaction Routes
 const importPppoePlansLogs = require('./import_pppoe_plans_logs/allRoutes.js');
 
+// Add, Connect & Disconnect Smart TV
+const smarttvRoutes = require("./smarttv/allRoutes.js");
+
 
 const app = express();
 const port = 8000;
@@ -174,6 +177,9 @@ app.use('/b2b', b2bTransactionRoutes);
 
 // B2B Transaction Routes
 app.use('/', allTransactionRoutes);
+
+// Smart TV Routes
+app.use('/smarttv', smarttvRoutes);
 
 // Home route
 app.get('/', (req, res) => {
