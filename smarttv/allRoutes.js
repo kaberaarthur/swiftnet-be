@@ -52,49 +52,36 @@ router.post('/add', async (req, res) => {
 
     let oldMac = null;
 
-    // 3) Insert or Update TV in database
+    // 3) Insert or Update TV in database using ON DUPLICATE KEY UPDATE
     try {
-      // Check if TV already exists by phone_number + router_id
-      const [existing] = await db.execute(
-        `SELECT id, mac_address 
-         FROM tvs 
-         WHERE phone_number = ? AND router_id = ?`,
-        [phoneNumber, routerDetails.data.id]
+      const [result] = await db.execute(
+        `INSERT INTO tvs (mac_address, binding_type, phone_number, voucher_id, router_id, end_date, updated_at)
+         VALUES (?, 'bypassed', ?, ?, ?, ?, CURRENT_TIMESTAMP)
+         ON DUPLICATE KEY UPDATE
+           phone_number = VALUES(phone_number),
+           voucher_id = VALUES(voucher_id),
+           binding_type = VALUES(binding_type),
+           end_date = VALUES(end_date),
+           updated_at = CURRENT_TIMESTAMP`,
+        [
+          macNorm,
+          phoneNumber,
+          voucherResult.voucher.id,
+          routerDetails.data.id,
+          voucherResult.voucher.end_date
+        ]
       );
 
-      if (existing.length > 0) {
-        // TV exists → update MAC + other fields
-        oldMac = existing[0].mac_address;
-
-        await db.execute(
-          `UPDATE tvs 
-           SET mac_address = ?,
-               binding_type = 'bypassed',
-               voucher_id = ?,
-               end_date = ?,
-               updated_at = CURRENT_TIMESTAMP
-           WHERE id = ?`,
-          [
-            macNorm,
-            voucherResult.voucher.id,
-            voucherResult.voucher.end_date,
-            existing[0].id
-          ]
+      // If it was an update, fetch the old MAC for cleanup
+      if (result.affectedRows > 1) {
+        // Means an update happened (insert + update counts as 2)
+        const [existing] = await db.execute(
+          `SELECT mac_address FROM tvs WHERE phone_number = ? AND router_id = ?`,
+          [phoneNumber, routerDetails.data.id]
         );
-      } else {
-        // No TV → insert new record
-        await db.execute(
-          `INSERT INTO tvs 
-             (mac_address, binding_type, phone_number, voucher_id, router_id, end_date)
-           VALUES (?, 'bypassed', ?, ?, ?, ?)`,
-          [
-            macNorm,
-            phoneNumber,
-            voucherResult.voucher.id,
-            routerDetails.data.id,
-            voucherResult.voucher.end_date
-          ]
-        );
+        if (existing.length > 0) {
+          oldMac = existing[0].mac_address;
+        }
       }
     } catch (dbErr) {
       console.error("DB Error inserting/updating TV:", dbErr);
@@ -119,13 +106,13 @@ router.post('/add', async (req, res) => {
     }
 
     // 5) If oldMac exists, remove its binding and active session
-    if (oldMac) {
+    if (oldMac && oldMac !== macNorm) {
       const oldMacNorm = normalizeMac(oldMac);
       try {
         await removeActiveSession(sshConfig, oldMacNorm);
       } catch (removeErr) {
         console.error('Error removing old binding or session:', removeErr);
-        // Not critical, so we don't return an error here
+        // Not critical, don’t fail the request
       }
     }
 
@@ -133,7 +120,7 @@ router.post('/add', async (req, res) => {
       success: true,
       message: 'Voucher redeemed and device bypassed. Device should reconnect automatically.',
       mac: macNorm,
-      oldMac // return old MAC so you can remove it from MikroTik yourself
+      oldMac
     });
 
   } catch (err) {
@@ -141,6 +128,7 @@ router.post('/add', async (req, res) => {
     return res.status(500).json({ success: false, error: err.message || 'Failed to add bypass' });
   }
 });
+
 
 // If user already has an existing binding, readd the TV
 // To only be used within the system not externally
