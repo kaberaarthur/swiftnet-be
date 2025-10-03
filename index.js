@@ -91,6 +91,9 @@ const importPppoePlansLogs = require('./import_pppoe_plans_logs/allRoutes.js');
 // Add, Connect & Disconnect Smart TV
 const smarttvRoutes = require("./smarttv/allRoutes.js");
 
+// Dashboard Total Users
+const dashboardRoutes = require("./dashboardData.js");
+
 
 const app = express();
 const port = 8000;
@@ -180,6 +183,9 @@ app.use('/', allTransactionRoutes);
 
 // Smart TV Routes
 app.use('/smarttv', smarttvRoutes);
+
+// Dashboard Data
+app.use('/dashboard', dashboardRoutes);
 
 // Home route
 app.get('/', (req, res) => {
