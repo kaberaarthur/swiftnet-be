@@ -130,7 +130,7 @@ async function createVoucher(plan_id, customer) {
         
         // Insert voucher into database
         const [result] = await db.execute(
-            'INSERT INTO vouchers (code_voucher, plan_id, company_id, router_id, company_username, plan_name, plan_validity, customer, total_users, current_users, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+            'INSERT INTO vouchers (code_voucher, plan_id, company_id, router_id, company_username, plan_name, plan_validity, customer, total_users, current_users, amount, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
             [
                 voucherCode,
                 plan_id,
@@ -142,6 +142,7 @@ async function createVoucher(plan_id, customer) {
                 customer,
                 plan.shared_users,
                 0, // current_users is initially 0
+                plan.plan_price,
             ]
         );
 

@@ -32,4 +32,38 @@ router.get('/total-users', verifyToken, async (req, res) => {
   }
 });
 
+// Endpoint to get PPPoE payments totals
+router.get('/pppoe-payments-total', verifyToken, async (req, res) => {
+  try {
+    const company_id = req.companyId; // if payments are tied to company
+
+    // Get today's total
+    const [todayRows] = await db.execute(
+      `SELECT IFNULL(SUM(Amount), 0) as total_today 
+       FROM pppoe_payments 
+       WHERE company_id = ? 
+       AND DATE(created_at) = CURDATE()`,
+      [company_id]
+    );
+
+    // Get this month's total
+    const [monthRows] = await db.execute(
+      `SELECT IFNULL(SUM(Amount), 0) as total_month 
+       FROM pppoe_payments 
+       WHERE company_id = ? 
+       AND YEAR(created_at) = YEAR(CURDATE()) 
+       AND MONTH(created_at) = MONTH(CURDATE())`,
+      [company_id]
+    );
+
+    res.json({
+      total_today: todayRows[0].total_today,
+      total_month: monthRows[0].total_month,
+    });
+  } catch (err) {
+    console.error('Error fetching PPPoE payments total:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 module.exports = router;
