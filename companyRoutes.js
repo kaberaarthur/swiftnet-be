@@ -67,6 +67,7 @@ router.post('/companies', verifyToken, async (req, res) => {
 
 // Get all companies (GET)
 router.get('/companies', verifyToken, async (req, res) => {
+    console.log('User Type:', req.userType);
     try {
         if (req.userType === 'superadmin') {
             // Superadmin can view all companies
