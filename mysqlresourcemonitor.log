@@ -37,3 +37,1102 @@
 [2025-10-07T13:03:09.702Z] [QUERY: 348ms] SELECT * FROM routers WHERE company_id = ? [params: [2]]
 [2025-10-07T13:03:09.833Z] [EXECUTE: 344ms] SELECT * FROM brands WHERE company_id = ? [params: [2]]
 [2025-10-07T13:03:11.129Z] ⚠️ [SLOW EXECUTE: 1783ms] SELECT * FROM pppoe_clients WHERE company_id = ? AND type = ? [params: [2, pppoe]]
+[2025-10-07T13:06:36.477Z] [QUERY: 355ms] SELECT * FROM routers WHERE company_id = ? [params: [2]]
+[2025-10-07T13:06:36.875Z] [QUERY: 358ms] SELECT * FROM routers WHERE company_id = ? [params: [2]]
+[2025-10-07T13:38:15.337Z] ❌ [EXECUTE ERROR: 19428ms] SELECT * FROM companies  - read ECONNRESET
+[2025-10-07T13:39:11.859Z] ❌ [EXECUTE ERROR: 19202ms] SELECT * FROM companies  - read ECONNRESET
+[2025-10-07T13:43:20.594Z] ✅ New MySQL connection established
+[2025-10-07T13:43:21.352Z] ⚠️ [SLOW EXECUTE: 2213ms] SELECT * FROM companies 
+[2025-10-07T13:44:05.239Z] [EXECUTE: 355ms] SELECT * FROM companies 
+[2025-10-07T13:44:05.616Z] [QUERY: 361ms] SELECT * FROM routers 
+[2025-10-07T13:44:07.661Z] ⚠️ [SLOW EXECUTE: 2022ms] SELECT * FROM pppoe_clients WHERE 1=1 
+[2025-10-07T13:44:13.838Z] [EXECUTE: 728ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254710731680, Success, 100, ATXid_dd5d91bd0040058daf28d8e5ce4b9ed1, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:18.829Z] [EXECUTE: 353ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254723019152, Success, 100, ATXid_7a23b513e14d00c03b34d13d83496c27, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:19.755Z] [EXECUTE: 361ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254723154936, Success, 100, ATXid_3c7ba3d4d934eaa806aef43d64644d19, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:20.498Z] [EXECUTE: 732ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1562]]
+[2025-10-07T13:44:21.447Z] [EXECUTE: 382ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722168991, Success, 100, ATXid_62be375b90028f0351fea97326c0048b, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:21.824Z] [EXECUTE: 366ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1563]]
+[2025-10-07T13:44:26.843Z] [EXECUTE: 350ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254727493487, Success, 100, ATXid_05b08d887123fc405b9dd369e372c39e, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:31.879Z] [EXECUTE: 370ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254720976777, Success, 100, ATXid_46461dc08aa1d3db02f93aa9cb3a6293, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:32.824Z] [EXECUTE: 359ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254705091940, Success, 100, ATXid_0eb8d72e9a6bceb74deffce828c37079, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:33.181Z] [EXECUTE: 346ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1581]]
+[2025-10-07T13:44:34.100Z] [EXECUTE: 373ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254718494585, Success, 100, ATXid_dc9b3a6baa0e672e7394312e2e35ea9a, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:34.461Z] [EXECUTE: 350ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1585]]
+[2025-10-07T13:44:35.354Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254728620848, Success, 100, ATXid_205e9b63b322af183869d67048b54841, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:35.710Z] [EXECUTE: 347ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1587]]
+[2025-10-07T13:44:36.622Z] [EXECUTE: 362ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722347922, Success, 100, ATXid_c5813f01dc937656933faf9c46578d0b, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:37.033Z] [EXECUTE: 343ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1593]]
+[2025-10-07T13:44:37.939Z] [EXECUTE: 348ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254720274827, Success, 100, ATXid_98d0a16a57e8537776965d0adf5ca227, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:38.307Z] [EXECUTE: 356ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1594]]
+[2025-10-07T13:44:39.219Z] [EXECUTE: 359ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254797649940, Success, 100, ATXid_0c62667d3714e7827a2dec6c9b7a22ab, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:39.599Z] [EXECUTE: 349ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1596]]
+[2025-10-07T13:44:40.503Z] [EXECUTE: 351ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254711241625, Success, 100, ATXid_d93199eb8aa6528eb8bcbf233056ad7f, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:40.903Z] [EXECUTE: 354ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1605]]
+[2025-10-07T13:44:41.815Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254724967638, Success, 100, ATXid_d065def2c37b633009a96ab009729bb7, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:42.182Z] [EXECUTE: 348ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1620]]
+[2025-10-07T13:44:43.137Z] [EXECUTE: 351ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254721327287, Success, 100, ATXid_2e1a42a9ef6a00af04add0cd4097e88c, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:43.539Z] [EXECUTE: 360ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1626]]
+[2025-10-07T13:44:48.597Z] [EXECUTE: 358ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254718581756, Success, 100, ATXid_350290e160b3f825f21918874bf5f1ce, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:49.506Z] [EXECUTE: 351ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254720901388, Success, 100, ATXid_13789fbcbeaf752b78fa3d6b9f3ea78d, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:49.874Z] [EXECUTE: 351ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1631]]
+[2025-10-07T13:44:54.849Z] [EXECUTE: 350ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722359399, Success, 100, ATXid_cdbc8a4df3e48fbfeea8da33959ff679, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:55.743Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254723638663, Success, 100, ATXid_f9cae886d9c16e08b7c0cd2b658e6c24, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:56.104Z] [EXECUTE: 350ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1667]]
+[2025-10-07T13:44:57.017Z] [EXECUTE: 356ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722229270, Success, 100, ATXid_4f50280608c0daa251455bd567f7a3ab, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:44:57.379Z] [EXECUTE: 354ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1672]]
+[2025-10-07T13:45:02.397Z] [EXECUTE: 371ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722650556, Success, 100, ATXid_c2b31b507698e56bffafa476df322503, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:03.293Z] [EXECUTE: 354ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254729206208, Success, 100, ATXid_390774f46ae94c2f6d7b14e3fedf8ca4, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:03.679Z] [EXECUTE: 367ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1679]]
+[2025-10-07T13:45:04.631Z] [EXECUTE: 391ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254721566067, Success, 100, ATXid_88e73e1068155c96e3d8bb71961e46c9, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:04.988Z] [EXECUTE: 347ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1686]]
+[2025-10-07T13:45:05.887Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254705812390, Success, 100, ATXid_cb450cea2ca2d4196a4d70ffc96d615a, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:06.241Z] [EXECUTE: 346ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1688]]
+[2025-10-07T13:45:11.279Z] [EXECUTE: 350ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254728477630, Success, 100, ATXid_7903b7f67a1cf4104b2ad66a3d12c8ce, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:12.177Z] [EXECUTE: 356ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254720059451, Success, 100, ATXid_2d9fe22f4fbdd5f4a7f4759af9f227a5, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:12.565Z] [EXECUTE: 344ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1722]]
+[2025-10-07T13:45:13.431Z] [EXECUTE: 350ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254704017162, Success, 100, ATXid_cdfeb941ad83bc442b68d7c08c0e0bac, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:13.778Z] [EXECUTE: 340ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1726]]
+[2025-10-07T13:45:14.666Z] [EXECUTE: 351ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254721678459, Success, 100, ATXid_6bbe3e4ac3adfc315f75f6babe3423f3, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:15.022Z] [EXECUTE: 346ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1728]]
+[2025-10-07T13:45:15.915Z] [EXECUTE: 359ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254757694353, Success, 100, ATXid_136e33ccd6347067b65e237cbaca7be4, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:16.307Z] [EXECUTE: 343ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1731]]
+[2025-10-07T13:45:17.266Z] [EXECUTE: 374ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254726377096, Success, 100, ATXid_87ef1c4b727310f737337dcebefb0a8b, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:17.647Z] [EXECUTE: 351ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1742]]
+[2025-10-07T13:45:18.595Z] [EXECUTE: 355ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254112235829, Success, 100, ATXid_5316786bf13e55fe0f1ce55cfb5a4dd0, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:18.962Z] [EXECUTE: 345ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1748]]
+[2025-10-07T13:45:19.861Z] [EXECUTE: 350ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254723072625, Success, 100, ATXid_7344debf3cbeebcb1d458993904c42a5, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:20.239Z] [EXECUTE: 344ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1761]]
+[2025-10-07T13:45:21.150Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254721156494, Success, 100, ATXid_2d4f1f534a4f2e1f4124c760230192dc, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:21.522Z] [EXECUTE: 346ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1764]]
+[2025-10-07T13:45:22.443Z] [EXECUTE: 365ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254721659398, Success, 100, ATXid_b45d9ccc90691bbac57764786b06ff56, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:22.810Z] [EXECUTE: 345ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1772]]
+[2025-10-07T13:45:23.712Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254711595829, Success, 100, ATXid_b9ba63751375f9c55008a5918c309cad, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:24.067Z] [EXECUTE: 345ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1777]]
+[2025-10-07T13:45:29.058Z] [EXECUTE: 359ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254758419002, Success, 100, ATXid_f95514821c3d5345113ff716c97be10c, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:29.955Z] [EXECUTE: 354ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254700806228, Success, 100, ATXid_b0508082c60935cee19557ed4aaefdd0, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:30.333Z] [EXECUTE: 353ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1788]]
+[2025-10-07T13:45:35.351Z] [EXECUTE: 356ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254725775012, Success, 100, ATXid_de0cab604a80006fdd22f96d61e3d328, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:36.261Z] [EXECUTE: 355ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254795408083, Success, 100, ATXid_7c8e6df83f35e0590253c410afbd2d7a, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:36.623Z] [EXECUTE: 351ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1792]]
+[2025-10-07T13:45:37.534Z] [EXECUTE: 353ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254796847192, Success, 100, ATXid_d51e040d8586d8cddd793246b3288110, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:37.893Z] [EXECUTE: 347ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1807]]
+[2025-10-07T13:45:38.804Z] [EXECUTE: 357ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722553031, Success, 100, ATXid_a23b3fed8a5b9e1eb70321f9ec6e2599, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:39.181Z] [EXECUTE: 350ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1813]]
+[2025-10-07T13:45:44.175Z] [EXECUTE: 351ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254717227971, Success, 100, ATXid_d2b985d1e7f1a481db940eeafabd9451, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:45.105Z] [EXECUTE: 348ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254725379316, Success, 100, ATXid_2a65531e88eff489959376cd2f331d70, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:45.460Z] [EXECUTE: 342ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1846]]
+[2025-10-07T13:45:46.343Z] [EXECUTE: 348ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254740343845, Success, 100, ATXid_8ccd0a79f9c4d61614f750f78238233e, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:46.704Z] [EXECUTE: 344ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1848]]
+[2025-10-07T13:45:47.599Z] [EXECUTE: 342ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722228416, Success, 100, ATXid_020f9a629494cc6a1ba81f232d693bbc, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:47.967Z] [EXECUTE: 342ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1852]]
+[2025-10-07T13:45:48.897Z] [EXECUTE: 361ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254721904602, Success, 100, ATXid_818ee205c663f50bceeca8176a9feabc, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:49.271Z] [EXECUTE: 351ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1853]]
+[2025-10-07T13:45:50.177Z] [EXECUTE: 358ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254706337535, Success, 100, ATXid_bb5db3ff87f9568e59843143a0ea01f5, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:50.555Z] [EXECUTE: 348ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1854]]
+[2025-10-07T13:45:51.470Z] [EXECUTE: 358ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722403803, Success, 100, ATXid_4e47745f73b7557b7a1a85a6c3792b3f, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:51.820Z] [EXECUTE: 340ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1869]]
+[2025-10-07T13:45:52.708Z] [EXECUTE: 349ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254790782194, Success, 100, ATXid_c1b887cf1eafcd6d6d9e3b9f3b6d363c, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:53.084Z] [EXECUTE: 346ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1875]]
+[2025-10-07T13:45:53.982Z] [EXECUTE: 346ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722143234, Success, 100, ATXid_8088d0010a3b89071d651e68334cc2ae, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:54.355Z] [EXECUTE: 354ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1877]]
+[2025-10-07T13:45:55.262Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254729243024, Success, 100, ATXid_3a6c302ae45822a1a9bb08f1bb7c58a2, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:55.636Z] [EXECUTE: 352ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1879]]
+[2025-10-07T13:45:56.537Z] [EXECUTE: 359ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254758836937, Success, 100, ATXid_1e9ae96f1c71eb7d10277627f693b8f6, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:56.923Z] [EXECUTE: 349ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1885]]
+[2025-10-07T13:45:57.425Z] ❌ [EXECUTE ERROR: 0ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [00721524186, InvalidPhoneNumber, 403, None, 0, , Sent to 0/1 Total Cost: 0]] - Bind parameters must not contain undefined. To pass SQL NULL specify JS null
+[2025-10-07T13:45:57.806Z] [EXECUTE: 359ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1905]]
+[2025-10-07T13:45:58.701Z] [EXECUTE: 354ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254720791704, Success, 100, ATXid_5960c4956d054b2027469dd2251e73cb, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:45:59.066Z] [EXECUTE: 356ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1909]]
+[2025-10-07T13:46:00.005Z] [EXECUTE: 359ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254708646066, Success, 100, ATXid_19afe16bf1a42af948c8a7bfbfab4005, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:00.370Z] [EXECUTE: 352ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1921]]
+[2025-10-07T13:46:01.287Z] [EXECUTE: 376ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254745545147, Success, 100, ATXid_1daf6f5770897b4d782005ea43def255, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:01.648Z] [EXECUTE: 349ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1939]]
+[2025-10-07T13:46:02.586Z] [EXECUTE: 358ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254795788407, Success, 100, ATXid_7a4af93107f86e51695b45eb9b0d6032, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:02.965Z] [EXECUTE: 345ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1944]]
+[2025-10-07T13:46:03.860Z] [EXECUTE: 366ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254795503081, Success, 100, ATXid_c351b3e63e206471965edf912f252f64, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:04.221Z] [EXECUTE: 345ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1945]]
+[2025-10-07T13:46:05.150Z] [EXECUTE: 364ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254729007897, Success, 100, ATXid_5b01338ce9f9e865290c001e5949a7e7, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:05.504Z] [EXECUTE: 343ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1949]]
+[2025-10-07T13:46:06.420Z] [EXECUTE: 359ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254719288728, Success, 100, ATXid_3bf455f7ee656ba757ea9ac3fe094a73, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:06.790Z] [EXECUTE: 348ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1964]]
+[2025-10-07T13:46:07.711Z] [EXECUTE: 357ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254706420413, Success, 100, ATXid_ae3b496735ea4f4517d9e3a004c8c3a4, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:08.089Z] [EXECUTE: 368ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1970]]
+[2025-10-07T13:46:09.052Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254701679325, Success, 100, ATXid_1c3427130a08f9573ac8a3bdaa7aaa30, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:09.470Z] [EXECUTE: 354ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1976]]
+[2025-10-07T13:46:10.360Z] [EXECUTE: 348ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254727823300, Success, 100, ATXid_c6b033c66112432d9a9fac4d64e9403d, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:10.734Z] [EXECUTE: 346ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1978]]
+[2025-10-07T13:46:11.603Z] [EXECUTE: 356ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254721836754, Success, 100, ATXid_de43a62200a7f5231abb260165bfd58b, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:11.964Z] [EXECUTE: 345ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1982]]
+[2025-10-07T13:46:12.881Z] [EXECUTE: 361ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254795434646, Success, 100, ATXid_29a5b233624dcd068098e964eff4276d, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:13.277Z] [EXECUTE: 350ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1989]]
+[2025-10-07T13:46:14.187Z] [EXECUTE: 349ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254748693194, Success, 100, ATXid_70e93d0a8bc7209faee6d13bd813110f, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:14.583Z] [EXECUTE: 351ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 1993]]
+[2025-10-07T13:46:15.527Z] [EXECUTE: 377ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254723022200, Success, 100, ATXid_46f24493eeb8a789fddea192b1fc351e, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:15.916Z] [EXECUTE: 365ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2004]]
+[2025-10-07T13:46:16.831Z] [EXECUTE: 350ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254718610816, Success, 100, ATXid_c4036b48a8f1dc6050b64e99d66e24c9, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:17.189Z] [EXECUTE: 350ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2010]]
+[2025-10-07T13:46:18.137Z] [EXECUTE: 370ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254799981998, Success, 100, ATXid_5ddce07c8e7ea3c9a87dacde3b809dcb, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:18.507Z] [EXECUTE: 353ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2019]]
+[2025-10-07T13:46:19.380Z] [EXECUTE: 349ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254707922095, Success, 100, ATXid_2edb58265ded990fc03d0267edead29c, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:19.873Z] [EXECUTE: 345ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2024]]
+[2025-10-07T13:46:20.770Z] [EXECUTE: 359ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254758568880, Success, 100, ATXid_f98c503a29d55ed4046380ba159b7cd9, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:21.130Z] [EXECUTE: 352ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2035]]
+[2025-10-07T13:46:22.063Z] [EXECUTE: 351ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254723067591, Success, 100, ATXid_6e55f00ad0a7b081adad528e20a1b13a, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:22.429Z] [EXECUTE: 342ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2052]]
+[2025-10-07T13:46:27.379Z] [EXECUTE: 358ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254797933937, Success, 100, ATXid_fb636b31ecf083c43ac167201bab4c1d, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:28.294Z] [EXECUTE: 350ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254724225858, Success, 100, ATXid_bcae9359b0e8dcfafa82772d192194ac, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:28.660Z] [EXECUTE: 344ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2069]]
+[2025-10-07T13:46:29.546Z] [EXECUTE: 346ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254758575580, Success, 100, ATXid_b90415f3d813328d65cf6ee8074f7831, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:29.907Z] [EXECUTE: 348ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2078]]
+[2025-10-07T13:46:30.828Z] [EXECUTE: 359ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254724464134, Success, 100, ATXid_626734bcac35dfbeb251fb3431c421d4, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:31.219Z] [EXECUTE: 358ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2090]]
+[2025-10-07T13:46:36.212Z] [EXECUTE: 354ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254791922016, Success, 100, ATXid_8a3dc591fa9f0af1951558c55a4bc5cc, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:37.141Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254701163149, Success, 100, ATXid_a052180cbd23570742b3e240e95d74ac, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:37.514Z] [EXECUTE: 351ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2100]]
+[2025-10-07T13:46:42.540Z] [EXECUTE: 353ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254723066495, Success, 100, ATXid_a628be6c0ea9ca7803857f18cf663d8e, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:43.473Z] [EXECUTE: 367ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254717913265, Success, 100, ATXid_3bc5ae9d4ea5d54a580f2fda0ef7fc38, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:43.867Z] [EXECUTE: 369ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2136]]
+[2025-10-07T13:46:44.935Z] [EXECUTE: 351ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722782569, Success, 100, ATXid_25632b7d0d35b06eaae53c74236226a8, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:45.371Z] [EXECUTE: 354ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2139]]
+[2025-10-07T13:46:46.327Z] [EXECUTE: 357ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254706117411, Success, 100, ATXid_890c503778082571a945dc076cd5a928, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:46.681Z] [EXECUTE: 343ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2142]]
+[2025-10-07T13:46:47.585Z] [EXECUTE: 353ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254725092159, Success, 100, ATXid_8b22c6e6935c4772264798f540bf39c1, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:47.945Z] [EXECUTE: 340ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2144]]
+[2025-10-07T13:46:48.846Z] [EXECUTE: 354ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254721891194, Success, 100, ATXid_a9167fda28a09e71a85560e33cbf440a, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:49.243Z] [EXECUTE: 344ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2147]]
+[2025-10-07T13:46:50.125Z] [EXECUTE: 348ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254704510962, Success, 100, ATXid_49334596fef78dc48e865135b33bc720, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:50.501Z] [EXECUTE: 345ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2158]]
+[2025-10-07T13:46:51.406Z] [EXECUTE: 354ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722351733, Success, 100, ATXid_f8ae8bd0b0f57493d10cb88772ac326c, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:51.769Z] [EXECUTE: 342ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2163]]
+[2025-10-07T13:46:52.702Z] [EXECUTE: 351ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254723879874, Success, 100, ATXid_5c746d5668de058eca03a2693b9076a2, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:53.086Z] [EXECUTE: 357ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2183]]
+[2025-10-07T13:46:53.981Z] [EXECUTE: 353ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254706103748, Success, 100, ATXid_9b570c930bbc2de44dba64701b36320e, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:46:54.340Z] [EXECUTE: 347ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2185]]
+[2025-10-07T13:46:59.293Z] [EXECUTE: 347ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254723827110, Success, 100, ATXid_a7f4682b36000e3742bf24e355938afd, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:00.178Z] [EXECUTE: 350ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254720242219, Success, 100, ATXid_6ccf0c7b96a1a79631b303ad40424cba, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:00.551Z] [EXECUTE: 342ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2204]]
+[2025-10-07T13:47:01.489Z] [EXECUTE: 350ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254721850181, Success, 100, ATXid_5fe574856ed1bf11855b56c39aa9e014, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:01.842Z] [EXECUTE: 346ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2206]]
+[2025-10-07T13:47:02.757Z] [EXECUTE: 360ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254796441001, Success, 100, ATXid_b5993f83a72018bd886f6f78703c59cb, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:03.111Z] [EXECUTE: 342ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2218]]
+[2025-10-07T13:47:03.999Z] [EXECUTE: 351ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254728023568, Success, 100, ATXid_528d79e9c996dca8dfe5d1c0e054085c, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:04.360Z] [EXECUTE: 352ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2224]]
+[2025-10-07T13:47:05.294Z] [EXECUTE: 351ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254712987959, Success, 100, ATXid_7b6e1e386eda1caa459786c90211f29b, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:05.645Z] [EXECUTE: 343ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2226]]
+[2025-10-07T13:47:06.534Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254723256935, Success, 100, ATXid_04fec1db41579786166353549790dc9c, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:06.922Z] [EXECUTE: 345ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2234]]
+[2025-10-07T13:47:11.908Z] [EXECUTE: 356ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254720320699, Success, 100, ATXid_387bfa41596995f41219d32a527c4b3f, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:16.958Z] [EXECUTE: 360ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254742928530, Success, 100, ATXid_c5ea3dd70bea1348e6aef82b9da4fb01, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:17.465Z] ❌ [EXECUTE ERROR: 0ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [00721891194, InvalidPhoneNumber, 403, None, 0, , Sent to 0/1 Total Cost: 0]] - Bind parameters must not contain undefined. To pass SQL NULL specify JS null
+[2025-10-07T13:47:17.868Z] [EXECUTE: 347ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2257]]
+[2025-10-07T13:47:18.775Z] [EXECUTE: 358ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254727550957, Success, 100, ATXid_39e973fe5ea96b3cedd81d64dd0950e8, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:19.172Z] [EXECUTE: 352ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2266]]
+[2025-10-07T13:47:20.102Z] [EXECUTE: 356ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254700292395, Success, 100, ATXid_52ae81c67147c8b46f7f04817a9c4581, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:20.470Z] [EXECUTE: 344ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2267]]
+[2025-10-07T13:47:21.374Z] [EXECUTE: 348ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254723765487, Success, 100, ATXid_59c9c857c90a7ba8d42d576554070cca, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:21.728Z] [EXECUTE: 343ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2268]]
+[2025-10-07T13:47:22.620Z] [EXECUTE: 347ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254798376762, Success, 100, ATXid_d67819867512e31fd9d71410a853a870, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:22.980Z] [EXECUTE: 340ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2274]]
+[2025-10-07T13:47:24.007Z] [EXECUTE: 349ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254704820548, Success, 100, ATXid_a3ab6f3c43f5a339d8b6d9265a6db589, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:24.366Z] [EXECUTE: 351ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2335]]
+[2025-10-07T13:47:29.376Z] [EXECUTE: 353ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254794276741, Success, 100, ATXid_c669b9a9c689bca14040f1454fde18b9, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:30.298Z] [EXECUTE: 357ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254715325916, Success, 100, ATXid_dafbe77bcb5f91d52483c72fde1685b6, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:30.665Z] [EXECUTE: 356ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2377]]
+[2025-10-07T13:47:31.544Z] [EXECUTE: 353ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254723914768, Success, 100, ATXid_a4b7c63a1970157d1eb3cd28bdd3678f, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:31.904Z] [EXECUTE: 348ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2380]]
+[2025-10-07T13:47:32.781Z] [EXECUTE: 350ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254710677118, Success, 100, ATXid_5894147e1c10fb351fbce9e58e7f33b0, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:33.153Z] [EXECUTE: 343ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2391]]
+[2025-10-07T13:47:34.058Z] [EXECUTE: 348ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254703443827, Success, 100, ATXid_57d920452376935a8bf36ad9eee21812, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:34.419Z] [EXECUTE: 346ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2397]]
+[2025-10-07T13:47:35.307Z] [EXECUTE: 363ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254703665655, Success, 100, ATXid_295a8c48b7219c920b93cf07da7e21f9, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:35.676Z] [EXECUTE: 343ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2416]]
+[2025-10-07T13:47:40.286Z] ❌ [EXECUTE ERROR: 1ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [, InvalidPhoneNumber, 403, None, 0, , Sent to 0/1 Total Cost: 0]] - Bind parameters must not contain undefined. To pass SQL NULL specify JS null
+[2025-10-07T13:47:44.915Z] ❌ [EXECUTE ERROR: 1ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [, InvalidPhoneNumber, 403, None, 0, , Sent to 0/1 Total Cost: 0]] - Bind parameters must not contain undefined. To pass SQL NULL specify JS null
+[2025-10-07T13:47:45.470Z] ❌ [EXECUTE ERROR: 0ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [, InvalidPhoneNumber, 403, None, 0, , Sent to 0/1 Total Cost: 0]] - Bind parameters must not contain undefined. To pass SQL NULL specify JS null
+[2025-10-07T13:47:45.857Z] [EXECUTE: 350ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2535]]
+[2025-10-07T13:47:46.802Z] [EXECUTE: 350ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254729094718, Success, 100, ATXid_fe13c26c18971fcc039db820339a7542, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:47.185Z] [EXECUTE: 357ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2536]]
+[2025-10-07T13:47:52.154Z] [EXECUTE: 349ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254748854597, Success, 100, ATXid_5bf5ca6c8063e79e11a84d54ef864cba, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:57.121Z] [EXECUTE: 360ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254727154871, Success, 100, ATXid_b37793890d52a5b10e46c9081eda4df7, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:58.023Z] [EXECUTE: 350ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254727823760, Success, 100, ATXid_7aac3ae5643a3f4835c3cfdc2084ddb4, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:58.400Z] [EXECUTE: 365ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2543]]
+[2025-10-07T13:47:59.322Z] [EXECUTE: 353ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254794874279, Success, 100, ATXid_192b60d54183fd47f0f5f0260ec65418, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:47:59.679Z] [EXECUTE: 341ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2544]]
+[2025-10-07T13:48:00.564Z] [EXECUTE: 353ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254715816644, Success, 100, ATXid_9bc26f555dbfbd9ec3b0fb5d9f2fabfc, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:00.940Z] [EXECUTE: 350ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2548]]
+[2025-10-07T13:48:01.894Z] [EXECUTE: 351ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722236738, Success, 100, ATXid_c2c60aa16874d58d87ae954bb31dc7d6, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:02.284Z] [EXECUTE: 345ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2550]]
+[2025-10-07T13:48:03.249Z] [EXECUTE: 358ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254726758540, Success, 100, ATXid_c2a9b0739473c308f3be7de93328ac6e, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:03.624Z] [EXECUTE: 349ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2551]]
+[2025-10-07T13:48:08.612Z] [EXECUTE: 377ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254794459872, Success, 100, ATXid_dfec20672e4461497ff857870f847cb6, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:10.027Z] [EXECUTE: 384ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254721971339, Success, 100, ATXid_14a4f212479b7d6fa507d9c8a033138b, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:10.390Z] [EXECUTE: 353ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2578]]
+[2025-10-07T13:48:15.423Z] [EXECUTE: 365ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254720783862, Success, 100, ATXid_c20a88831a676699ede157ffa08753df, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:16.408Z] [EXECUTE: 356ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254721372388, Success, 100, ATXid_18ecfb1602f86c333ace73e6cf469d57, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:16.799Z] [EXECUTE: 345ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2591]]
+[2025-10-07T13:48:17.700Z] [EXECUTE: 357ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254726911535, Success, 100, ATXid_b5637830f1959f2cef6fcb23c0704032, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:18.172Z] [EXECUTE: 346ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2609]]
+[2025-10-07T13:48:23.240Z] [EXECUTE: 359ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254706943563, Success, 100, ATXid_f6e4485a123b758679a84632248be966, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:24.176Z] [EXECUTE: 362ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254720230116, Success, 100, ATXid_fd1a862e2d046e34e5083d4f433c59a9, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:24.535Z] [EXECUTE: 351ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2634]]
+[2025-10-07T13:48:25.425Z] [EXECUTE: 346ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254713295166, Success, 100, ATXid_e9a58b06bef3c151d2283af65a7ff03b, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:25.804Z] [EXECUTE: 345ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2647]]
+[2025-10-07T13:48:26.729Z] [EXECUTE: 360ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254111872942, Success, 100, ATXid_2b3eb993412f6da955e5edb4300a56f3, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:27.094Z] [EXECUTE: 346ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2654]]
+[2025-10-07T13:48:28.003Z] [EXECUTE: 356ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254757243434, Success, 100, ATXid_608127d0c703fa7242e4e64eb74d8af7, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:28.374Z] [EXECUTE: 348ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2656]]
+[2025-10-07T13:48:33.399Z] [EXECUTE: 355ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254729636217, Success, 100, ATXid_3cf4c665712ba42b5d6a81c331d0c8a1, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:34.309Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254716882749, Success, 100, ATXid_b23e7c14e842800370d2f1f0ce1abfdd, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:34.664Z] [EXECUTE: 346ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2701]]
+[2025-10-07T13:48:35.540Z] [EXECUTE: 353ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254720764762, Success, 100, ATXid_233455f3ad991b79152abedc2fed0105, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:35.918Z] [EXECUTE: 348ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2713]]
+[2025-10-07T13:48:36.828Z] [EXECUTE: 349ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254710792499, Success, 100, ATXid_2ac36e5b0645bc759a47c8a05df150a1, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:37.180Z] [EXECUTE: 344ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2730]]
+[2025-10-07T13:48:38.078Z] [EXECUTE: 356ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254710908790, Success, 100, ATXid_e6cb6777ee21e063a737fc5b807c4b23, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:38.454Z] [EXECUTE: 350ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2736]]
+[2025-10-07T13:48:39.339Z] [EXECUTE: 347ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254720209716, Success, 100, ATXid_a70fe9c2fe06e2540c9d31d874bf4b2f, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:39.699Z] [EXECUTE: 347ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2753]]
+[2025-10-07T13:48:40.639Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254794166363, Success, 100, ATXid_2e295d9e982210c992012fc7df8b1377, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:41.018Z] [EXECUTE: 349ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2760]]
+[2025-10-07T13:48:41.904Z] [EXECUTE: 348ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254716565923, Success, 100, ATXid_e3facd92211944124265f398b889cf77, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:42.262Z] [EXECUTE: 348ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2781]]
+[2025-10-07T13:48:43.168Z] [EXECUTE: 373ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254705377337, Success, 100, ATXid_69b3ef0c2597e79705d8e28516139cd1, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:43.532Z] [EXECUTE: 344ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2795]]
+[2025-10-07T13:48:44.424Z] [EXECUTE: 346ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254701777650, Success, 100, ATXid_35a795239e0bd56b41d638afa3527178, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:44.800Z] [EXECUTE: 361ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2802]]
+[2025-10-07T13:48:45.706Z] [EXECUTE: 350ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254704911432, Success, 100, ATXid_d19e83d0c9d63a36176e953cc178d7df, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:46.067Z] [EXECUTE: 343ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2805]]
+[2025-10-07T13:48:51.053Z] [EXECUTE: 351ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254793009769, Success, 100, ATXid_2b5d2cb41b53ceec01e4e42e98cf38d6, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:56.061Z] [EXECUTE: 350ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254710440887, Success, 100, ATXid_def6e9ba747d7e0ee72ec8f9bca6e3d6, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:56.992Z] [EXECUTE: 385ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254723846430, Success, 100, ATXid_9aafc37801a8be89dc53fca4906fa53e, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:57.367Z] [EXECUTE: 345ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2820]]
+[2025-10-07T13:48:58.235Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254725286190, Success, 100, ATXid_063c0e6b6dec5bb763b4ed76ca619cd0, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:48:58.625Z] [EXECUTE: 357ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2824]]
+[2025-10-07T13:49:03.617Z] [EXECUTE: 360ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254728244077, Success, 100, ATXid_924d53b403a603f75c88ce576710505a, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:49:08.642Z] [EXECUTE: 353ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254727975148, Success, 100, ATXid_b1d9331b89008cb20bfb19c57a71ad0b, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:49:09.567Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254716108108, Success, 100, ATXid_83e82b075184ee21292cd69a00307ee9, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:49:09.927Z] [EXECUTE: 349ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2855]]
+[2025-10-07T13:49:10.828Z] [EXECUTE: 350ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722979225, Success, 100, ATXid_b98300382aee77b00dfa99a828560047, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:49:11.186Z] [EXECUTE: 349ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2862]]
+[2025-10-07T13:49:16.284Z] [EXECUTE: 370ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254711398189, Success, 100, ATXid_e98afe818a311c260e058605d15bfc82, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:49:21.254Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722299681, Success, 100, ATXid_2be096edb8a087db5a317d55e531322c, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:49:26.256Z] [EXECUTE: 353ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254716579390, Success, 100, ATXid_9d06c00fdc4ed45b838e69ed8647576e, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:49:27.141Z] [EXECUTE: 360ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254720772952, Success, 100, ATXid_75ca518fdafa70b4b3366ee136fcd0d8, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:49:27.501Z] [EXECUTE: 341ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2900]]
+[2025-10-07T13:49:28.397Z] [EXECUTE: 346ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254700455756, Success, 100, ATXid_013f548974a3bc6fea4a7e5886c070b9, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:49:28.767Z] [EXECUTE: 344ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2905]]
+[2025-10-07T13:49:29.671Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254792037810, Success, 100, ATXid_e03dbf8d155d273a3d648ef72e8067d7, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:49:30.034Z] [EXECUTE: 342ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2908]]
+[2025-10-07T13:49:35.076Z] [EXECUTE: 357ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722939100, Success, 100, ATXid_0afa616d59d182db2a7a1a34d2471add, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:49:35.961Z] [EXECUTE: 349ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722271608, Success, 100, ATXid_32a1c13e8ecff2c51417dd94eee832c4, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:49:36.332Z] [EXECUTE: 345ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2945]]
+[2025-10-07T13:49:37.260Z] [EXECUTE: 362ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254799074439, Success, 100, ATXid_68efeb37641c46ec16e7e707e1581cce, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:49:37.613Z] [EXECUTE: 345ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2953]]
+[2025-10-07T13:49:38.509Z] [EXECUTE: 358ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254711778125, Success, 100, ATXid_063b105d18240c45dd4d697f1542d4a7, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:49:38.892Z] [EXECUTE: 352ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2954]]
+[2025-10-07T13:49:43.903Z] [EXECUTE: 356ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254702316776, Success, 100, ATXid_093550ab51d0ab0fd393ebd175c3af16, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:49:48.907Z] [EXECUTE: 351ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254706141802, Success, 100, ATXid_0ca4833a06e953683baa20ae675cb659, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:49:49.794Z] [EXECUTE: 361ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254714564914, Success, 100, ATXid_29dd9627b6e4d8644a6dae1329c9b8fe, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:49:50.152Z] [EXECUTE: 348ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2991]]
+[2025-10-07T13:49:55.089Z] [EXECUTE: 351ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254729095898, Success, 100, ATXid_1a1335e1ca05a047dd25e134c3ae571d, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:00.103Z] [EXECUTE: 350ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254745536665, Success, 100, ATXid_02d1d8770a6a260515214ee3f9871ce2, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:01.026Z] [EXECUTE: 361ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254740414875, Success, 100, ATXid_192a164bcf0cec01f1f22c65f03bccfb, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:01.403Z] [EXECUTE: 350ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 2996]]
+[2025-10-07T13:50:06.356Z] [EXECUTE: 353ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254714769160, Success, 100, ATXid_edd992412b504bfd5587c43087d2e23c, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:07.291Z] [EXECUTE: 353ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254728594838, Success, 100, ATXid_0258f33d5445505ff762d4876d47e9d0, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:07.644Z] [EXECUTE: 344ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 3013]]
+[2025-10-07T13:50:08.549Z] [EXECUTE: 353ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254720774292, Success, 100, ATXid_ec7b9bf1e8f149472bbe246da5b4a32a, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:08.904Z] [EXECUTE: 348ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 3020]]
+[2025-10-07T13:50:09.814Z] [EXECUTE: 359ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254113766091, Success, 100, ATXid_67ef7adc113d7365b964b95f577cc900, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:10.174Z] [EXECUTE: 353ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 3022]]
+[2025-10-07T13:50:11.063Z] [EXECUTE: 351ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254717105466, Success, 100, ATXid_f0be18e0ec39b840a89285105cc6f0be, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:11.445Z] [EXECUTE: 346ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 3024]]
+[2025-10-07T13:50:12.331Z] [EXECUTE: 355ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254716711516, Success, 100, ATXid_a19ea664e76ae334474771bba2a2ed5d, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:12.705Z] [EXECUTE: 342ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 3027]]
+[2025-10-07T13:50:13.581Z] [EXECUTE: 346ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722216835, Success, 100, ATXid_7ebfc09d523a4d0a31b24ecba39622c3, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:13.939Z] [EXECUTE: 344ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 3034]]
+[2025-10-07T13:50:14.846Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254700054717, Success, 100, ATXid_6cebf777a07652954c08d0c17749ff8b, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:15.247Z] [EXECUTE: 355ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 3039]]
+[2025-10-07T13:50:20.482Z] [EXECUTE: 348ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254713366874, Success, 100, ATXid_501dd6ca538f2d5ab02f1ce66857b294, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:25.846Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254700362058, Success, 100, ATXid_5a46256377c8985f8e0750a21559466b, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:27.376Z] [EXECUTE: 357ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254706292462, Success, 100, ATXid_eb9ce1f9e5c9af164a3abdc8390587cf, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:27.750Z] [EXECUTE: 354ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 3158]]
+[2025-10-07T13:50:28.652Z] [EXECUTE: 355ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254724362259, Success, 100, ATXid_a56fc721cf6d4e7440dc83bd24bface7, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:29.026Z] [EXECUTE: 349ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 3160]]
+[2025-10-07T13:50:29.959Z] [EXECUTE: 365ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254757432370, Success, 100, ATXid_591d74090e4e9234f4823fbfab9ac006, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:30.334Z] [EXECUTE: 352ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 3194]]
+[2025-10-07T13:50:36.276Z] [EXECUTE: 382ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254722151524, Success, 100, ATXid_e377ba014d7cbfb7a02de8f1a5d3540d, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:41.257Z] [EXECUTE: 363ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254727564949, Success, 100, ATXid_204cca5206f0e02719df2a2a852d03f7, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:42.207Z] [EXECUTE: 352ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254742358521, Success, 100, ATXid_59656940ee697824dc6255bc9362232b, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:42.559Z] [EXECUTE: 341ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 3221]]
+[2025-10-07T13:50:43.452Z] [EXECUTE: 357ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254116066753, Success, 100, ATXid_6f69a3bd761ccc235e56f253eb0ff3d9, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:43.814Z] [EXECUTE: 346ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 3222]]
+[2025-10-07T13:50:44.715Z] [EXECUTE: 349ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254727236840, Success, 100, ATXid_8e15f050e9590ed66d2cd03d5a06a812, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:45.099Z] [EXECUTE: 345ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 3223]]
+[2025-10-07T13:50:46.062Z] [EXECUTE: 357ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254729010355, Success, 100, ATXid_d845673ea005640800791831a3d8133e, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:46.411Z] [EXECUTE: 341ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 3226]]
+[2025-10-07T13:50:47.344Z] [EXECUTE: 367ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254723386381, Success, 100, ATXid_7dc7e24aa425e3e38da65496b8d926ae, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:47.735Z] [EXECUTE: 353ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 3227]]
+[2025-10-07T13:50:48.718Z] [EXECUTE: 351ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254707198177, Success, 100, ATXid_f090341df577e8a0e3946a72c3dcb283, 1.6, 2, Sent to 1/1 Total Cost: KES 1.6000]]
+[2025-10-07T13:50:49.081Z] [EXECUTE: 350ms] UPDATE pppoe_clients SET reminder = ? WHERE id = ? [params: [0, 3228]]
+[2025-10-07T14:11:24.871Z] ✅ New MySQL connection established
+[2025-10-07T14:11:25.227Z] ⚠️ [SLOW QUERY: 1805ms] 
+      UPDATE pppoe_clients
+      SET reminder = CASE id WHEN 3228 THEN 0 END
+      WHERE id IN (3228);
+     
+[2025-10-07T14:18:09.704Z] ❌ [QUERY ERROR: 106032ms] 
+      UPDATE pppoe_clients
+      SET reminder = CASE id WHEN 3228 THEN 0 WHEN 3227 THEN 0 END
+      WHERE id IN (3228,3227);
+      - Connection lost: The server closed the connection.
+[2025-10-07T14:20:02.542Z] ✅ New MySQL connection established
+[2025-10-07T14:20:02.903Z] ⚠️ [SLOW QUERY: 2870ms] 
+      UPDATE pppoe_clients
+      SET reminder = CASE id WHEN 3227 THEN 0 WHEN 3228 THEN 0 END
+      WHERE id IN (3227,3228);
+     

@@ -6,8 +6,15 @@ const db = require('./dbPromise');
 const bodyParser = require('body-parser');
 const { Client } = require('ssh2');
 
-const { startWorker } = require('./transaction_status/workers/b2bWorker');
-startWorker(); // Start the B2B worker
+// const { startWorker } = require('./transaction_status/workers/b2bWorker');
+// startWorker(); // Start the B2B worker
+
+const { startWorker: startB2BWorker } = require("./transaction_status/workers/b2bWorker");
+const { startWorker: startReminderWorker } = require("./clients/pppoe/workers/reminderWorker");
+
+startB2BWorker();
+startReminderWorker();
+
 
 require('dotenv').config();
 
