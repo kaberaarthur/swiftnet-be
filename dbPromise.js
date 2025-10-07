@@ -21,4 +21,28 @@ const pool = mysql.createPool({
     timezone: "+03:00"
 });
 
-module.exports = pool;
+// Optional: log when a connection is made (useful for debugging)
+pool.on('connection', (connection) => {
+  console.log('✅ New MySQL connection established');
+});
+
+// Wrapper function that logs query duration and content
+async function query(sql, params = []) {
+  const start = Date.now();
+  try {
+    const [rows] = await pool.query(sql, params);
+    const duration = Date.now() - start;
+
+    if (duration > 500) {
+      // Warn about slow queries
+      console.warn(`⚠️  [SLOW QUERY: ${duration}ms] ${sql}`);
+    }
+
+    return rows;
+  } catch (error) {
+    console.error(`❌ [QUERY ERROR] ${sql}`, error.message);
+    throw error;
+  }
+}
+
+module.exports = {pool, query};
