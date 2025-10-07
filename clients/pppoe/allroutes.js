@@ -263,16 +263,12 @@ router.post('/pppoe-clients', verifyToken, async (req, res) => {
 // Get PPPoE clients with optional query parameters
 router.get('/pppoe-clients', verifyToken, async (req, res) => {
     const { router_id, active, type, phone_number } = req.query;
+    const company_id = req.companyId; // Always provided by verifyToken
+    console.log("Getting PPPoE Clients...");
 
-    const company_id = req.companyId;
-
-    let query = 'SELECT * FROM pppoe_clients WHERE 1=1';
-    const params = [];
-
-    if (company_id) {
-        query += ' AND company_id = ?';
-        params.push(company_id);
-    }
+    // Base query filtered by company
+    let query = 'SELECT * FROM pppoe_clients WHERE company_id = ?';
+    const params = [company_id];
 
     if (router_id) {
         query += ' AND router_id = ?';
@@ -290,7 +286,7 @@ router.get('/pppoe-clients', verifyToken, async (req, res) => {
     }
 
     if (phone_number) {
-        query += ' AND phone_number LIKE ?'; // Use LIKE for partial matching if needed
+        query += ' AND phone_number LIKE ?';
         params.push(`%${phone_number}%`);
     }
 
@@ -298,7 +294,7 @@ router.get('/pppoe-clients', verifyToken, async (req, res) => {
         const [clients] = await db.execute(query, params);
         res.json(clients);
     } catch (error) {
-        res.status(500).json({ success:false, message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 

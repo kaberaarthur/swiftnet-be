@@ -1,3 +1,39 @@
 [2025-10-07T12:25:10.102Z] ✅ New MySQL connection established
 [2025-10-07T12:25:10.799Z] ⚠️ [SLOW EXECUTE: 2135ms] SELECT COUNT(*) as total FROM hotspot_clients WHERE company_id = ? [params: [2]]
 [2025-10-07T12:25:11.501Z] ⚠️ [SLOW EXECUTE: 701ms] SELECT COUNT(*) as total FROM pppoe_clients WHERE company_id = ? [params: [2]]
+[2025-10-07T12:28:18.437Z] ✅ New MySQL connection established
+[2025-10-07T12:28:18.454Z] [EXECUTE: 51ms] SELECT COUNT(*) as total FROM hotspot_clients WHERE company_id = ? [params: [2]]
+[2025-10-07T12:28:18.458Z] [EXECUTE: 3ms] SELECT COUNT(*) as total FROM pppoe_clients WHERE company_id = ? [params: [2]]
+[2025-10-07T12:30:03.219Z] ✅ New MySQL connection established
+[2025-10-07T12:30:03.292Z] [EXECUTE: 212ms] SELECT * FROM companies 
+[2025-10-07T12:30:03.367Z] [QUERY: 21ms] SELECT * FROM routers 
+[2025-10-07T12:30:03.895Z] [EXECUTE: 502ms] SELECT * FROM pppoe_clients WHERE 1=1 
+[2025-10-07T12:30:04.424Z] [EXECUTE: 78ms] SELECT * FROM pppoe_clients WHERE 1=1 
+[2025-10-07T12:38:47.082Z] ✅ New MySQL connection established
+[2025-10-07T12:38:47.099Z] ✅ New MySQL connection established
+[2025-10-07T12:38:47.102Z] ✅ New MySQL connection established
+[2025-10-07T12:38:47.486Z] ⚠️ [SLOW QUERY: 1799ms] SELECT * FROM routers WHERE company_id = ? [params: [2]]
+[2025-10-07T12:38:47.859Z] ⚠️ [SLOW EXECUTE: 2277ms] SELECT * FROM brands WHERE company_id = ? [params: [2]]
+[2025-10-07T12:38:48.366Z] [EXECUTE: 364ms] SELECT * FROM brands WHERE company_id = ? [params: [2]]
+[2025-10-07T12:38:49.180Z] ⚠️ [SLOW EXECUTE: 3510ms] SELECT * FROM pppoe_clients WHERE company_id = ? AND type = ? [params: [2, pppoe]]
+[2025-10-07T12:50:42.700Z] ❌ [QUERY ERROR: 199825ms] SELECT * FROM pppoe_payments WHERE 1=1 AND company_id = ? [params: [2]] - Connection lost: The server closed the connection.
+[2025-10-07T12:50:50.852Z] ❌ [QUERY ERROR: 188060ms] SELECT * FROM pppoe_payments WHERE 1=1 AND company_id = ? [params: [2]] - Connection lost: The server closed the connection.
+[2025-10-07T12:59:00.946Z] ✅ New MySQL connection established
+[2025-10-07T12:59:01.683Z] ⚠️ [SLOW EXECUTE: 2241ms] SELECT * FROM brands WHERE company_id = ? [params: [2]]
+[2025-10-07T12:59:01.929Z] ✅ New MySQL connection established
+[2025-10-07T12:59:02.108Z] [EXECUTE: 356ms] SELECT * FROM brands WHERE company_id = ? [params: [2]]
+[2025-10-07T12:59:02.298Z] ⚠️ [SLOW QUERY: 1937ms] SELECT * FROM routers WHERE company_id = ? [params: [2]]
+[2025-10-07T12:59:02.727Z] ✅ New MySQL connection established
+[2025-10-07T12:59:04.786Z] ⚠️ [SLOW EXECUTE: 4436ms] SELECT * FROM pppoe_clients WHERE company_id = ? AND type = ? [params: [2, pppoe]]
+[2025-10-07T13:02:28.948Z] [QUERY: 359ms] SELECT * FROM routers WHERE company_id = ? [params: [2]]
+[2025-10-07T13:02:29.382Z] [EXECUTE: 1000ms] SELECT * FROM brands WHERE company_id = ? [params: [2]]
+[2025-10-07T13:02:30.210Z] [EXECUTE: 343ms] SELECT * FROM brands WHERE company_id = ? [params: [2]]
+[2025-10-07T13:02:30.881Z] ⚠️ [SLOW EXECUTE: 2226ms] SELECT * FROM pppoe_clients WHERE company_id = ? AND type = ? [params: [2, pppoe]]
+[2025-10-07T13:02:50.078Z] [EXECUTE: 359ms] SELECT * FROM brands WHERE company_id = ? [params: [2]]
+[2025-10-07T13:02:50.207Z] [QUERY: 344ms] SELECT * FROM routers WHERE company_id = ? [params: [2]]
+[2025-10-07T13:02:50.535Z] [EXECUTE: 363ms] SELECT * FROM brands WHERE company_id = ? [params: [2]]
+[2025-10-07T13:02:51.569Z] ⚠️ [SLOW EXECUTE: 1714ms] SELECT * FROM pppoe_clients WHERE company_id = ? AND type = ? [params: [2, pppoe]]
+[2025-10-07T13:03:09.390Z] [EXECUTE: 357ms] SELECT * FROM brands WHERE company_id = ? [params: [2]]
+[2025-10-07T13:03:09.702Z] [QUERY: 348ms] SELECT * FROM routers WHERE company_id = ? [params: [2]]
+[2025-10-07T13:03:09.833Z] [EXECUTE: 344ms] SELECT * FROM brands WHERE company_id = ? [params: [2]]
+[2025-10-07T13:03:11.129Z] ⚠️ [SLOW EXECUTE: 1783ms] SELECT * FROM pppoe_clients WHERE company_id = ? AND type = ? [params: [2, pppoe]]
