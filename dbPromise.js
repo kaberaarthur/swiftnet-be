@@ -48,7 +48,7 @@ pool.query = async (sql, params = []) => {
     const duration = Date.now() - start;
 
     const paramsLog = params.length ? `[params: [${params.join(', ')}]]` : '';
-    const message = duration > 500
+    const message = duration > 1000
       ? `⚠️ [SLOW QUERY: ${duration}ms] ${sql} ${paramsLog}`
       : `[QUERY: ${duration}ms] ${sql} ${paramsLog}`;
 
