@@ -73,11 +73,11 @@ pool.execute = async (sql, params = []) => {
     const duration = Date.now() - start;
 
     const paramsLog = params.length ? `[params: [${params.join(', ')}]]` : '';
-    const message = duration > 500
+    const message = duration > 1000
       ? `⚠️ [SLOW EXECUTE: ${duration}ms] ${sql} ${paramsLog}`
       : `[EXECUTE: ${duration}ms] ${sql} ${paramsLog}`;
 
-    if (duration > 500) console.warn(message);
+    if (duration > 1000) console.warn(message);
     writeToLog(message);
 
     return [rows];
