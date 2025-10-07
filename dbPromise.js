@@ -1,5 +1,6 @@
 const mysql = require('mysql2/promise');
 const os = require('os');
+const fs = require('fs');
 require('dotenv').config();
 
 // Get the server's IP address
@@ -10,7 +11,7 @@ const host = (serverIP === '139.59.60.20') ? 'localhost' : '139.59.60.20';
 
 // MySQL connection setup
 const pool = mysql.createPool({
-    host: host,  // Dynamically set the host based on the server IP
+    host: host,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
@@ -21,28 +22,53 @@ const pool = mysql.createPool({
     timezone: "+03:00"
 });
 
-// Optional: log when a connection is made (useful for debugging)
+// Log file path
+const logFile = 'mysqlresourcemonitor.log';
+
+// Function to write logs to file (with datetime prefix)
+function writeToLog(message) {
+    const timestamp = new Date().toISOString();
+    const logEntry = `[${timestamp}] ${message}\n`;
+    fs.appendFileSync(logFile, logEntry, 'utf8');
+}
+
+// Log when a connection is made
 pool.on('connection', (connection) => {
-  console.log('✅ New MySQL connection established');
+    const message = '✅ New MySQL connection established';
+    console.log(message);
+    writeToLog(message);
 });
 
 // Wrapper function that logs query duration and content
 async function query(sql, params = []) {
-  const start = Date.now();
-  try {
-    const [rows] = await pool.query(sql, params);
-    const duration = Date.now() - start;
+    const start = Date.now();
+    try {
+        const [rows] = await pool.query(sql, params);
+        const duration = Date.now() - start;
 
-    if (duration > 500) {
-      // Warn about slow queries
-      console.warn(`⚠️  [SLOW QUERY: ${duration}ms] ${sql}`);
+        // Format params for logging (avoid logging sensitive data if needed)
+        const paramsLog = params.length > 0 ? `[params: [${params.join(', ')}]]` : '';
+
+        if (duration > 500) {
+            // Warn about slow queries (console + file)
+            const message = `⚠️ [SLOW QUERY: ${duration}ms] ${sql} ${paramsLog}`;
+            console.warn(message);
+            writeToLog(message);
+        } else {
+            // Log normal queries (file only)
+            const message = `[QUERY: ${duration}ms] ${sql} ${paramsLog}`;
+            writeToLog(message);
+        }
+
+        return rows;
+    } catch (error) {
+        // Log errors (console + file)
+        const paramsLog = params.length > 0 ? `[params: [${params.join(', ')}]]` : '';
+        const message = `❌ [QUERY ERROR: ${duration}ms] ${sql} ${paramsLog} - ${error.message}`;
+        console.error(message);
+        writeToLog(message);
+        throw error;
     }
-
-    return rows;
-  } catch (error) {
-    console.error(`❌ [QUERY ERROR] ${sql}`, error.message);
-    throw error;
-  }
 }
 
-module.exports = {pool, query};
+module.exports = { pool, query };
