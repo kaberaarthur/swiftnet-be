@@ -1136,3 +1136,19 @@
       SET reminder = CASE id WHEN 3227 THEN 0 WHEN 3228 THEN 0 END
       WHERE id IN (3227,3228);
      
+[2025-10-07T14:33:57.318Z] ✅ New MySQL connection established
+[2025-10-07T14:33:58.168Z] ✅ New MySQL connection established
+[2025-10-07T14:33:58.547Z] ✅ New MySQL connection established
+[2025-10-07T14:33:58.876Z] ⚠️ [SLOW EXECUTE: 3536ms] SELECT * FROM brands WHERE company_id = ? [params: [2]]
+[2025-10-07T14:33:59.008Z] ⚠️ [SLOW QUERY: 3078ms] SELECT * FROM routers WHERE company_id = ? [params: [2]]
+[2025-10-07T14:33:59.887Z] ⚠️ [SLOW EXECUTE: 3956ms] SELECT * FROM pppoe_clients WHERE company_id = ? AND type = ? [params: [2, pppoe]]
+[2025-10-07T14:34:00.389Z] [EXECUTE: 885ms] SELECT * FROM brands WHERE company_id = ? [params: [2]]
+[2025-10-07T14:36:05.822Z] [EXECUTE: 756ms] SELECT company_id, router_id, company_username, plan_name, plan_validity, plan_price, shared_users FROM hotspot_plans WHERE id = ? [params: [31]]
+[2025-10-07T14:36:06.191Z] [QUERY: 368ms] SELECT code_voucher FROM vouchers WHERE code_voucher = ? [params: [eIT63Cjd]]
+[2025-10-07T14:36:06.981Z] [EXECUTE: 784ms] INSERT INTO vouchers (code_voucher, plan_id, company_id, router_id, company_username, plan_name, plan_validity, customer, total_users, current_users, amount, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW()) [params: [eIT63Cjd, 31, 9, 19, @pawainternet, Jienjoy Offer, 72, 254790485731, 1, 0, 69.00]]
+[2025-10-07T14:36:07.705Z] ❌ [EXECUTE ERROR: 722ms] DELETE FROM vouchers 
+       WHERE redeemed = 1 
+       AND created_at < NOW() - INTERVAL 7 DAY  - Cannot delete or update a parent row: a foreign key constraint fails (`swiftnet`.`tvs`, CONSTRAINT `tvs_ibfk_1` FOREIGN KEY (`voucher_id`) REFERENCES `vouchers` (`id`))
+[2025-10-08T11:55:34.206Z] ❌ [QUERY ERROR: 10058ms] SELECT * FROM routers WHERE company_id = ? [params: [2]] - connect ETIMEDOUT
+[2025-10-08T11:56:26.169Z] ❌ [QUERY ERROR: 10014ms] SELECT * FROM routers WHERE company_id = ? [params: [2]] - connect ETIMEDOUT
+[2025-10-08T11:56:46.824Z] ❌ [QUERY ERROR: 10040ms] SELECT * FROM routers WHERE company_id = ? [params: [2]] - connect ETIMEDOUT

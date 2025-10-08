@@ -25,11 +25,11 @@ async function getPlanDetails(plan_id) {
 
 async function deleteOldRedeemedVouchers() {
   try {
-    // Delete rows where redeemed = 1 and created_at is older than 7 days
+    // Delete rows where redeemed = 1 and end_date passed 7 days ago
     const [result] = await db.execute(
       `DELETE FROM vouchers 
        WHERE redeemed = 1 
-       AND created_at < NOW() - INTERVAL 7 DAY`
+       AND end_date < NOW() - INTERVAL 7 DAY`
     );
 
     console.log(`${result.affectedRows} old redeemed voucher(s) deleted.`);
@@ -113,7 +113,7 @@ async function createVoucher(plan_id, customer) {
     try {
         // Query to select plan details
         const [rows] = await db.execute(
-            'SELECT company_id, router_id, company_username, plan_name, plan_validity, shared_users FROM hotspot_plans WHERE id = ?',
+            'SELECT company_id, router_id, company_username, plan_name, plan_validity, plan_price, shared_users FROM hotspot_plans WHERE id = ?',
             [plan_id]
         );
 
