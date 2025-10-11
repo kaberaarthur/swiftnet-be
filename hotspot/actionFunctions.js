@@ -123,11 +123,6 @@ async function createVoucher(plan_id, customer) {
         }
 
         const plan = rows[0];
-
-        console.log("#############################");
-        console.log('Plan Details: ', plan);
-        console.log("#############################");
-
         
         // Generate unique voucher
         const voucherCode = await generateUniqueVoucher();
