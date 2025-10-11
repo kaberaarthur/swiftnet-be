@@ -67,6 +67,8 @@ router.post('/', async (req, res) => {
       success: false, 
       message: 'Customer not found' 
     });
+  } else {
+    console.log('User found for customer_id:', { customer_id, user_id: user.id });
   }
 
   const company_id = user.company_id;
