@@ -1152,3 +1152,112 @@
 [2025-10-08T11:55:34.206Z] ❌ [QUERY ERROR: 10058ms] SELECT * FROM routers WHERE company_id = ? [params: [2]] - connect ETIMEDOUT
 [2025-10-08T11:56:26.169Z] ❌ [QUERY ERROR: 10014ms] SELECT * FROM routers WHERE company_id = ? [params: [2]] - connect ETIMEDOUT
 [2025-10-08T11:56:46.824Z] ❌ [QUERY ERROR: 10040ms] SELECT * FROM routers WHERE company_id = ? [params: [2]] - connect ETIMEDOUT
+[2025-10-10T22:04:15.459Z] ✅ New MySQL connection established
+[2025-10-10T22:04:15.917Z] ⚠️ [SLOW EXECUTE: 1473ms] 
+            INSERT INTO sms_logs (
+                number, status, status_code, message_id, cost, message_parts, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+         [params: [+254790485731, Success, 100, ATXid_3849113ac428efe8f31fa07a7c56e400, 0.8, 1, Sent to 1/1 Total Cost: KES 0.8000]]
+[2025-10-11T07:48:50.678Z] ✅ New MySQL connection established
+[2025-10-11T07:48:51.133Z] ⚠️ [SLOW EXECUTE: 1375ms] SELECT company_id, router_id, company_username, plan_name, plan_validity, plan_price, shared_users FROM hotspot_plans WHERE id = ? [params: [32]]
+[2025-10-11T07:48:51.354Z] [QUERY: 219ms] SELECT code_voucher FROM vouchers WHERE code_voucher = ? [params: [Hwbi8AHX]]
+[2025-10-11T07:48:51.795Z] [EXECUTE: 439ms] INSERT INTO vouchers (code_voucher, plan_id, company_id, router_id, company_username, plan_name, plan_validity, customer, total_users, current_users, amount, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW()) [params: [Hwbi8AHX, 32, 9, 19, @pawainternet, Supa, 1, 254790485731, 2, 0, 1.00]]
+[2025-10-11T07:48:52.235Z] ❌ [EXECUTE ERROR: 438ms] DELETE FROM vouchers 
+       WHERE redeemed = 1 
+       AND end_date < NOW() - INTERVAL 7 DAY  - Cannot delete or update a parent row: a foreign key constraint fails (`swiftnet`.`tvs`, CONSTRAINT `tvs_ibfk_1` FOREIGN KEY (`voucher_id`) REFERENCES `vouchers` (`id`))
+[2025-10-11T07:49:47.076Z] ✅ New MySQL connection established
+[2025-10-11T07:49:47.519Z] ⚠️ [SLOW EXECUTE: 1351ms] SELECT company_id, router_id, company_username, plan_name, plan_validity, plan_price, shared_users FROM hotspot_plans WHERE id = ? [params: [32]]
+[2025-10-11T07:49:47.742Z] [QUERY: 220ms] SELECT code_voucher FROM vouchers WHERE code_voucher = ? [params: [KB2C1cPS]]
+[2025-10-11T07:49:48.198Z] [EXECUTE: 437ms] INSERT INTO vouchers (code_voucher, plan_id, company_id, router_id, company_username, plan_name, plan_validity, customer, total_users, current_users, amount, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW()) [params: [KB2C1cPS, 32, 9, 19, @pawainternet, Supa, 1, 254790485731, 2, 0, 1.00]]
+[2025-10-11T07:50:13.334Z] ✅ New MySQL connection established
+[2025-10-11T07:50:13.772Z] ⚠️ [SLOW EXECUTE: 1331ms] SELECT company_id, router_id, company_username, plan_name, plan_validity, plan_price, shared_users FROM hotspot_plans WHERE id = ? [params: [32]]
+[2025-10-11T07:50:13.992Z] [QUERY: 217ms] SELECT code_voucher FROM vouchers WHERE code_voucher = ? [params: [EavXPCyA]]
+[2025-10-11T07:50:14.427Z] [EXECUTE: 433ms] INSERT INTO vouchers (code_voucher, plan_id, company_id, router_id, company_username, plan_name, plan_validity, customer, total_users, current_users, amount, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW()) [params: [EavXPCyA, 32, 9, 19, @pawainternet, Supa, 1, 254790485731, 2, 0, 1.00]]
+[2025-10-11T07:50:14.867Z] ❌ [EXECUTE ERROR: 430ms] DELETE FROM vouchers 
+       WHERE redeemed = 1 
+       AND end_date < NOW() - INTERVAL 7 DAY  - Cannot delete or update a parent row: a foreign key constraint fails (`swiftnet`.`tvs`, CONSTRAINT `tvs_ibfk_1` FOREIGN KEY (`voucher_id`) REFERENCES `vouchers` (`id`))
+[2025-10-11T07:52:35.328Z] ✅ New MySQL connection established
+[2025-10-11T07:52:35.776Z] ⚠️ [SLOW EXECUTE: 1356ms] SELECT * FROM hotspot_plans WHERE id = ? [params: [32]]
+[2025-10-11T07:52:36.835Z] [EXECUTE: 429ms] SELECT id, MpesaReceiptNumber, Amount FROM payments WHERE CheckoutRequestID = ? LIMIT 1 [params: [ws_CO_11102025105236980790485731]]
+[2025-10-11T07:52:42.076Z] [EXECUTE: 214ms] SELECT id, MpesaReceiptNumber, Amount FROM payments WHERE CheckoutRequestID = ? LIMIT 1 [params: [ws_CO_11102025105236980790485731]]
+[2025-10-11T07:52:47.303Z] [EXECUTE: 216ms] SELECT id, MpesaReceiptNumber, Amount FROM payments WHERE CheckoutRequestID = ? LIMIT 1 [params: [ws_CO_11102025105236980790485731]]
+[2025-10-11T07:52:52.530Z] [EXECUTE: 215ms] SELECT id, MpesaReceiptNumber, Amount FROM payments WHERE CheckoutRequestID = ? LIMIT 1 [params: [ws_CO_11102025105236980790485731]]
+[2025-10-11T07:52:57.763Z] [EXECUTE: 215ms] SELECT id, MpesaReceiptNumber, Amount FROM payments WHERE CheckoutRequestID = ? LIMIT 1 [params: [ws_CO_11102025105236980790485731]]
+[2025-10-11T07:53:02.990Z] [EXECUTE: 216ms] SELECT id, MpesaReceiptNumber, Amount FROM payments WHERE CheckoutRequestID = ? LIMIT 1 [params: [ws_CO_11102025105236980790485731]]
+[2025-10-11T07:53:35.081Z] ✅ New MySQL connection established
+[2025-10-11T07:53:35.530Z] ⚠️ [SLOW EXECUTE: 1357ms] SELECT * FROM hotspot_plans WHERE id = ? [params: [32]]
+[2025-10-11T07:53:36.567Z] [EXECUTE: 435ms] SELECT id, MpesaReceiptNumber, Amount FROM payments WHERE CheckoutRequestID = ? LIMIT 1 [params: [ws_CO_11102025105336504790485731]]
+[2025-10-11T07:53:41.807Z] [EXECUTE: 217ms] SELECT id, MpesaReceiptNumber, Amount FROM payments WHERE CheckoutRequestID = ? LIMIT 1 [params: [ws_CO_11102025105336504790485731]]
+[2025-10-11T07:53:47.039Z] [EXECUTE: 218ms] SELECT id, MpesaReceiptNumber, Amount FROM payments WHERE CheckoutRequestID = ? LIMIT 1 [params: [ws_CO_11102025105336504790485731]]
+[2025-10-11T07:53:52.261Z] [EXECUTE: 217ms] SELECT id, MpesaReceiptNumber, Amount FROM payments WHERE CheckoutRequestID = ? LIMIT 1 [params: [ws_CO_11102025105336504790485731]]
+[2025-10-11T07:53:57.513Z] [EXECUTE: 218ms] SELECT id, MpesaReceiptNumber, Amount FROM payments WHERE CheckoutRequestID = ? LIMIT 1 [params: [ws_CO_11102025105336504790485731]]
+[2025-10-11T07:53:57.956Z] [EXECUTE: 433ms] SELECT bill_ref_number FROM all_mpesa_transactions WHERE trans_id = ? LIMIT 1 [params: [TJBMX73BQY]]
+[2025-10-11T07:53:58.394Z] [EXECUTE: 434ms] SELECT ip_address, router_secret, username, port, company_id, router_name, company_username FROM routers WHERE id = ? LIMIT 1 [params: [19]]
+[2025-10-11T07:53:58.839Z] [EXECUTE: 435ms] SELECT paybill_no, account_no, forward_payment FROM companies WHERE id = ? [params: [9]]
+[2025-10-11T07:53:59.288Z] ❌ [EXECUTE ERROR: 441ms] DELETE FROM vouchers 
+       WHERE redeemed = 1 
+       AND end_date < NOW() - INTERVAL 7 DAY  - Cannot delete or update a parent row: a foreign key constraint fails (`swiftnet`.`tvs`, CONSTRAINT `tvs_ibfk_1` FOREIGN KEY (`voucher_id`) REFERENCES `vouchers` (`id`))
+[2025-10-11T07:53:59.767Z] [EXECUTE: 436ms] SELECT company_id, router_id, company_username, plan_name, plan_validity, plan_price, shared_users FROM hotspot_plans WHERE id = ? [params: [32]]
+[2025-10-11T07:53:59.777Z] ✅ New MySQL connection established
+[2025-10-11T07:53:59.993Z] [QUERY: 222ms] SELECT code_voucher FROM vouchers WHERE code_voucher = ? [params: [wu9KSFJm]]
+[2025-10-11T07:54:00.224Z] ⚠️ [SLOW EXECUTE: 1359ms] SELECT mpesa_initiator_password FROM companies WHERE id = ? [params: [2]]
+[2025-10-11T07:54:00.434Z] [EXECUTE: 440ms] INSERT INTO vouchers (code_voucher, plan_id, company_id, router_id, company_username, plan_name, plan_validity, customer, total_users, current_users, amount, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW()) [params: [wu9KSFJm, 32, 9, 19, @pawainternet, Supa, 1, 254790485731, 2, 0, 1.00]]
+[2025-10-11T07:54:11.620Z] [EXECUTE: 434ms] SELECT id FROM hotspot_clients WHERE phone_number = ? AND router_id = ? [params: [254790485731, 19]]
+[2025-10-11T07:54:12.058Z] [EXECUTE: 437ms] UPDATE hotspot_clients 
+         SET password = ?, 
+             service_start = ?, 
+             service_expiry = ?, 
+             plan_id = ?, 
+             plan_validity = ?, 
+             plan_name = ?
+         WHERE phone_number = ? AND router_id = ? [params: [hb8wUc, 2025-10-11 10:54:11, 2025-10-11 11:54:11, 32, 1, Supa, 254790485731, 19]]
+[2025-10-11T07:54:12.504Z] [EXECUTE: 437ms] UPDATE payments
+       SET company_id = ?,
+           company_username = ?,
+           router_id = ?,
+           plan_id = ?,
+           plan_name = ?,
+           plan_validity = ?,
+           phone_number = ?,
+           usedStatus = ?,
+           start_date = ?,
+           end_date = ?
+       WHERE id = ? [params: [9, @pawainternet, 19, 32, Supa, 1, 254790485731, used, 2025-10-11 10:54:12, 2025-10-11 11:54:12, 210]]
+[2025-10-11T08:07:05.528Z] ✅ New MySQL connection established
+[2025-10-11T08:07:05.977Z] ⚠️ [SLOW EXECUTE: 1361ms] SELECT * FROM hotspot_plans WHERE id = ? [params: [32]]
+[2025-10-11T08:07:07.706Z] [EXECUTE: 428ms] SELECT id, MpesaReceiptNumber, Amount FROM payments WHERE CheckoutRequestID = ? LIMIT 1 [params: [ws_CO_11102025110707011790485731]]
+[2025-10-11T08:07:12.934Z] [EXECUTE: 213ms] SELECT id, MpesaReceiptNumber, Amount FROM payments WHERE CheckoutRequestID = ? LIMIT 1 [params: [ws_CO_11102025110707011790485731]]
+[2025-10-11T08:07:18.170Z] [EXECUTE: 214ms] SELECT id, MpesaReceiptNumber, Amount FROM payments WHERE CheckoutRequestID = ? LIMIT 1 [params: [ws_CO_11102025110707011790485731]]
+[2025-10-11T08:07:23.402Z] [EXECUTE: 216ms] SELECT id, MpesaReceiptNumber, Amount FROM payments WHERE CheckoutRequestID = ? LIMIT 1 [params: [ws_CO_11102025110707011790485731]]
+[2025-10-11T08:07:23.834Z] [EXECUTE: 428ms] SELECT bill_ref_number FROM all_mpesa_transactions WHERE trans_id = ? LIMIT 1 [params: [TJBMX73HL7]]
+[2025-10-11T08:07:24.269Z] [EXECUTE: 429ms] SELECT ip_address, router_secret, username, port, company_id, router_name, company_username FROM routers WHERE id = ? LIMIT 1 [params: [19]]
+[2025-10-11T08:07:24.704Z] [EXECUTE: 428ms] SELECT paybill_no, account_no, forward_payment FROM companies WHERE id = ? [params: [9]]
+[2025-10-11T08:07:25.223Z] ❌ [EXECUTE ERROR: 430ms] DELETE FROM vouchers 
+       WHERE redeemed = 1 
+       AND end_date < NOW() - INTERVAL 7 DAY  - Cannot delete or update a parent row: a foreign key constraint fails (`swiftnet`.`tvs`, CONSTRAINT `tvs_ibfk_1` FOREIGN KEY (`voucher_id`) REFERENCES `vouchers` (`id`))
+[2025-10-11T08:07:25.672Z] [EXECUTE: 428ms] SELECT company_id, router_id, company_username, plan_name, plan_validity, plan_price, shared_users FROM hotspot_plans WHERE id = ? [params: [32]]
+[2025-10-11T08:07:25.898Z] [QUERY: 220ms] SELECT code_voucher FROM vouchers WHERE code_voucher = ? [params: [dYboVfzg]]
+[2025-10-11T08:07:26.333Z] [EXECUTE: 431ms] INSERT INTO vouchers (code_voucher, plan_id, company_id, router_id, company_username, plan_name, plan_validity, customer, total_users, current_users, amount, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW()) [params: [dYboVfzg, 32, 9, 19, @pawainternet, Supa, 1, 254790485731, 2, 0, 1.00]]
+[2025-10-11T08:07:26.685Z] ✅ New MySQL connection established
+[2025-10-11T08:07:27.116Z] ⚠️ [SLOW EXECUTE: 2303ms] SELECT mpesa_initiator_password FROM companies WHERE id = ? [params: [2]]
+[2025-10-11T08:07:37.541Z] [EXECUTE: 428ms] SELECT id FROM hotspot_clients WHERE phone_number = ? AND router_id = ? [params: [254790485731, 19]]
+[2025-10-11T08:07:38.006Z] [EXECUTE: 464ms] UPDATE hotspot_clients 
+         SET password = ?, 
+             service_start = ?, 
+             service_expiry = ?, 
+             plan_id = ?, 
+             plan_validity = ?, 
+             plan_name = ?
+         WHERE phone_number = ? AND router_id = ? [params: [6NH6A3, 2025-10-11 11:07:37, 2025-10-11 12:07:37, 32, 1, Supa, 254790485731, 19]]
+[2025-10-11T08:07:38.646Z] [EXECUTE: 433ms] UPDATE payments
+       SET company_id = ?,
+           company_username = ?,
+           router_id = ?,
+           plan_id = ?,
+           plan_name = ?,
+           plan_validity = ?,
+           phone_number = ?,
+           usedStatus = ?,
+           start_date = ?,
+           end_date = ?
+       WHERE id = ? [params: [9, @pawainternet, 19, 32, Supa, 1, 254790485731, used, 2025-10-11 11:07:38, 2025-10-11 12:07:38, 212]]

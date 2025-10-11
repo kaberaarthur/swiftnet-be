@@ -123,6 +123,11 @@ async function createVoucher(plan_id, customer) {
         }
 
         const plan = rows[0];
+
+        console.log("#############################");
+        console.log('Plan Price: ', plan.plan_price);
+        console.log("#############################");
+
         
         // Generate unique voucher
         const voucherCode = await generateUniqueVoucher();
@@ -142,7 +147,7 @@ async function createVoucher(plan_id, customer) {
                 customer,
                 plan.shared_users,
                 0, // current_users is initially 0
-                plan.plan_price,
+                plan.plan_price || null,
             ]
         );
 
@@ -155,6 +160,7 @@ async function createVoucher(plan_id, customer) {
             router_id: plan.router_id,
             company_username: plan.company_username,
             plan_name: plan.plan_name,
+            plan_price: plan.plan_price,
             plan_validity: plan.plan_validity,
             voucher_id: result.insertId,
             customer: customer,
