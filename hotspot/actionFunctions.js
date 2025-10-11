@@ -125,7 +125,7 @@ async function createVoucher(plan_id, customer) {
         const plan = rows[0];
 
         console.log("#############################");
-        console.log('Plan Price: ', plan.plan_price);
+        console.log('Plan Details: ', plan);
         console.log("#############################");
 
         
