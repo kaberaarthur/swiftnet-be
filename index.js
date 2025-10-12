@@ -11,9 +11,11 @@ const { Client } = require('ssh2');
 
 const { startWorker: startB2BWorker } = require("./transaction_status/workers/b2bWorker");
 const { startWorker: startReminderWorker } = require("./clients/pppoe/workers/reminderWorker");
+const { startWorker: companySubscriptionsWorker } = require("./clients/pppoe/workers/companySubscriptionsWorker");
 
 startB2BWorker();
 startReminderWorker();
+companySubscriptionsWorker();
 
 
 require('dotenv').config();
@@ -100,6 +102,9 @@ const smarttvRoutes = require("./smarttv/allRoutes.js");
 
 // Dashboard Total Users
 const dashboardRoutes = require("./dashboardData.js");
+
+// Company Plans
+const companyPlansRoutes = require("./company_plans/allRoutes.js");
 
 
 const app = express();
@@ -193,6 +198,9 @@ app.use('/smarttv', smarttvRoutes);
 
 // Dashboard Data
 app.use('/dashboard', dashboardRoutes);
+
+// Dashboard Data
+app.use('/company-plans', companyPlansRoutes);
 
 // Home route
 app.get('/', (req, res) => {
