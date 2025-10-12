@@ -7,11 +7,13 @@ const ssh = new Client();
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 
-const { sendSMS, executeSSHCommand, changePppoePlan, getRouterDetails } = require('./functions');
+const { sendSMS, executeSSHCommand, changePppoePlan, getRouterDetails, checkCompanySubscription } = require('./functions');
 
 require('dotenv').config();
 
 const jwtSecret = process.env.JWT_SECRET;
+
+const redisClient = require("../../services/redis");
 
 // Middleware to verify token
 function verifyToken(req, res, next) {
@@ -65,7 +67,7 @@ const getRouterById = async (id) => {
   };
 
 
-  // Function to create a PPPoE user
+// Function to create a PPPoE user
 async function createPPPoEUser(routerIp, routerUsername, routerPassword, phoneNumber, password, planName) {
     const command = `/ppp secret add name="${phoneNumber}" password="${password}" profile="${planName}" service=pppoe`;
 
@@ -157,106 +159,149 @@ router.get("/log", verifyToken, (req, res) => {
   
 // Add code to get Plan Details from DB
 // Create a new PPPoE client
+// Add a function to check if company is within subscription limitations
 router.post('/pppoe-clients', verifyToken, async (req, res) => {
-    const company_id = req.companyId;
+  const company_id = req.companyId;
 
-    try {
-        const {
-            account,
-            full_name,
-            email,
-            password,
-            portal_password,
-            address,
-            phone_number,
-            payment_no,
-            sms_group,
-            installation_fee,
-            router_id,
-            plan_id,
-            company_username,
-            fat_no,
-            active,
-            rate_limit,
-            type,
-            secret,
-            brand,
-            comments // New field
-        } = req.body;
+  try {
+    const {
+      account,
+      full_name,
+      email,
+      password,
+      portal_password,
+      address,
+      phone_number,
+      payment_no,
+      sms_group,
+      installation_fee,
+      router_id,
+      plan_id,
+      company_username,
+      fat_no,
+      active,
+      rate_limit,
+      type,
+      secret,
+      brand,
+      comments // New field
+    } = req.body;
 
-        console.log("Brand Name: ", brand);
+    console.log("Brand Name: ", brand);
 
-        // Get Router Details
-        const router_id_no = Number(router_id);
-        const routerDetails = await getRouterById(router_id_no);
-
-        if (!routerDetails) {
-            throw new Error(`Router with ID ${router_id_no} not found.`);
-        }
-
-        const { ip_address: router_ip, username: router_username, router_secret: router_password } = routerDetails;
-
-        // Get Plan Details
-        const planDetails = await getPlanDetails(plan_id);
-        if (!planDetails) {
-            throw new Error(`Plan with ID ${plan_id} not found.`);
-        }
-
-        const plan_name = planDetails.plan_name;
-        const plan_fee = parseFloat(planDetails.plan_price);
-
-        
-        // Create user on MikroTik
-        const createUserResponse = await createPPPoEUser(
-            router_ip,
-            router_username,
-            router_password,
-            secret,
-            password,
-            plan_name
-        );        
-        
-        if (!createUserResponse.success) {
-            throw new Error(`MikroTik error: ${createUserResponse.error || "Unknown error"}`);
-        }
-
-        // Insert into database
-        const query = `
-            INSERT INTO pppoe_clients (
-                account, full_name, email, password, portal_password, secret, location, phone_number, 
-                payment_no, sms_group, installation_fee, router_id, plan_name, 
-                plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, brand, 
-                comments, start_date, end_date, date_created
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
-                CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP() + INTERVAL 4 HOUR, CURRENT_TIMESTAMP())`;
-
-        const [result] = await db.execute(query, [
-            account, full_name, email, password, portal_password, secret, address, phone_number,
-            payment_no, sms_group, installation_fee, router_id, plan_name,
-            plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, brand,
-            comments ?? null // Added comments here
-        ]);
-
-        // Log success
-        console.log("PPPoE Client Created:", { id: result.insertId, account });
-
-        // Respond with success
-        res.status(201).json({
-            success: true,
-            id: result.insertId,
-            message: "Client Created Successfully"
-        });
-        
-    } catch (error) {
-        // Log error details
-        console.error("Error in /pppoe-clients:", error);
-
-        res.status(500).json({
-            success: false,
-            message: error.message || "Internal Server Error",
-            stack: process.env.NODE_ENV === "development" ? error.stack : undefined, // Show stack trace only in development
-        });
+    // ✅ 1. Get Subscription Info from Redis Cache
+    const cachedData = await redisClient.get("company_usage_summary");
+    if (!cachedData) {
+      return res.status(500).json({
+        success: false,
+        message: "Subscription data unavailable. Try again shortly."
+      });
     }
+
+    const subscription = JSON.parse(cachedData);
+    const company = subscription.find(c => c.id === company_id);
+
+    if (!company) {
+      return res.status(404).json({ success: false, message: "Company not found in subscription data." });
+    }
+
+    // ✅ 2. Check if Company is Active
+    if (!company.active) {
+      return res.status(403).json({ success: false, message: "Your company subscription is not active." });
+    }
+
+    // ✅ 3. Determine total users based on plan ID
+    let totalUsers = 0;
+    switch (company.company_plan_id) {
+      case 1: // Hotspot Only
+        return res.status(403).json({
+          success: false,
+          message: "Your plan does not support PPPoE transactions."
+        });
+      case 2: // PPPoE Only
+        totalUsers = company.total_pppoe_users || 0;
+        break;
+      case 3: // Hotspot + PPPoE
+        totalUsers = (company.total_pppoe_users || 0) + (company.total_hotspot_users || 0);
+        break;
+      default:
+        return res.status(400).json({ success: false, message: "Invalid or unsupported company plan." });
+    }
+
+    // ✅ 4. Check if total users exceed allowed users
+    const allowed = company.allowed_users || 0;
+    if (allowed > 0 && totalUsers >= allowed) {
+      return res.status(403).json({
+        success: false,
+        message: `User limit reached (${allowed}). Please upgrade your subscription plan.`
+      });
+    }
+
+    // ✅ 5. Get Router Details
+    const router_id_no = Number(router_id);
+    const routerDetails = await getRouterById(router_id_no);
+    if (!routerDetails) {
+      throw new Error(`Router with ID ${router_id_no} not found.`);
+    }
+
+    const { ip_address: router_ip, username: router_username, router_secret: router_password } = routerDetails;
+
+    // ✅ 6. Get Plan Details
+    const planDetails = await getPlanDetails(plan_id);
+    if (!planDetails) {
+      throw new Error(`Plan with ID ${plan_id} not found.`);
+    }
+
+    const plan_name = planDetails.plan_name;
+    const plan_fee = parseFloat(planDetails.plan_price);
+
+    // ✅ 7. Create PPPoE User on Router
+    const createUserResponse = await createPPPoEUser(
+      router_ip,
+      router_username,
+      router_password,
+      secret,
+      password,
+      plan_name
+    );
+
+    if (!createUserResponse.success) {
+      throw new Error(`MikroTik error: ${createUserResponse.error || "Unknown error"}`);
+    }
+
+    // ✅ 8. Insert new client into database
+    const query = `
+      INSERT INTO pppoe_clients (
+        account, full_name, email, password, portal_password, secret, location, phone_number,
+        payment_no, sms_group, installation_fee, router_id, plan_name,
+        plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, brand,
+        comments, start_date, end_date, date_created
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
+        CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP() + INTERVAL 4 HOUR, CURRENT_TIMESTAMP())`;
+
+    const [result] = await db.execute(query, [
+      account, full_name, email, password, portal_password, secret, address, phone_number,
+      payment_no, sms_group, installation_fee, router_id, plan_name,
+      plan_id, plan_fee, company_id, company_username, fat_no, active, rate_limit, type, brand,
+      comments ?? null
+    ]);
+
+    console.log("✅ PPPoE Client Created:", { id: result.insertId, account });
+
+    // ✅ 9. Return success response
+    res.status(201).json({
+      success: true,
+      id: result.insertId,
+      message: "Client created successfully"
+    });
+
+  } catch (error) {
+    console.error("❌ Error in /pppoe-clients:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Internal Server Error"
+    });
+  }
 });
 
 
@@ -418,11 +463,18 @@ router.get('/pppoe-clients/:id', async (req, res) => {
   router.patch('/edit-pppoe-client/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
+    const company_id = req.companyId;
 
-    // Include a check here to ensure only admin/superadmin user can update clients
-
-    // console.log(id);
-    console.log("Update Client: ", updates);
+    // ✅ Check subscription status
+    const subStatus = await checkCompanySubscription(company_id);
+    console.log(`User Company ID: ${company_id}`);
+    console.log("Subscription Status: ", subStatus);
+    if (!subStatus.success) {
+        return res.status(subStatus.status).json({
+        success: false,
+        message: subStatus.message,
+        });
+    }
   
     // Step 3: Generate dynamic SQL query for updating allowed fields only
     const allowedFields = ["sms_group", "end_date", "plan_fee", "brand", "full_name", "location", "plan_name", "plan_id", "active", "installation_fee", "comments", "phone_number"]; // <-- add only what you want to allow

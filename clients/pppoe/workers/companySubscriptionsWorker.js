@@ -67,7 +67,7 @@ async function updateCompanyUsage() {
 
 function startWorker() {
   updateCompanyUsage(); // Run immediately
-  setInterval(updateCompanyUsage, 10 * 60 * 1000); // Every 5 minutes
+  setInterval(updateCompanyUsage, 5 * 60 * 1000); // Every 5 minutes
 }
 
 module.exports = { startWorker };

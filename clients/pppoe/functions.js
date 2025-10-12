@@ -9,13 +9,66 @@ const API_KEY = 'atsk_9cfc317182ef7086d1c0c7c4445f2a95fa4578a005917a45f5b9921539
 const USERNAME = 'Swiftnet_sms';
 const SENDER_ID = 'SwiftKenya';
 
-/**
- * Send an OTP SMS to a client and update it in the database
- * @param {number} clientId - ID of the client in the database
- * @param {string|string[]} phoneNumbers - Phone number(s) to send the message to
- * @param {string|null} maskedNumber - Optional masked number
- * @param {string|null} telco - Optional telco
- */
+const redisClient = require("../../services/redis");
+
+async function checkCompanySubscription(company_id) {
+  try {
+    if (!company_id) {
+      return {
+        success: false,
+        status: 400,
+        message: "Missing company ID.",
+      };
+    }
+
+    // ✅ 1. Get Subscription Info from Redis Cache
+    const cachedData = await redisClient.get("company_usage_summary");
+    if (!cachedData) {
+      return {
+        success: false,
+        status: 500,
+        message: "Subscription data unavailable. Try again shortly.",
+      };
+    }
+
+    const subscription = JSON.parse(cachedData);
+    const company = subscription.find((c) => Number(c.id) === Number(company_id));
+
+    if (!company) {
+      return {
+        success: false,
+        status: 404,
+        message: "Company not found in subscription data.",
+      };
+    }
+
+    // ✅ 2. Check if Company is Active
+    if (!company.active) {
+      return {
+        success: false,
+        status: 403,
+        message: "Your company subscription is not active.",
+      };
+    }
+
+    // ✅ 3. Return success with company details
+    return {
+      success: true,
+      status: 200,
+      message: "Company subscription is active.",
+      data: company,
+    };
+  } catch (error) {
+    console.error("❌ Error checking company subscription:", error);
+    return {
+      success: false,
+      status: 500,
+      message: "Internal error while validating company subscription.",
+      error: error.message,
+    };
+  }
+}
+
 async function sendSMS(clientId, phoneNumbers, maskedNumber = null, telco = null) {
   if (typeof phoneNumbers === 'string') {
     phoneNumbers = [phoneNumbers];
@@ -200,4 +253,4 @@ function getRouterDetails(router_id) {
     });
 }
 
-module.exports = { sendSMS, executeSSHCommand, changePppoePlan, getRouterDetails };
+module.exports = { sendSMS, executeSSHCommand, changePppoePlan, getRouterDetails, checkCompanySubscription };

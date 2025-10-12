@@ -20,7 +20,7 @@ function verifyToken(req, res, next) {
 
     req.userId = decoded.id;
     req.userType = decoded.user_type;
-    req.company_id = decoded.company_id;
+    req.companyId = decoded.company_id;
     next();
   });
 }
@@ -72,6 +72,49 @@ router.get('/companies/subscription-usage', verifyToken, async (req, res) => {
   }
 });
 
+// ===============================
+// Company Subscription Usage Summary
+// ===============================
+router.get('/companies/subscription', verifyToken, async (req, res) => {
+  const company_id = req.companyId;
+
+  try {
+    // ✅ 1. Get cached subscription data
+    const cachedData = await redisClient.get("company_usage_summary");
+    if (!cachedData) {
+      return res.status(500).json({
+        success: false,
+        message: "Subscription data unavailable. Try again shortly."
+      });
+    }
+
+    // ✅ 2. Parse and find company
+    const companies = JSON.parse(cachedData);
+    const company = companies.find(c => c.id === company_id);
+
+    if (!company) {
+      return res.status(404).json({
+        success: false,
+        message: "Company not found in subscription data."
+      });
+    }
+
+    // ✅ 3. Return whether company is active
+    return res.json({
+      success: true,
+      company_id,
+      active: !!company.active
+    });
+
+  } catch (err) {
+    console.error("❌ Error fetching company subscription status:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message
+    });
+  }
+});
 
 // ===============================
 // CREATE a new company (POST)
