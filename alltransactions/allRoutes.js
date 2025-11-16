@@ -10,7 +10,7 @@ function verifyToken(req, res, next) {
   if (!token) return res.status(403).json({ message: 'No token provided' });
 
   const bearerToken = token.split(' ')[1];
-  jwt.verify(bearerToken, 'your_jwt_secret', (err, decoded) => {
+  jwt.verify(bearerToken, process.env.JWT_SECRET, (err, decoded) => {
     if (err) return res.status(500).json({ message: 'Failed to authenticate token' });
 
     req.userId = decoded.id;

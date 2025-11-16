@@ -20,7 +20,7 @@ function verifyToken(req, res, next) {
 
     
     // Verify the token
-    jwt.verify(bearerToken, 'your_jwt_secret', (err, decoded) => {
+    jwt.verify(bearerToken, process.env.JWT_SECRET, (err, decoded) => {
         if (err) {
             return res.status(500).json({ message: 'Failed to authenticate token' });
         }
@@ -45,7 +45,7 @@ router.get('/verify-token', (req, res) => {
     // Extract the token from the 'Authorization' header
     const bearerToken = token.split(' ')[1];  // Assuming the token is prefixed with 'Bearer'
 
-    jwt.verify(bearerToken, 'your_jwt_secret', (err, decoded) => {
+    jwt.verify(bearerToken, process.env.JWT_SECRET, (err, decoded) => {
         if (err) {
             return res.status(500).json({ message: 'Failed to authenticate token' });
         }
@@ -168,7 +168,7 @@ router.post('/signup', async (req, res) => {
         // Create a token with user_type included
         const token = jwt.sign(
             { id: newUserId, user_type: defaultUserType, company_id: companyId },
-            'your_jwt_secret',
+            process.env.JWT_SECRET,
             { expiresIn: '365d' }
         );
 
@@ -230,7 +230,7 @@ router.post('/signin', async (req, res) => {
         // Create and return a token with user_type included
         const token = jwt.sign(
             { id: user.id, user_type: user.user_type, company_id: user.company_id }, // Include user_type
-            'your_jwt_secret',
+            process.env.JWT_SECRET,
             { expiresIn: '365d' }
         );
 

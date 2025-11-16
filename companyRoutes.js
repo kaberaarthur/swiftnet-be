@@ -15,7 +15,7 @@ function verifyToken(req, res, next) {
   if (!token) return res.status(403).json({ message: 'No token provided' });
 
   const bearerToken = token.split(' ')[1];
-  jwt.verify(bearerToken, 'your_jwt_secret', (err, decoded) => {
+  jwt.verify(bearerToken, process.env.JWT_SECRET, (err, decoded) => {
     if (err) return res.status(500).json({ message: 'Failed to authenticate token' });
 
     req.userId = decoded.id;
@@ -210,18 +210,24 @@ router.get('/companies', verifyToken, async (req, res) => {
 // GET single company by ID
 // ===============================
 router.get('/companies/:id', verifyToken, async (req, res) => {
-  const companyId = req.params.id;
+  const companyId = parseInt(req.params.id);
+  const { userType, companyId: userCompanyId } = req;
 
   try {
-    if (req.userType === 'superadmin' || parseInt(companyId) === req.company_id) {
-      const [result] = await db.execute('SELECT * FROM companies WHERE id = ?', [companyId]);
-      if (result.length === 0)
-        return res.status(404).json({ message: 'Company not found' });
-      res.json(result[0]);
-    } else {
-      res.status(403).json({ message: 'Access denied: You can only view your own company' });
+    // ✅ Superadmin can view any company, admin only their own
+    if (userType !== 'superadmin' && companyId !== userCompanyId) {
+      return res.status(403).json({ message: 'Access denied: You can only view your own company' });
     }
+
+    const [result] = await db.execute('SELECT * FROM companies WHERE id = ?', [companyId]);
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: 'Company not found' });
+    }
+
+    res.json(result[0]);
   } catch (err) {
+    console.error("Database query error:", err);
     res.status(500).json({ message: 'Database query error', error: err.message });
   }
 });
@@ -304,6 +310,89 @@ router.delete('/companies/:id', verifyToken, async (req, res) => {
     res.json({ message: 'Company deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Database query error', error: err.message });
+  }
+});
+
+// ===============================
+// Redeem Bulk SMS Transaction
+// ===============================
+router.post('/companies/redeem-sms-transaction', verifyToken, async (req, res) => {
+  const { trans_id } = req.body;
+
+  if (!trans_id) {
+    return res.status(400).json({ message: "Missing transaction ID" });
+  }
+
+  try {
+    // 1️⃣ Check if transaction exists in all_mpesa_transactions
+    const [mpesaRows] = await db.query(
+      "SELECT * FROM all_mpesa_transactions WHERE trans_id = ?",
+      [trans_id]
+    );
+
+    if (mpesaRows.length === 0) {
+      return res.status(404).json({ message: "Transaction not found in MPESA records" });
+    }
+
+    const mpesaTx = mpesaRows[0];
+
+    // 2️⃣ Check if transaction already redeemed
+    const [existing] = await db.query(
+      "SELECT * FROM bulk_sms_transactions WHERE trans_id = ?",
+      [trans_id]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({ message: "This transaction has already been used" });
+    }
+
+    // 3️⃣ Validate bill_ref_number pattern (BSMxx)
+    const ref = mpesaTx.bill_ref_number.trim();
+    const match = ref.match(/^bsm(\d+)$/i);
+
+    if (!match) {
+      return res.status(400).json({ message: "Invalid bill reference — not a Bulk SMS reference" });
+    }
+
+    const companyId = parseInt(match[1]);
+    const smsUnits = parseFloat(mpesaTx.amount); // 1 KES = 1 SMS
+
+    // 4️⃣ Update company balance in a transaction
+    await db.beginTransaction();
+
+    // Increment bulk_sms_balance
+    await db.query(
+      "UPDATE companies SET bulk_sms_balance = bulk_sms_balance + ? WHERE id = ?",
+      [smsUnits, companyId]
+    );
+
+    // Fetch updated balance
+    const [updatedCompany] = await db.query(
+      "SELECT bulk_sms_balance FROM companies WHERE id = ?",
+      [companyId]
+    );
+
+    const newBalance = updatedCompany[0]?.bulk_sms_balance || 0;
+
+    // Record redemption in bulk_sms_transactions
+    await db.query(
+      `INSERT INTO bulk_sms_transactions (company_id, amount, bill_ref_number, trans_id)
+       VALUES (?, ?, ?, ?)`,
+      [companyId, smsUnits, mpesaTx.bill_ref_number, trans_id]
+    );
+
+    await db.commit();
+
+    res.status(200).json({
+      message: `Successfully redeemed ${smsUnits} SMS credits for company ${companyId}`,
+      new_balance: newBalance,
+      added_units: smsUnits,
+    });
+
+  } catch (err) {
+    console.error("Redeem error:", err);
+    await db.rollback();
+    res.status(500).json({ message: "Internal server error", error: err.message });
   }
 });
 

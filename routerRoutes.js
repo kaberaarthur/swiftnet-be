@@ -17,7 +17,7 @@ function verifyToken(req, res, next) {
 
     
     // Verify the token
-    jwt.verify(bearerToken, 'your_jwt_secret', (err, decoded) => {
+    jwt.verify(bearerToken, process.env.JWT_SECRET, (err, decoded) => {
         if (err) {
             return res.status(500).json({ message: 'Failed to authenticate token' });
         }
