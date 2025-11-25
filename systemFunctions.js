@@ -9,6 +9,8 @@ function verifyToken(req, res, next) {
     // Extract the token from the Authorization header
     const token = req.headers['authorization'];
 
+    console.log("JWT Secret:", jwtSecret); // Debugging line to check if JWT secret is loaded
+
     if (!token) {
         return res.status(403).json({ message: 'No token provided' });
     }

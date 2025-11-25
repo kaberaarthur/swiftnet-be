@@ -234,6 +234,136 @@ router.get('/pppoe-users/:router_id', verifyToken, async (req, res) => {
   }
 });
 
+router.post('/search-secret', verifyToken, async (req, res) => {
+  try {
+    const { secret_name, routers } = req.body;
+
+    if (!secret_name || !routers || !Array.isArray(routers)) {
+      return res.status(400).json({ error: "Invalid input format" });
+    }
+
+    let results = [];
+
+    for (const router_id of routers) {
+
+      // Get router info so we can show router_name
+      const routerDetails = await getRouterByID(router_id);
+
+      if (!routerDetails) {
+        results.push({
+          router_id,
+          router_name: null,
+          found_in_db: false,
+          db_user_id: null,
+          error: "Router not found or access denied"
+        });
+        continue;
+      }
+
+      // Search DB ONLY — no Mikrotik
+      const [dbRows] = await db.execute(
+        "SELECT id FROM pppoe_clients WHERE secret = ? AND router_id = ?",
+        [secret_name, router_id]
+      );
+
+      if (dbRows.length === 0) {
+        // No record found, still return router info
+        results.push({
+          router_id,
+          router_name: routerDetails.data.router_name,
+          found_in_db: false,
+          db_user_id: null
+        });
+      } else {
+        // One result per DB record
+        dbRows.forEach((row) => {
+          results.push({
+            router_id,
+            router_name: routerDetails.data.router_name,
+            found_in_db: true,
+            db_user_id: row.id
+          });
+        });
+      }
+    }
+
+    return res.json({
+      secret: secret_name,
+      results
+    });
+
+  } catch (error) {
+    console.error("Secret Search Error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post('/move-user', verifyToken, async (req, res) => {
+  try {
+    const { secret, former_router_id, new_router_id } = req.body;
+
+    if (!secret || !former_router_id || !new_router_id) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Update router_id directly
+    const [updateResult] = await db.execute(
+      `UPDATE pppoe_clients SET router_id = ? WHERE secret = ? AND router_id = ?`,
+      [new_router_id, secret, former_router_id]
+    );
+
+    if (updateResult.affectedRows === 0) {
+      return res.status(404).json({
+        message: "User not found on the specified former router",
+      });
+    }
+
+    return res.json({
+      message: "User successfully moved to new router",
+      moved_user: {
+        secret,
+        from: former_router_id,
+        to: new_router_id,
+      },
+      updateResult,
+    });
+
+  } catch (error) {
+    console.error("Move PPPoE User Error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post('/delete-user', verifyToken, async (req, res) => {
+  try {
+    const { db_user_id } = req.body;
+
+    if (!db_user_id) {
+      return res.status(400).json({ error: "Missing required field: db_user_id" });
+    }
+
+    // Delete the user record
+    const [deleteResult] = await db.execute(
+      "DELETE FROM pppoe_clients WHERE id = ?",
+      [db_user_id]
+    );
+
+    if (deleteResult.affectedRows === 0) {
+      return res.status(404).json({ message: "User record not found" });
+    }
+
+    return res.json({
+      message: "User record successfully deleted",
+      deleted_id: db_user_id
+    });
+
+  } catch (error) {
+    console.error("Delete PPPoE User Error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
 // V2 Import PPP secrets from SFTP
 const REMOTE_FILE = "pppoe_secrets.rsc";
 

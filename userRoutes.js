@@ -221,6 +221,8 @@ router.post('/signin', async (req, res) => {
             return res.status(400).json({ message: 'You account is inactive, contact your Admin.' });
         }
 
+        console.log("User Data: ", user);
+
         // Check password
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
@@ -287,9 +289,9 @@ router.get('/users/:id?', verifyToken, async (req, res) => {
     console.log("Company ID: ", companyId);
 
     // Check if user is superadmin
-    if (req.userType !== 'admin') {
-        return res.status(403).json({ 
-            message: 'Access denied: Admin privileges required' 
+    if (req.userType !== 'admin' && req.userType !== 'superadmin') {
+        return res.status(403).json({
+            message: 'Access denied: Admin or Superadmin privileges required'
         });
     }
 
