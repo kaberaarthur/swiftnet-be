@@ -27,6 +27,8 @@ function verifyToken(req, res, next) {
     // Extract the token from the 'Authorization' header
     const bearerToken = token.split(' ')[1];
 
+    console.log("JWT Secret: ", jwtSecret);
+
     
     // Verify the token
     jwt.verify(bearerToken, jwtSecret, (err, decoded) => {

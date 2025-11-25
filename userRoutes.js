@@ -229,6 +229,8 @@ router.post('/signin', async (req, res) => {
             return res.status(401).json({ message: 'Invalid password' });
         }
 
+        console.log("JWT Secret Used: ", process.env.JWT_SECRET);
+
         // Create and return a token with user_type included
         const token = jwt.sign(
             { id: user.id, user_type: user.user_type, company_id: user.company_id }, // Include user_type

@@ -6941,3 +6941,121 @@
       WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
       GROUP BY v.company_id
      
+[2025-11-25T10:30:30.426Z] ❌ [QUERY ERROR: 30065ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2025-11-25T10:35:01.707Z] ✅ New MySQL connection established
+[2025-11-25T10:35:02.008Z] ⚠️ [SLOW QUERY: 1630ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-11-25T10:35:02.300Z] [QUERY: 292ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-11-25T10:35:02.585Z] [QUERY: 285ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-11-25T10:37:31.246Z] [EXECUTE: 585ms] SELECT COUNT(*) as total FROM hotspot_clients WHERE company_id = ? [params: [9]]
+[2025-11-25T10:37:31.817Z] [EXECUTE: 570ms] SELECT COUNT(*) as total FROM pppoe_clients WHERE company_id = ? [params: [9]]
+[2025-11-25T10:37:31.824Z] ✅ New MySQL connection established
+[2025-11-25T10:37:31.856Z] ✅ New MySQL connection established
+[2025-11-25T10:37:32.156Z] ⚠️ [SLOW QUERY: 1443ms] SELECT * FROM pppoe_payments WHERE 1=1 AND company_id = ? [params: [9]]
+[2025-11-25T10:37:32.161Z] [EXECUTE: 296ms] SELECT COUNT(*) as total FROM hotspot_clients WHERE company_id = ? [params: [9]]
+[2025-11-25T10:37:32.385Z] ⚠️ [SLOW EXECUTE: 1700ms] SELECT IFNULL(SUM(Amount), 0) as total_today 
+       FROM pppoe_payments 
+       WHERE company_id = ? 
+       AND DATE(created_at) = CURDATE() [params: [9]]
+[2025-11-25T10:37:32.440Z] [EXECUTE: 278ms] SELECT COUNT(*) as total FROM pppoe_clients WHERE company_id = ? [params: [9]]
+[2025-11-25T10:37:32.723Z] [QUERY: 291ms] SELECT * FROM pppoe_payments WHERE 1=1 AND company_id = ? [params: [9]]
+[2025-11-25T10:37:32.863Z] [EXECUTE: 280ms] SELECT COUNT(*) as total FROM hotspot_clients WHERE company_id = ? [params: [9]]
+[2025-11-25T10:37:32.937Z] [EXECUTE: 552ms] SELECT IFNULL(SUM(Amount), 0) as total_month 
+       FROM pppoe_payments 
+       WHERE company_id = ? 
+       AND YEAR(created_at) = YEAR(CURDATE()) 
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [9]]
+[2025-11-25T10:37:33.046Z] [QUERY: 288ms] SELECT * FROM pppoe_payments WHERE 1=1 AND company_id = ? [params: [9]]
+[2025-11-25T10:37:33.146Z] [EXECUTE: 283ms] SELECT COUNT(*) as total FROM pppoe_clients WHERE company_id = ? [params: [9]]
+[2025-11-25T10:37:33.249Z] [EXECUTE: 280ms] SELECT IFNULL(SUM(Amount), 0) as total_today 
+       FROM pppoe_payments 
+       WHERE company_id = ? 
+       AND DATE(created_at) = CURDATE() [params: [9]]
+[2025-11-25T10:37:33.488Z] [QUERY: 284ms] SELECT * FROM pppoe_payments WHERE 1=1 AND company_id = ? [params: [9]]
+[2025-11-25T10:37:33.530Z] [EXECUTE: 281ms] SELECT IFNULL(SUM(Amount), 0) as total_month 
+       FROM pppoe_payments 
+       WHERE company_id = ? 
+       AND YEAR(created_at) = YEAR(CURDATE()) 
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [9]]
+[2025-11-25T10:37:33.818Z] [EXECUTE: 572ms] SELECT COUNT(*) as total FROM hotspot_clients WHERE company_id = ? [params: [9]]
+[2025-11-25T10:37:33.840Z] [EXECUTE: 285ms] SELECT IFNULL(SUM(Amount), 0) as total_today 
+       FROM pppoe_payments 
+       WHERE company_id = ? 
+       AND DATE(created_at) = CURDATE() [params: [9]]
+[2025-11-25T10:37:34.122Z] [EXECUTE: 282ms] SELECT IFNULL(SUM(Amount), 0) as total_month 
+       FROM pppoe_payments 
+       WHERE company_id = ? 
+       AND YEAR(created_at) = YEAR(CURDATE()) 
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [9]]
+[2025-11-25T10:37:34.358Z] [EXECUTE: 539ms] SELECT COUNT(*) as total FROM pppoe_clients WHERE company_id = ? [params: [9]]
+[2025-11-25T10:37:34.428Z] [EXECUTE: 279ms] SELECT IFNULL(SUM(Amount), 0) as total_today 
+       FROM pppoe_payments 
+       WHERE company_id = ? 
+       AND DATE(created_at) = CURDATE() [params: [9]]
+[2025-11-25T10:37:34.712Z] [EXECUTE: 283ms] SELECT IFNULL(SUM(Amount), 0) as total_month 
+       FROM pppoe_payments 
+       WHERE company_id = ? 
+       AND YEAR(created_at) = YEAR(CURDATE()) 
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [9]]
+[2025-11-25T10:40:00.760Z] [QUERY: 378ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-11-25T10:40:01.055Z] [QUERY: 294ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-11-25T10:40:01.345Z] [QUERY: 289ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-11-25T10:41:10.317Z] ⚠️ [SLOW EXECUTE: 2043ms] SELECT * FROM pppoe_clients WHERE company_id = ? AND type = ? [params: [2, pppoe]]
+[2025-11-25T10:43:54.389Z] ✅ New MySQL connection established
+[2025-11-25T10:43:54.714Z] ⚠️ [SLOW QUERY: 2453ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-11-25T10:43:55.016Z] [QUERY: 301ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-11-25T10:43:55.320Z] [QUERY: 303ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-11-25T10:45:18.371Z] ✅ New MySQL connection established
+[2025-11-25T10:45:18.671Z] ⚠️ [SLOW QUERY: 1873ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-11-25T10:45:18.964Z] [QUERY: 292ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-11-25T10:45:19.251Z] [QUERY: 286ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
