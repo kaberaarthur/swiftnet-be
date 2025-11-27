@@ -28,7 +28,7 @@ router.post('/b2b-payment', async (req, res) => {
     // Use the Swiftnet Company ID, To avoid changing for each company
     const password = await getDarajaInitiatorPassword(2);
 
-    console.log('Received B2B payment request:');
+    console.log('Received B2B payment request using Initiator Password:', password);
 
     if (!password) {
       return res.status(404).json({ error: 'Initiator password not found for company_id' });
@@ -40,7 +40,7 @@ router.post('/b2b-payment', async (req, res) => {
         // const securityCredential = getSecurityCredential(")Tr-Jzp3SP28eKG");
 
         const payload = {
-            Initiator: "Swiftnet",
+            Initiator: "Swiftnetweb",
             SecurityCredential: securityCredential,
             CommandID: "BusinessPayBill",
             SenderIdentifierType: "4",
