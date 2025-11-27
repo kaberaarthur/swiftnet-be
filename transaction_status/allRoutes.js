@@ -116,6 +116,7 @@ router.post('/', async (req, res) => {
     // const password = await getDarajaInitiatorPassword(company_id);
     // use manual company_id to get the password
     const password = await getDarajaInitiatorPassword(2);
+    console.log("Initiator Password Fetched: ", password);
 
     if (!password) {
       return res.status(404).json({ error: 'Initiator password not found for company_id' });
@@ -155,7 +156,7 @@ router.post('/', async (req, res) => {
       }
     );
 
-    // Add a way to confirm or reject the transaction
+    // Add a way to confirm or reject the transaction - Why are we doing this check, I don't get it.
     // 1. Wait for transaction from callback
     const payment = await waitForPaymentReceipt(transaction_code);
     const paymentDate = moment(payment.timestamp);
@@ -310,7 +311,7 @@ const allowedIPs = [
   '196.201.212.69'
 ];
 
-
+// Daraja sends a callback when one does a transaction status query
 router.post('/callback', async (req, res) => {
   // Check to ensure only Safaricom can make the api call to the callback url
   const clientIP = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').replace('::ffff:', '');

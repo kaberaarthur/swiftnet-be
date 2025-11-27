@@ -34,8 +34,8 @@ router.get('/total-users', verifyToken, async (req, res) => {
 
 // Endpoint to get PPPoE payments totals
 router.get('/pppoe-payments-total', verifyToken, async (req, res) => {
-  console.log("Fetching PPPoE payments total for company ID:", req.companyId);
-  
+  console.log("Fetching PPPoE payments total for company ID: ", req.companyId);
+
   try {
     const company_id = req.companyId;
     const user_type = req.userType;
