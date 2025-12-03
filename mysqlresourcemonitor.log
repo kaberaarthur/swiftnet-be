@@ -7469,3 +7469,518 @@
       SELECT id, allowed_users, company_plan_name, company_plan_id, active
       FROM companies
       - read ECONNRESET
+[2025-12-03T07:28:02.288Z] ✅ New MySQL connection established
+[2025-12-03T07:28:02.552Z] ⚠️ [SLOW QUERY: 1868ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T07:28:02.806Z] [QUERY: 254ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T07:28:03.050Z] [QUERY: 243ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T07:33:29.804Z] ❌ [QUERY ERROR: 28875ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2025-12-03T07:38:01.832Z] ✅ New MySQL connection established
+[2025-12-03T07:38:02.079Z] ⚠️ [SLOW QUERY: 1253ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T07:38:02.319Z] [QUERY: 239ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T07:38:02.557Z] [QUERY: 238ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T07:43:02.428Z] ✅ New MySQL connection established
+[2025-12-03T07:43:02.814Z] ⚠️ [SLOW QUERY: 1291ms] SELECT * FROM hotspot_clients WHERE 1=1 
+[2025-12-03T07:43:03.238Z] [QUERY: 258ms] SELECT * FROM hotspot_clients WHERE 1=1 
+[2025-12-03T07:43:23.281Z] ❌ [QUERY ERROR: 22441ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2025-12-03T07:45:15.777Z] ✅ New MySQL connection established
+[2025-12-03T07:45:16.046Z] ⚠️ [SLOW QUERY: 1926ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T07:45:16.280Z] [QUERY: 234ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T07:45:16.512Z] [QUERY: 231ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T07:48:32.597Z] [QUERY: 267ms] SELECT * FROM hotspot_clients WHERE 1=1 
+[2025-12-03T07:48:32.918Z] [QUERY: 232ms] SELECT * FROM hotspot_clients WHERE 1=1 
+[2025-12-03T07:50:14.379Z] [QUERY: 232ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T07:50:14.624Z] [QUERY: 244ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T07:50:14.860Z] [QUERY: 235ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T07:50:33.529Z] ✅ New MySQL connection established
+[2025-12-03T07:50:33.785Z] ⚠️ [SLOW QUERY: 1819ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T07:50:34.026Z] [QUERY: 240ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T07:50:34.262Z] [QUERY: 235ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T07:51:23.015Z] ✅ New MySQL connection established
+[2025-12-03T07:51:23.260Z] ⚠️ [SLOW QUERY: 1802ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T07:51:23.495Z] [QUERY: 234ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T07:51:23.727Z] [QUERY: 231ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T07:55:48.521Z] ✅ New MySQL connection established
+[2025-12-03T07:55:48.766Z] ⚠️ [SLOW QUERY: 1720ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T07:55:49.005Z] [QUERY: 238ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T07:55:49.242Z] [QUERY: 236ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T07:56:10.369Z] ✅ New MySQL connection established
+[2025-12-03T07:56:10.613Z] ⚠️ [SLOW QUERY: 2949ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T07:56:10.849Z] [QUERY: 235ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T07:56:11.082Z] [QUERY: 232ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T08:01:31.532Z] ❌ [QUERY ERROR: 23862ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2025-12-03T08:05:06.554Z] ✅ New MySQL connection established
+[2025-12-03T08:05:06.862Z] ⚠️ [SLOW QUERY: 1320ms] SELECT * FROM hotspot_clients WHERE 1=1 AND company_id = ? [params: [2]]
+[2025-12-03T08:05:07.307Z] [QUERY: 241ms] SELECT * FROM hotspot_clients WHERE 1=1 AND company_id = ? [params: [2]]
+[2025-12-03T08:06:08.455Z] [QUERY: 761ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T08:06:09.669Z] ⚠️ [SLOW QUERY: 1212ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T08:06:10.595Z] [QUERY: 923ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T08:12:17.529Z] ❌ [QUERY ERROR: 69844ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2025-12-03T08:16:10.953Z] ✅ New MySQL connection established
+[2025-12-03T08:16:11.197Z] ⚠️ [SLOW QUERY: 3492ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T08:16:12.553Z] ⚠️ [SLOW QUERY: 1351ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T08:16:13.034Z] [QUERY: 480ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T08:21:55.671Z] ❌ [QUERY ERROR: 47973ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2025-12-03T08:23:52.293Z] ✅ New MySQL connection established
+[2025-12-03T08:23:52.531Z] ⚠️ [SLOW QUERY: 2236ms] SELECT * FROM hotspot_clients WHERE 1=1 AND company_id = ? [params: [2]]
+[2025-12-03T08:23:53.691Z] [QUERY: 312ms] SELECT * FROM hotspot_clients WHERE 1=1 AND company_id = ? [params: [2]]
+[2025-12-03T08:24:13.446Z] [QUERY: 236ms] SELECT * FROM hotspot_clients WHERE 1=1 AND company_id = ? [params: [2]]
+[2025-12-03T08:24:16.010Z] [QUERY: 659ms] SELECT * FROM hotspot_clients WHERE 1=1 AND company_id = ? [params: [2]]
+[2025-12-03T08:24:51.992Z] [QUERY: 238ms] SELECT * FROM hotspot_clients WHERE 1=1 AND company_id = ? [params: [2]]
+[2025-12-03T08:24:52.422Z] [QUERY: 246ms] SELECT * FROM hotspot_clients WHERE 1=1 AND company_id = ? [params: [2]]
+[2025-12-03T08:25:29.760Z] [EXECUTE: 534ms] SELECT * FROM hotspot_plans WHERE company_id = ? [params: [2]]
+[2025-12-03T08:25:30.181Z] [EXECUTE: 238ms] SELECT * FROM hotspot_plans WHERE company_id = ? [params: [2]]
+[2025-12-03T08:25:30.355Z] ✅ New MySQL connection established
+[2025-12-03T08:25:30.640Z] ⚠️ [SLOW QUERY: 1255ms] SELECT * FROM routers WHERE company_id = ? [params: [2]]
+[2025-12-03T08:25:32.393Z] [QUERY: 243ms] SELECT * FROM routers WHERE company_id = ? [params: [2]]
+[2025-12-03T08:26:08.311Z] [QUERY: 605ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T08:26:10.254Z] ⚠️ [SLOW QUERY: 1941ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T08:26:10.509Z] [QUERY: 254ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T08:29:30.800Z] [EXECUTE: 506ms] SELECT * FROM hotspot_plans WHERE company_id = ? AND router_id = ? [params: [2, 6]]
+[2025-12-03T08:31:15.620Z] ❌ [QUERY ERROR: 7898ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - Connection lost: The server closed the connection.
+[2025-12-03T08:36:26.988Z] ❌ [QUERY ERROR: 19255ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2025-12-03T08:41:12.222Z] ✅ New MySQL connection established
+[2025-12-03T08:41:12.466Z] ⚠️ [SLOW QUERY: 4732ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T08:41:14.128Z] ⚠️ [SLOW QUERY: 1661ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T08:41:14.880Z] [QUERY: 750ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T08:47:11.099Z] ❌ [QUERY ERROR: 63350ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2025-12-03T08:51:07.755Z] ❌ [QUERY ERROR: 7ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - connect EHOSTUNREACH 139.59.60.20:3306
+[2025-12-03T08:56:09.481Z] ✅ New MySQL connection established
+[2025-12-03T08:56:09.715Z] ⚠️ [SLOW QUERY: 1849ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T08:56:09.947Z] [QUERY: 232ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T08:56:10.177Z] [QUERY: 230ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T09:01:31.556Z] ❌ [QUERY ERROR: 23744ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2025-12-03T09:06:07.832Z] ❌ [QUERY ERROR: 8ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - connect EHOSTUNREACH 139.59.60.20:3306
+[2025-12-03T09:11:07.826Z] ❌ [QUERY ERROR: 5ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - connect EHOSTUNREACH 139.59.60.20:3306
+[2025-12-03T09:16:12.252Z] ✅ New MySQL connection established
+[2025-12-03T09:16:12.575Z] ⚠️ [SLOW QUERY: 4744ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T09:16:12.856Z] [QUERY: 280ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T09:16:13.187Z] [QUERY: 330ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T09:19:39.010Z] ⚠️ [SLOW QUERY: 1660ms] 
+      INSERT INTO pppoe_b2b_payments (
+        originator_conversation_id,
+        conversation_id,
+        transaction_id,
+        result_code,
+        result_desc,
+        amount,
+        currency,
+        status,
+        bill_reference_number,
+        trans_completed_time,
+        debit_account_balance,
+        debit_party_account_balance,
+        debit_party_charges,
+        receiver_party_public_name,
+        initiator_account_balance,
+        reference_data,
+        raw_payload
+      ) VALUES ?
+      ON DUPLICATE KEY UPDATE
+        result_code = VALUES(result_code),
+        result_desc = VALUES(result_desc),
+        status = VALUES(status),
+        raw_payload = VALUES(raw_payload)
+     [params: [a81f-4d9f-ac5d-8231326b6a3e174262,AG_20251203_010020730qf2aetnrnbj,TL3TT4M75N,,The service request is processed successfully.,10,KES,success,1003761913,20251203121933,,Working Account|KES|78.00|78.00|0.00|0.00,,880100 - NCBA BANK KENYA PLC.,{Amount={CurrencyCode=KES, MinimumAmount=7800, BasicAmount=78.00}},{"BillReferenceNumber":1003761913,"QueueTimeoutURL":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"ResultType":0,"ResultCode":0,"ResultDesc":"The service request is processed successfully.","OriginatorConversationID":"a81f-4d9f-ac5d-8231326b6a3e174262","ConversationID":"AG_20251203_010020730qf2aetnrnbj","TransactionID":"TL3TT4M75N","ResultParameters":{"ResultParameter":[{"Key":"Currency","Value":"KES"},{"Key":"ReceiverPartyPublicName","Value":"880100 - NCBA BANK KENYA PLC."},{"Key":"DebitPartyCharges"},{"Key":"TransCompletedTime","Value":20251203121933},{"Key":"DebitPartyAffectedAccountBalance","Value":"Working Account|KES|78.00|78.00|0.00|0.00"},{"Key":"Amount","Value":10},{"Key":"DebitAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=7800, BasicAmount=78.00}}"},{"Key":"InitiatorAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=7800, BasicAmount=78.00}}"}]},"ReferenceData":{"ReferenceItem":[{"Key":"BillReferenceNumber","Value":1003761913},{"Key":"QueueTimeoutURL","Value":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"Key":"Occassion"}]}}]]
+[2025-12-03T09:21:08.070Z] [QUERY: 240ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T09:21:08.303Z] [QUERY: 233ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T09:21:08.537Z] [QUERY: 232ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T09:26:36.469Z] ❌ [QUERY ERROR: 28627ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2025-12-03T09:28:59.752Z] ✅ New MySQL connection established
+[2025-12-03T09:29:00.015Z] ⚠️ [SLOW QUERY: 13185ms] SELECT * FROM routers WHERE company_id = ? [params: [9]]
+[2025-12-03T09:29:07.996Z] [QUERY: 231ms] SELECT * FROM routers WHERE company_id = ? [params: [9]]
+[2025-12-03T09:31:11.856Z] ✅ New MySQL connection established
+[2025-12-03T09:31:12.109Z] ⚠️ [SLOW QUERY: 4260ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T09:31:13.207Z] ⚠️ [SLOW QUERY: 1096ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T09:31:13.810Z] [QUERY: 600ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T09:32:20.265Z] ⚠️ [SLOW QUERY: 1524ms] 
+      INSERT INTO pppoe_b2b_payments (
+        originator_conversation_id,
+        conversation_id,
+        transaction_id,
+        result_code,
+        result_desc,
+        amount,
+        currency,
+        status,
+        bill_reference_number,
+        trans_completed_time,
+        debit_account_balance,
+        debit_party_account_balance,
+        debit_party_charges,
+        receiver_party_public_name,
+        initiator_account_balance,
+        reference_data,
+        raw_payload
+      ) VALUES ?
+      ON DUPLICATE KEY UPDATE
+        result_code = VALUES(result_code),
+        result_desc = VALUES(result_desc),
+        status = VALUES(status),
+        raw_payload = VALUES(raw_payload)
+     [params: [a81f-4d9f-ac5d-8231326b6a3e187160,AG_20251203_010020730qvf566xizko,TL3TT4LYEO,,The service request is processed successfully.,10,KES,success,1003761913,20251203123216,,Working Account|KES|68.00|68.00|0.00|0.00,,880100 - NCBA BANK KENYA PLC.,{Amount={CurrencyCode=KES, MinimumAmount=6800, BasicAmount=68.00}},{"BillReferenceNumber":1003761913,"QueueTimeoutURL":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"ResultType":0,"ResultCode":0,"ResultDesc":"The service request is processed successfully.","OriginatorConversationID":"a81f-4d9f-ac5d-8231326b6a3e187160","ConversationID":"AG_20251203_010020730qvf566xizko","TransactionID":"TL3TT4LYEO","ResultParameters":{"ResultParameter":[{"Key":"Currency","Value":"KES"},{"Key":"ReceiverPartyPublicName","Value":"880100 - NCBA BANK KENYA PLC."},{"Key":"DebitPartyCharges"},{"Key":"TransCompletedTime","Value":20251203123216},{"Key":"DebitPartyAffectedAccountBalance","Value":"Working Account|KES|68.00|68.00|0.00|0.00"},{"Key":"Amount","Value":10},{"Key":"DebitAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=6800, BasicAmount=68.00}}"},{"Key":"InitiatorAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=6800, BasicAmount=68.00}}"}]},"ReferenceData":{"ReferenceItem":[{"Key":"BillReferenceNumber","Value":1003761913},{"Key":"QueueTimeoutURL","Value":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"Key":"Occassion"}]}}]]
+[2025-12-03T09:36:08.187Z] [QUERY: 331ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T09:36:09.317Z] ⚠️ [SLOW QUERY: 1128ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T09:36:09.891Z] [QUERY: 572ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T09:38:22.484Z] [EXECUTE: 496ms] SELECT * FROM hotspot_plans WHERE company_id = ? [params: [9]]
+[2025-12-03T09:38:23.014Z] ✅ New MySQL connection established
+[2025-12-03T09:38:23.257Z] ⚠️ [SLOW QUERY: 1252ms] SELECT * FROM routers WHERE company_id = ? [params: [9]]
+[2025-12-03T09:38:24.468Z] [EXECUTE: 459ms] SELECT * FROM hotspot_plans WHERE company_id = ? [params: [9]]
+[2025-12-03T09:38:24.997Z] [QUERY: 230ms] SELECT * FROM routers WHERE company_id = ? [params: [9]]
+[2025-12-03T09:41:08.097Z] [QUERY: 233ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T09:41:08.337Z] [QUERY: 239ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T09:41:08.568Z] [QUERY: 231ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T09:44:46.893Z] [QUERY: 339ms] SELECT * FROM routers WHERE company_id = ? [params: [9]]
+[2025-12-03T09:45:14.912Z] [EXECUTE: 260ms] SELECT * FROM hotspot_plans WHERE company_id = ? [params: [9]]
+[2025-12-03T09:45:15.810Z] ✅ New MySQL connection established
+[2025-12-03T09:45:16.069Z] ⚠️ [SLOW QUERY: 1249ms] SELECT * FROM routers WHERE company_id = ? [params: [9]]
+[2025-12-03T09:45:41.005Z] ❌ [EXECUTE ERROR: 54236ms] SELECT * FROM hotspot_plans WHERE company_id = ? [params: [9]] - read ECONNRESET
+[2025-12-03T09:45:50.230Z] [EXECUTE: 496ms] SELECT * FROM hotspot_plans WHERE id = ? [params: [31]]
+[2025-12-03T09:45:50.556Z] [EXECUTE: 251ms] SELECT * FROM hotspot_plans WHERE id = ? [params: [31]]
+[2025-12-03T09:46:08.123Z] [QUERY: 246ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T09:46:08.375Z] [QUERY: 251ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T09:46:08.620Z] [QUERY: 244ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T09:48:09.021Z] [QUERY: 237ms] SELECT * FROM routers WHERE company_id = ? [params: [9]]
+[2025-12-03T09:48:09.272Z] [EXECUTE: 490ms] SELECT * FROM hotspot_plans WHERE company_id = ? [params: [9]]
+[2025-12-03T09:48:09.351Z] [QUERY: 229ms] SELECT * FROM routers WHERE company_id = ? [params: [9]]
+[2025-12-03T09:48:09.564Z] [EXECUTE: 239ms] SELECT * FROM hotspot_plans WHERE company_id = ? [params: [9]]
+[2025-12-03T09:48:13.687Z] [EXECUTE: 239ms] SELECT * FROM hotspot_plans WHERE id = ? [params: [33]]
+[2025-12-03T09:48:13.984Z] [EXECUTE: 239ms] SELECT * FROM hotspot_plans WHERE id = ? [params: [33]]
+[2025-12-03T09:51:08.155Z] [QUERY: 259ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T09:51:08.400Z] [QUERY: 244ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T09:51:08.642Z] [QUERY: 241ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T09:56:27.163Z] ❌ [QUERY ERROR: 19258ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2025-12-03T10:01:27.186Z] ❌ [QUERY ERROR: 19281ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2025-12-03T10:06:08.861Z] ✅ New MySQL connection established
+[2025-12-03T10:06:09.093Z] ⚠️ [SLOW QUERY: 1174ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T10:06:09.326Z] [QUERY: 232ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T10:06:09.558Z] [QUERY: 232ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T10:11:29.750Z] ❌ [QUERY ERROR: 21830ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2025-12-03T10:15:52.459Z] ✅ New MySQL connection established
+[2025-12-03T10:15:52.961Z] ⚠️ [SLOW EXECUTE: 1525ms] SELECT * FROM hotspot_plans WHERE id = ? [params: [33]]
+[2025-12-03T10:15:55.239Z] [EXECUTE: 234ms] SELECT * FROM hotspot_plans WHERE id = ? [params: [33]]
+[2025-12-03T10:16:08.160Z] [QUERY: 237ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2025-12-03T10:16:08.398Z] [QUERY: 237ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2025-12-03T10:16:08.636Z] [QUERY: 237ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2025-12-03T10:16:09.610Z] [EXECUTE: 235ms] SELECT * FROM hotspot_plans WHERE id = ? [params: [33]]
+[2025-12-03T10:16:09.926Z] [EXECUTE: 235ms] SELECT * FROM hotspot_plans WHERE id = ? [params: [33]]
+[2025-12-03T10:16:35.567Z] [QUERY: 243ms] SELECT * FROM routers WHERE company_id = ? [params: [9]]
+[2025-12-03T10:16:35.881Z] [QUERY: 237ms] SELECT * FROM routers WHERE company_id = ? [params: [9]]
+[2025-12-03T10:16:36.314Z] ✅ New MySQL connection established
+[2025-12-03T10:16:36.777Z] ⚠️ [SLOW EXECUTE: 1388ms] SELECT * FROM hotspot_plans WHERE company_id = ? [params: [9]]
+[2025-12-03T10:16:37.063Z] [EXECUTE: 231ms] SELECT * FROM hotspot_plans WHERE company_id = ? [params: [9]]
+[2025-12-03T10:16:52.222Z] [QUERY: 236ms] SELECT * FROM routers WHERE company_id = ? [params: [9]]
+[2025-12-03T10:16:52.535Z] [QUERY: 231ms] SELECT * FROM routers WHERE company_id = ? [params: [9]]
+[2025-12-03T10:19:50.746Z] [QUERY: 240ms] SELECT * FROM routers WHERE company_id = ? [params: [9]]
+[2025-12-03T10:19:51.024Z] [QUERY: 236ms] SELECT * FROM routers WHERE company_id = ? [params: [9]]

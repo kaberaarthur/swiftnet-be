@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../dbPromise');
 
+const { verifyToken } = require('../../systemFunctions');
+
 // Create a new hotspot client
 router.post('/hotspot-clients', async (req, res) => {
     const { mac_address, plan_name, plan_id, plan_validity, phone_number, service_start, service_expiry, router_id, router_name, password, company_name, company_id } = req.body;
@@ -21,8 +23,10 @@ router.post('/hotspot-clients', async (req, res) => {
 });
 
 // Get all hotspot clients with optional filtering by router_id and company_id
-router.get('/hotspot-clients', async (req, res) => {
-    const { router_id, company_id } = req.query; // Destructure the query parameters
+router.get('/hotspot-clients', verifyToken, async (req, res) => {
+    const { router_id } = req.query; // Destructure the query parameters
+
+    const company_id = req.companyId;
 
     let query = 'SELECT * FROM hotspot_clients WHERE 1=1'; // Start with a base query
     const queryParams = [];
