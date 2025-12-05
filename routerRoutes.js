@@ -36,7 +36,7 @@ router.post('/routers', verifyToken, async (req, res) => {
     const company_id = req.companyId;
 
     // Check if user is admin - Only admins can perform these tasks
-    if (req.userType !== 'admin') {
+    if (req.userType !== 'admin' && req.userType !== 'superadmin') {
         return res.status(403).json({ 
             message: 'Access denied: Admin privileges required' 
         });

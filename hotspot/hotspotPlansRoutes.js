@@ -175,9 +175,19 @@ router.post('/hotspot-plans', verifyToken, async (req, res) => {
   console.log("Creating Hotspot Plan");
 
   const {
-    plan_name, plan_type, limit_type, data_limit,
-    bandwidth, plan_price, shared_users, plan_validity,
-    company_username, company_id, router_id, router_name
+    plan_name, 
+    plan_type, 
+    limit_type, 
+    data_limit,
+    bandwidth, 
+    plan_price, 
+    shared_users, 
+    plan_validity,
+    company_username, 
+    company_id, 
+    router_id, 
+    router_name,
+    offer // ✅ SAME NAME AS DB + FRONTEND
   } = req.body;
 
   try {
@@ -195,52 +205,52 @@ router.post('/hotspot-plans', verifyToken, async (req, res) => {
     const thisRouterResponse = await getRouterDetails(router_id);
     const thisRouter = thisRouterResponse.data;
 
-    // Step 3: Prepare and run SSH command
+    // Step 3: Prepare SSH command
     const sshCommand = `/ip hotspot user profile add name="${plan_name}" shared-users=${shared_users} rate-limit=${bandwidth}M/${bandwidth}M`;
     console.log('SSH Command:', sshCommand);
 
-    const sshOutput = await runSSHCommand(sshCommand, thisRouter.ip_address, thisRouter.username, thisRouter.router_secret, thisRouter.port);
-    console.log('SSH Output:', sshOutput);
+    await runSSHCommand(
+      sshCommand,
+      thisRouter.ip_address,
+      thisRouter.username,
+      thisRouter.router_secret,
+      thisRouter.port
+    );
 
-    // Step 4: Save to DB
-    // Apply defaults
-    const final_limit_type = limit_type ?? 'Time Limit';
-    const final_data_limit = data_limit ?? 0;
-
+    // Step 4: Insert into DB
     const insertQuery = `
       INSERT INTO hotspot_plans 
-      (plan_name, plan_type, limit_type, data_limit, bandwidth, plan_price, shared_users, plan_validity, company_username, company_id, router_id, router_name) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (plan_name, plan_type, limit_type, data_limit, bandwidth, plan_price, shared_users, plan_validity, company_username, company_id, router_id, router_name, offer) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    console.log({
-        plan_name,
-        plan_type,
-        final_limit_type,
-        final_data_limit,
-        bandwidth,
-        plan_price,
-        shared_users,
-        plan_validity,
-        company_username,
-        company_id,
-        router_id,
-        router_name
-    });
-
-
     const [results] = await db.execute(insertQuery, [
-      plan_name, plan_type, final_limit_type, final_data_limit, bandwidth, plan_price,
-      shared_users, plan_validity, company_username, company_id, router_id, router_name
+      plan_name,
+      plan_type,
+      limit_type ?? 'Time Limit',
+      data_limit ?? 0,
+      bandwidth,
+      plan_price,
+      shared_users,
+      plan_validity,
+      company_username,
+      company_id,
+      router_id,
+      router_name,
+      offer ?? 0 // ✅ CLEAN + CLEAR
     ]);
 
-    res.status(201).json({ message: 'Hotspot Plan created successfully!', plan_id: results.insertId });
-    
+    res.status(201).json({ 
+      message: 'Hotspot Plan created successfully!', 
+      plan_id: results.insertId 
+    });
+
   } catch (err) {
     console.error('Error creating hotspot plan:', err);
     res.status(500).json({ error: err.message || 'Unexpected server error' });
   }
 });
+
 
 
 // READ all Hotspot Plans filtered by company_id and router_id
