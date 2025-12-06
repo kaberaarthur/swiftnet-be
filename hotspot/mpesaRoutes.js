@@ -22,6 +22,28 @@ router.get('/get-access-token', async (req, res) => {
     }
 });
 
+router.post('/test-mikrotik', async (req, res) => {
+    // Create or Reset MikroTik Hotspot User
+    const mikrotikResult = await createOrResetMikrotikHotspotUser(
+      "104.248.76.5",
+      "admin",
+      "Nopa55word*",
+      "254790485731",
+      "On1pTz",
+      "1 Hour",
+      3012
+    );
+
+    if (!mikrotikResult.success) {
+      console.error('Failed to create/reset MikroTik hotspot user:', mikrotikResult.message);
+      return res.status(400).json({ success: false, error: mikrotikResult.message });
+    }
+
+    console.log(mikrotikResult);
+
+    res.json(mikrotikResult);
+});
+
 // ✅ POST - Initiate Direct STK Push Via Daraja
 router.post('/daraja-stk', async (req, res) => {
   const { phone_number, plan_id, router_id } = req.body;

@@ -165,7 +165,9 @@ async function createOrResetMikrotikHotspotUser(ip, username, password, phone_nu
         let errorOutput = '';
 
         stream
-          .on('close', () => {
+          .on('close', (code, signal) => {
+            console.log(`Check command closed with code ${code}`);
+            
             if (errorOutput) {
               conn.end();
               return reject({
@@ -178,6 +180,7 @@ async function createOrResetMikrotikHotspotUser(ip, username, password, phone_nu
             if (output.includes(phone_number)) {
               // User exists — reset password
               const resetCommand = `/ip hotspot user set [find where name="${phone_number}"] password="${userPassword}" profile="${plan_name}" disabled=no`;
+              console.log(`Executing reset command: ${resetCommand}`);
 
               conn.exec(resetCommand, (err, resetStream) => {
                 if (err) {
@@ -186,10 +189,17 @@ async function createOrResetMikrotikHotspotUser(ip, username, password, phone_nu
                 }
 
                 let resetError = '';
+                let resetOutput = '';
+
                 resetStream
-                  .on('close', () => {
+                  .on('close', (code, signal) => {
+                    console.log(`Reset command closed with code ${code}`);
+                    console.log(`Reset output: ${resetOutput}`);
+                    console.log(`Reset errors: ${resetError}`);
+                    
                     conn.end();
-                    if (resetError) {
+                    
+                    if (resetError && !resetError.includes('ignored')) {
                       return reject({
                         success: false,
                         message: 'Error resetting password',
@@ -208,7 +218,9 @@ async function createOrResetMikrotikHotspotUser(ip, username, password, phone_nu
                       },
                     });
                   })
-                  .on('data', () => {}); // Ignore output
+                  .on('data', (data) => {
+                    resetOutput += data.toString();
+                  });
 
                 resetStream.stderr.on('data', (data) => {
                   resetError += data.toString();
@@ -219,7 +231,9 @@ async function createOrResetMikrotikHotspotUser(ip, username, password, phone_nu
             }
 
             // User doesn't exist — create
-            const createCommand = `/ip hotspot user add name="${phone_number}" password="${userPassword}" profile=${plan_name}`;
+            const createCommand = `/ip hotspot user add name="${phone_number}" password="${userPassword}" profile="${plan_name}"`;
+            console.log(`Executing create command: ${createCommand}`);
+
             conn.exec(createCommand, (err, createStream) => {
               if (err) {
                 conn.end();
@@ -227,10 +241,17 @@ async function createOrResetMikrotikHotspotUser(ip, username, password, phone_nu
               }
 
               let createError = '';
+              let createOutput = '';
+
               createStream
-                .on('close', () => {
+                .on('close', (code, signal) => {
+                  console.log(`Create command closed with code ${code}`);
+                  console.log(`Create output: ${createOutput}`);
+                  console.log(`Create errors: ${createError}`);
+                  
                   conn.end();
-                  if (createError) {
+                  
+                  if (createError && !createError.includes('ignored')) {
                     return reject({
                       success: false,
                       message: 'Error creating user',
@@ -249,7 +270,9 @@ async function createOrResetMikrotikHotspotUser(ip, username, password, phone_nu
                     },
                   });
                 })
-                .on('data', () => {}); // Ignore output
+                .on('data', (data) => {
+                  createOutput += data.toString();
+                });
 
               createStream.stderr.on('data', (data) => {
                 createError += data.toString();
