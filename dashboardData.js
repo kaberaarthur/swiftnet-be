@@ -32,50 +32,82 @@ router.get('/total-users', verifyToken, async (req, res) => {
   }
 });
 
-// Endpoint to get PPPoE payments totals
+// Endpoint to get PPPoE + Hotspot payments totals
 router.get('/pppoe-payments-total', verifyToken, async (req, res) => {
-  console.log("Fetching PPPoE payments total for company ID: ", req.companyId);
+  console.log("Fetching PPPoE & Hotspot totals for company ID:", req.companyId);
 
   try {
     const company_id = req.companyId;
     const user_type = req.userType;
 
-    // ✅ Restrict access: only "admin" or "superadmin" can fetch DB totals
+    // Restrict access
     if (user_type !== "admin" && user_type !== "superadmin") {
       return res.json({
         total_today: "0.00",
         total_month: "0.00",
+        total_day_hotspot: "0.00",
+        total_month_hotspot: "0.00"
       });
     }
 
-    // Get today's total
+    // ==========================
+    // PPPoE Totals
+    // ==========================
+
+    // Today's PPPoE total
     const [todayRows] = await db.execute(
-      `SELECT IFNULL(SUM(Amount), 0) as total_today 
-       FROM pppoe_payments 
-       WHERE company_id = ? 
+      `SELECT IFNULL(SUM(Amount), 0) AS total_today
+       FROM pppoe_payments
+       WHERE company_id = ?
        AND DATE(created_at) = CURDATE()`,
       [company_id]
     );
 
-    // Get this month's total
+    // This month's PPPoE total
     const [monthRows] = await db.execute(
-      `SELECT IFNULL(SUM(Amount), 0) as total_month 
-       FROM pppoe_payments 
-       WHERE company_id = ? 
-       AND YEAR(created_at) = YEAR(CURDATE()) 
+      `SELECT IFNULL(SUM(Amount), 0) AS total_month
+       FROM pppoe_payments
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
        AND MONTH(created_at) = MONTH(CURDATE())`,
       [company_id]
     );
 
+    // ==========================
+    // Hotspot Totals (vouchers table)
+    // ==========================
+
+    // Today's Hotspot total
+    const [hotspotToday] = await db.execute(
+      `SELECT IFNULL(SUM(amount), 0) AS total_day_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND DATE(created_at) = CURDATE()`,
+      [company_id]
+    );
+
+    // This month's Hotspot total
+    const [hotspotMonth] = await db.execute(
+      `SELECT IFNULL(SUM(amount), 0) AS total_month_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
+       AND MONTH(created_at) = MONTH(CURDATE())`,
+      [company_id]
+    );
+
+    // Return combined totals
     res.json({
       total_today: todayRows[0].total_today,
       total_month: monthRows[0].total_month,
+      total_day_hotspot: hotspotToday[0].total_day_hotspot,
+      total_month_hotspot: hotspotMonth[0].total_month_hotspot
     });
+
   } catch (err) {
-    console.error("Error fetching PPPoE payments total:", err);
+    console.error("Error fetching totals:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 module.exports = router;

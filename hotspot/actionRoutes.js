@@ -161,6 +161,68 @@ router.post('/create-voucher', verifyToken, async (req, res) => {
     }
 });
 
+// GET endpoint to view vouchers
+router.get('/getvouchers', verifyToken, async (req, res) => {
+    try {
+        const company_id = req.companyId; // dynamic company ID extracted from token
+        const { redeemed } = req.query;   // optional filter: 0 = unredeemed, 1 = redeemed
+
+        // Base SQL
+        let query = `
+            SELECT 
+                id,
+                router_id,
+                plan_name,
+                plan_validity,
+                code_voucher,
+                customer,
+                created_at,
+                redeemed
+            FROM vouchers
+            WHERE company_id = ?
+        `;
+
+        const queryParams = [company_id];
+
+        // Add redeemed filter ONLY if passed
+        if (redeemed === "0" || redeemed === "1") {
+            query += ` AND redeemed = ?`;
+            queryParams.push(redeemed);
+        }
+
+        // Order by newest first
+        query += ` ORDER BY id DESC`;
+
+        // Execute query
+        const rows = await db.query(query, queryParams);
+
+        // Format created_at → "Nov 12, 2025"
+        const formatted = rows.map(row => {
+            return {
+                ...row,
+                created_at: new Date(row.created_at).toLocaleString("en-US", {
+                    month: "short",
+                    day: "2-digit",
+                    year: "numeric"
+                })
+            };
+        });
+
+        res.status(200).json({
+            success: true,
+            count: formatted.length,
+            data: formatted
+        });
+
+    } catch (error) {
+        console.error("Error fetching vouchers:", error);
+        res.status(500).json({
+            success: false,
+            error: "Internal server error"
+        });
+    }
+});
+
 router.patch('/redeem-voucher', async (req, res) => {
   const { code_voucher } = req.body;
   const password = generatePassword();

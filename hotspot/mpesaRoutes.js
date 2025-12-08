@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../dbPromise');
 const moment = require('moment');
+const redisClient = require("../services/redis");
 
 
 const { initiateSTKPush, confirmPaymentByTransactionCode, findPaymentByCheckoutRequestID, getAccessToken, initiateDarajaStkPush } = require('./mpesaFunctions');
@@ -224,6 +225,8 @@ router.post('/daraja-stk', async (req, res) => {
             const mpesa_transaction_id = paymentId;
             console.log("Mpesa Transaction ID: ", mpesa_transaction_id);
             finalizePaymentById(mpesa_transaction_id, phone_number, createVoucherResult);
+
+            // Create a Record at Redis for Hotspot Payments
 
             // ✅ Success Response
             return res.json({

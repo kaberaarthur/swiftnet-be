@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('./dbPromise');
+const verifyToken = require('./systemFunctions').verifyToken;
+
 
 // Function to parse Python-like dictionary string
 function parsePythonLikeDict(str) {
@@ -171,6 +173,42 @@ router.get('/payments', (req, res) => {
         .catch(err => {
             console.error('Error fetching payments:', err);
             res.status(500).json({ error: 'Failed to fetch payments data', details: err.message || err  });
+        });
+});
+
+// View Hotspot Payments
+router.get('/hotspot-payments', verifyToken, (req, res) => {
+    console.log("View Hotspot Payments");
+
+    const company_id = req.companyId;
+
+    if (!company_id) {
+        return res.status(400).json({ error: "company_id missing from token" });
+    }
+    
+    // Query only the fields you want
+    const query = `
+        SELECT 
+            id,
+            Amount,
+            MpesaReceiptNumber,
+            Phone,
+            plan_name
+        FROM payments 
+        WHERE company_id = ?
+        ORDER BY id DESC
+    `;
+
+    db.query(query, [company_id])
+        .then(results => {
+            res.status(200).json(results);
+        })
+        .catch(err => {
+            console.error('Error fetching payments:', err);
+            res.status(500).json({ 
+                error: 'Failed to fetch payments data',
+                details: err.message || err
+            });
         });
 });
 
