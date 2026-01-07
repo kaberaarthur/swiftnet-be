@@ -52,6 +52,8 @@ async function getAccessToken() {
     }
 }
 
+// Get Company Details - Include Consumer Key and Secret, Passcode, Shortcode in Companies Table
+
 // Intiates STK Push Directly Through Daraja
 async function initiateDarajaStkPush(myPhoneNumber, planPrice) {
     const accessData = await getAccessToken();

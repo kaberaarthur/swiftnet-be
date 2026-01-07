@@ -129,69 +129,87 @@ async function sendSMS(clientId, phoneNumbers, maskedNumber = null, telco = null
 }
 
 // Function to execute the SSH command on MikroTik
-function executeSSHCommand(ip_address, username, password, secret_name, command) {
+function executeSSHCommand(
+    ip_address,
+    username,
+    password,
+    secret_name,
+    command,
+    port = 22
+) {
     return new Promise((resolve, reject) => {
         const ssh = new Client();
 
         ssh.on('ready', () => {
             const sshCommand = `/ppp secret set [find name=${secret_name}] disabled=${command === 'disable' ? 'yes' : 'no'}`;
             console.log('Executing SSH Command:', sshCommand);
-            
+
             ssh.exec(sshCommand, (err, stream) => {
                 if (err) {
                     console.error('SSH Command Execution Error:', err);
-                    reject(`SSH Command Execution Error: ${err}`);
                     ssh.end();
-                } else {
-                    let output = '';
-                    let error = '';
-                    
-                    stream.on('data', (data) => {
-                        output += data.toString();
-                    });
-                    
-                    stream.on('stderr', (data) => {
-                        error += data.toString();
-                    });
-                    
-                    stream.on('close', () => {
-                        ssh.end();
-                        if (error) {
-                            console.error('SSH Command Error Output:', error);
-                            reject({ status: 'error', message: error });
-                        } else {
-                            resolve({ status: 'success', message: `PPP Secret '${secret_name}' ${command}d successfully.` });
-                        }
-                    });
+                    return reject(`SSH Command Execution Error: ${err}`);
                 }
+
+                let output = '';
+                let error = '';
+
+                stream.on('data', (data) => {
+                    output += data.toString();
+                });
+
+                stream.on('stderr', (data) => {
+                    error += data.toString();
+                });
+
+                stream.on('close', () => {
+                    ssh.end();
+                    if (error) {
+                        console.error('SSH Command Error Output:', error);
+                        reject({ status: 'error', message: error });
+                    } else {
+                        resolve({
+                            status: 'success',
+                            message: `PPP Secret '${secret_name}' ${command}d successfully.`
+                        });
+                    }
+                });
             });
         }).on('error', (err) => {
             console.error('SSH Connection Failed:', err);
             reject(`SSH Connection Failed: ${err}`);
         }).connect({
             host: ip_address,
-            username: username,
-            password: password,
-            port: 22,
+            username,
+            password,
+            port, // defaults to 22
         });
     });
 }
 
-function changePppoePlan(ip_address, username, password, secret_name, new_plan) {
+
+function changePppoePlan(
+    ip_address,
+    username,
+    password,
+    secret_name,
+    new_plan,
+    port = 22
+) {
     return new Promise((resolve, reject) => {
         const conn = new Client();
 
         conn.on('ready', () => {
-            // console.log('SSH Connection Established');
-
-            // MikroTik command to update the PPPoE secret profile
             const command = `/ppp secret set [find name=${secret_name}] profile="${new_plan}"`;
-            console.log("Change PPPoE Plan: ", command)
+            console.log('Change PPPoE Plan:', command);
 
             conn.exec(command, (err, stream) => {
                 if (err) {
                     conn.end();
-                    return reject({ status: 'error', message: `SSH command error: ${err.message}` });
+                    return reject({
+                        status: 'error',
+                        message: `SSH command error: ${err.message}`
+                    });
                 }
 
                 let output = '';
@@ -210,21 +228,27 @@ function changePppoePlan(ip_address, username, password, secret_name, new_plan) 
                     if (error) {
                         reject({ status: 'error', message: error.trim() });
                     } else {
-                        resolve({ status: 'success', message: `PPP secret '${secret_name}' updated to plan '${new_plan}'.` });
+                        resolve({
+                            status: 'success',
+                            message: `PPP secret '${secret_name}' updated to plan '${new_plan}'.`
+                        });
                     }
                 });
             });
         });
 
         conn.on('error', (err) => {
-            reject({ status: 'error', message: `SSH Connection Error: ${err.message}` });
+            reject({
+                status: 'error',
+                message: `SSH Connection Error: ${err.message}`
+            });
         });
 
         conn.connect({
             host: ip_address,
-            port: 22,
-            username: username,
-            password: password
+            username,
+            password,
+            port, // defaults to 22 if not supplied
         });
     });
 }
@@ -236,7 +260,7 @@ function getRouterDetails(router_id) {
             const connection = await pool.getConnection();
             
             // SQL query to get router details
-            const query = "SELECT ip_address, username, router_secret FROM routers WHERE id = ?";
+            const query = "SELECT ip_address, username, router_secret, port FROM routers WHERE id = ?";
             const [rows] = await connection.execute(query, [router_id]);
             
             // Release the connection back to the pool

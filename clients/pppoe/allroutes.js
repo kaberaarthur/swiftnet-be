@@ -522,7 +522,8 @@ router.get('/pppoe-clients/:id', async (req, res) => {
                 routerDetails.username, 
                 routerDetails.router_secret, 
                 updates.secret, 
-                updates.plan_name
+                updates.plan_name,
+                routerDetails.port
             );
 
             if (change_result.status !== 'success') {
@@ -554,7 +555,8 @@ router.get('/pppoe-clients/:id', async (req, res) => {
                     routerDetails.username,
                     routerDetails.router_secret,
                     updates.secret,
-                    command
+                    command,
+                    routerDetails.port
                 );
 
                 if (mikrotikResult.status !== 'success') {
@@ -619,7 +621,7 @@ router.patch('/pppoe-clients/:id', async (req, res) => {
                 return res.status(404).json({ message: 'Router details not found for this client' });
             }
 
-            const { ip_address, username, router_secret } = routerDetails;
+            const { ip_address, username, router_secret, port=22 } = routerDetails;
 
             // Step 2b: Update profile in MikroTik
             const mikrotikCommand = `/ppp secret set [find name="${client.secret}"] profile="${updates.plan_name}"`;
@@ -662,7 +664,7 @@ router.patch('/pppoe-clients/:id', async (req, res) => {
 
                 ssh.connect({
                     host: ip_address,
-                    port: 22,
+                    port,
                     username: username,
                     password: router_secret,
                 });
@@ -778,7 +780,7 @@ router.delete('/pppoe-clients/:id', async (req, res) => {
             return res.status(404).json({ message: 'Router details not found for this client' });
         }
 
-        const { ip_address, username, router_secret } = routerDetails;
+        const { ip_address, username, router_secret, port } = routerDetails;
 
         const ssh = new Client();
         const sshResult = await new Promise((resolve) => {
@@ -823,9 +825,9 @@ router.delete('/pppoe-clients/:id', async (req, res) => {
 
             ssh.connect({
                 host: ip_address,
-                port: 22,
                 username: username,
                 password: router_secret,
+                port,
             });
         });
 
