@@ -6,7 +6,6 @@ const router = express.Router();
 const getRouterById = require('./getRouterById');
 const jwt = require('jsonwebtoken');
 
-
 const SFTPClient = require("ssh2-sftp-client");
 const fs = require("fs");
 const path = require("path");
@@ -80,28 +79,176 @@ async function downloadExportFile(routerIP, username, password, port) {
 // Parse .rsc into JSON with id and underscore keys
 function parseRscToJson(localFile) {
   const data = fs.readFileSync(localFile, "utf-8");
-  const lines = data.split("\n");
-  const profiles = [];
-  let counter = 1;
 
-  for (let line of lines) {
+  // 1. Reconstruct logical lines (handle \ continuation)
+  const rawLines = data.split("\n");
+  const commands = [];
+
+  let buffer = "";
+
+  for (let line of rawLines) {
     line = line.trim();
-    if (line.startsWith("add ")) {
-      const entry = { id: counter++ }; // add index as id
-      const parts = [...line.matchAll(/(\S+)=("[^"]*"|\S+)/g)];
-      for (const match of parts) {
-        // Normalize key names (replace dashes with underscores)
-        const key = match[1].replace(/-/g, "_");
-        const value = match[2].replace(/"/g, "");
-        entry[key] = value;
-      }
-      if (!entry["disabled"]) entry["disabled"] = "no";
-      profiles.push(entry);
+
+    // Skip comments and empty lines
+    if (!line || line.startsWith("#")) continue;
+
+    if (line.endsWith("\\")) {
+      buffer += line.slice(0, -1) + " ";
+    } else {
+      buffer += line;
+      commands.push(buffer.trim());
+      buffer = "";
     }
+  }
+
+  const profiles = [];
+  let id = 1;
+
+  // 2. Parse only "add" PPP profile commands
+  for (const cmd of commands) {
+    if (!cmd.startsWith("add ")) continue;
+
+    const entry = {
+      id: id++,
+      disabled: "no",     // RouterOS default
+      rate_limit: null,   // ensure consistency
+    };
+
+    // 3. Extract key=value pairs (quoted and unquoted)
+    const regex = /([\w-]+)=(".*?"|\S+)/g;
+    let match;
+
+    while ((match = regex.exec(cmd)) !== null) {
+      const key = match[1].replace(/-/g, "_");
+      const value = match[2].replace(/^"|"$/g, "").trim();
+
+      entry[key] = value;
+    }
+
+    profiles.push(entry);
   }
 
   return profiles;
 }
+
+
+// Trial for importing PPPoE profiles
+function runMikrotikCommand(host, username, password, port, command) {
+  return new Promise((resolve, reject) => {
+    let output = "";
+
+    const conn = new Client();
+
+    conn
+      .on("ready", () => {
+        conn.exec(command, (err, stream) => {
+          if (err) {
+            conn.end();
+            return reject(err);
+          }
+
+          stream
+            .on("data", (data) => {
+              output += data.toString();
+            })
+            .on("close", () => {
+              conn.end();
+              resolve(output);
+            });
+        });
+      })
+      .on("error", reject)
+      .connect({
+        host,
+        port,
+        username,
+        password,
+      });
+  });
+}
+
+function parsePppProfiles(output) {
+  const lines = output
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  const profiles = [];
+
+  for (const line of lines) {
+    const match = line.match(/^(\d+)\s+(.*)$/);
+    if (!match) continue;
+
+    const id = Number(match[1]);
+    const rest = match[2];
+
+    const profile = {
+      id,
+      rate_limit: null, // ensure presence
+    };
+
+    const regex = /([\w-]+)=(".*?"|\S+)/g;
+    let kv;
+
+    while ((kv = regex.exec(rest)) !== null) {
+      const key = kv[1].replace(/-/g, "_");
+      const value = kv[2].replace(/^"|"$/g, "").trim();
+
+      profile[key] = value;
+    }
+
+    profiles.push(profile);
+  }
+
+  return profiles;
+}
+
+
+// GET endpoint for PPPoE profiles (efficient version)
+router.get("/router-pppoe-profiles-trial", async (req, res) => {
+  const id = req.query.id;
+
+  if (!id || isNaN(id)) {
+    return res.status(400).json({
+      message: 'Missing or invalid "id" query parameter.',
+    });
+  }
+
+  try {
+    const response = await getRouterById(Number(id));
+
+    if (!response.success) {
+      return res.status(404).json({ message: "Router not found." });
+    }
+
+    const {
+      ip_address: routerIP,
+      username,
+      router_secret: password,
+      port = 22,
+    } = response.data;
+
+    // Execute MikroTik command directly
+    const rawOutput = await runMikrotikCommand(
+      routerIP,
+      username,
+      password,
+      port,
+      "/ppp profile print detail without-paging"
+    );
+
+    const profiles = parsePppProfiles(rawOutput);
+
+    res.json(profiles);
+  } catch (error) {
+    console.error("❌ Error fetching PPPoE profiles:", error);
+    res.status(500).json({
+      error: "Failed to fetch PPPoE profiles",
+      message: error.message,
+    });
+  }
+});
+
 
 // GET endpoint for PPPoE profiles
 router.get("/router-pppoe-profiles", async (req, res) => {
