@@ -5,6 +5,8 @@ const moment = require('moment');
 const db = require('../dbPromise');
 const redisClient = require("../services/redis");
 
+const { logBasicAmount } = require('./b2bHelperRoutes'); // Import the helper function
+
 // Import your functions
 const {
   getSecurityCredential,
@@ -130,6 +132,8 @@ router.post('/b2b-result', async (req, res) => {
     }
 
     console.log('✅ Valid B2B callback received:', JSON.stringify(req.body, null, 2));
+
+    logBasicAmount(req.body); // Call the helper function to log BasicAmount
 
     // Debug TransactionID + ConversationID
     // console.log(`📦 Enqueuing TransactionID=${result.TransactionID}, ConversationID=${result.ConversationID}`);
