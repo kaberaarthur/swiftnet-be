@@ -7369,3 +7369,391 @@
       WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
       GROUP BY v.company_id
      
+[2026-03-05T06:34:38.084Z] ❌ [QUERY ERROR: 26117ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-03-05T06:37:59.393Z] ✅ New MySQL connection established
+[2026-03-05T06:37:59.639Z] ⚠️ [SLOW QUERY: 1178ms] 
+      INSERT INTO pppoe_b2b_payments (
+        originator_conversation_id,
+        conversation_id,
+        transaction_id,
+        result_code,
+        result_desc,
+        amount,
+        currency,
+        status,
+        bill_reference_number,
+        trans_completed_time,
+        debit_account_balance,
+        debit_party_account_balance,
+        debit_party_charges,
+        receiver_party_public_name,
+        initiator_account_balance,
+        reference_data,
+        raw_payload
+      ) VALUES ?
+      ON DUPLICATE KEY UPDATE
+        result_code = VALUES(result_code),
+        result_desc = VALUES(result_desc),
+        status = VALUES(status),
+        raw_payload = VALUES(raw_payload)
+     [params: [3cf7-4b79-bf2d-81bd0dccc99238636,AG_20260305_010020730kn8gs7rhwf1,UC5TT86J0O,,The service request is processed successfully.,100,KES,success,1003761913,20260305093757,,Working Account|KES|70012.00|70012.00|0.00|0.00,,880100 - NCBA BANK KENYA PLC.,{Amount={CurrencyCode=KES, MinimumAmount=7001200, BasicAmount=70012.00}},{"BillReferenceNumber":1003761913,"QueueTimeoutURL":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"ResultType":0,"ResultCode":0,"ResultDesc":"The service request is processed successfully.","OriginatorConversationID":"3cf7-4b79-bf2d-81bd0dccc99238636","ConversationID":"AG_20260305_010020730kn8gs7rhwf1","TransactionID":"UC5TT86J0O","ResultParameters":{"ResultParameter":[{"Key":"Currency","Value":"KES"},{"Key":"ReceiverPartyPublicName","Value":"880100 - NCBA BANK KENYA PLC."},{"Key":"DebitPartyCharges"},{"Key":"TransCompletedTime","Value":20260305093757},{"Key":"DebitPartyAffectedAccountBalance","Value":"Working Account|KES|70012.00|70012.00|0.00|0.00"},{"Key":"Amount","Value":100},{"Key":"DebitAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=7001200, BasicAmount=70012.00}}"},{"Key":"InitiatorAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=7001200, BasicAmount=70012.00}}"}]},"ReferenceData":{"ReferenceItem":[{"Key":"BillReferenceNumber","Value":1003761913},{"Key":"QueueTimeoutURL","Value":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"Key":"Occassion"}]}}]]
+[2026-03-05T06:39:12.205Z] [QUERY: 237ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-03-05T06:39:12.440Z] [QUERY: 234ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-03-05T06:39:12.674Z] [QUERY: 233ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-03-05T06:43:43.898Z] ❌ [QUERY ERROR: 19910ms] 
+      INSERT INTO pppoe_b2b_payments (
+        originator_conversation_id,
+        conversation_id,
+        transaction_id,
+        result_code,
+        result_desc,
+        amount,
+        currency,
+        status,
+        bill_reference_number,
+        trans_completed_time,
+        debit_account_balance,
+        debit_party_account_balance,
+        debit_party_charges,
+        receiver_party_public_name,
+        initiator_account_balance,
+        reference_data,
+        raw_payload
+      ) VALUES ?
+      ON DUPLICATE KEY UPDATE
+        result_code = VALUES(result_code),
+        result_desc = VALUES(result_desc),
+        status = VALUES(status),
+        raw_payload = VALUES(raw_payload)
+     [params: [3cf7-4b79-bf2d-81bd0dccc99245383,AG_20260305_010020730ku7f4m5wpue,UC5TT86KIU,,The service request is processed successfully.,20,KES,success,1003761913,20260305094322,,Working Account|KES|69633.00|69633.00|0.00|0.00,Business Pay Bill Charge|KES|2.00,880100 - NCBA BANK KENYA PLC.,{Amount={CurrencyCode=KES, MinimumAmount=6963300, BasicAmount=69633.00}},{"BillReferenceNumber":1003761913,"QueueTimeoutURL":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"ResultType":0,"ResultCode":0,"ResultDesc":"The service request is processed successfully.","OriginatorConversationID":"3cf7-4b79-bf2d-81bd0dccc99245383","ConversationID":"AG_20260305_010020730ku7f4m5wpue","TransactionID":"UC5TT86KIU","ResultParameters":{"ResultParameter":[{"Key":"Currency","Value":"KES"},{"Key":"ReceiverPartyPublicName","Value":"880100 - NCBA BANK KENYA PLC."},{"Key":"DebitPartyCharges","Value":"Business Pay Bill Charge|KES|2.00"},{"Key":"TransCompletedTime","Value":20260305094322},{"Key":"DebitPartyAffectedAccountBalance","Value":"Working Account|KES|69633.00|69633.00|0.00|0.00"},{"Key":"Amount","Value":20},{"Key":"DebitAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=6963300, BasicAmount=69633.00}}"},{"Key":"InitiatorAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=6963300, BasicAmount=69633.00}}"}]},"ReferenceData":{"ReferenceItem":[{"Key":"BillReferenceNumber","Value":1003761913},{"Key":"QueueTimeoutURL","Value":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"Key":"Occassion"}]}}]] - read ECONNRESET
+[2026-03-05T06:44:13.282Z] ✅ New MySQL connection established
+[2026-03-05T06:44:13.592Z] ⚠️ [SLOW QUERY: 1620ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-03-05T06:44:13.829Z] [QUERY: 236ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-03-05T06:44:14.206Z] [QUERY: 376ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-03-05T06:49:57.506Z] ❌ [QUERY ERROR: 45522ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-03-05T06:54:12.939Z] ✅ New MySQL connection established
+[2026-03-05T06:54:13.177Z] ⚠️ [SLOW QUERY: 1197ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-03-05T06:54:13.422Z] [QUERY: 244ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-03-05T06:54:13.657Z] [QUERY: 234ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-03-05T06:59:34.408Z] ❌ [QUERY ERROR: 22396ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-03-05T07:04:12.958Z] ✅ New MySQL connection established
+[2026-03-05T07:04:13.201Z] ⚠️ [SLOW QUERY: 1219ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-03-05T07:04:13.440Z] [QUERY: 238ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-03-05T07:04:13.683Z] [QUERY: 243ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-03-05T07:09:34.147Z] ❌ [QUERY ERROR: 22155ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-03-05T07:14:13.192Z] ✅ New MySQL connection established
+[2026-03-05T07:14:13.521Z] ⚠️ [SLOW QUERY: 1525ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-03-05T07:14:13.806Z] [QUERY: 284ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-03-05T07:14:14.136Z] [QUERY: 330ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-03-05T07:19:44.221Z] ❌ [QUERY ERROR: 32205ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-03-05T07:24:13.029Z] ✅ New MySQL connection established
+[2026-03-05T07:24:13.273Z] ⚠️ [SLOW QUERY: 1250ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-03-05T07:24:13.517Z] [QUERY: 243ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-03-05T07:24:13.754Z] [QUERY: 236ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-03-05T07:29:35.266Z] ❌ [QUERY ERROR: 23235ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-03-05T07:34:12.995Z] ✅ New MySQL connection established
+[2026-03-05T07:34:13.286Z] ⚠️ [SLOW QUERY: 1243ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-03-05T07:34:13.524Z] [QUERY: 237ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-03-05T07:34:13.762Z] [QUERY: 237ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-03-05T07:39:37.649Z] ❌ [QUERY ERROR: 25522ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-03-05T07:44:13.022Z] ✅ New MySQL connection established
+[2026-03-05T07:44:13.262Z] ⚠️ [SLOW QUERY: 1210ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-03-05T07:44:13.501Z] [QUERY: 239ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-03-05T07:44:13.737Z] [QUERY: 236ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-03-05T07:49:35.688Z] ❌ [QUERY ERROR: 23624ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-03-05T07:54:13.008Z] ✅ New MySQL connection established
+[2026-03-05T07:54:13.247Z] ⚠️ [SLOW QUERY: 1171ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-03-05T07:54:13.480Z] [QUERY: 232ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-03-05T07:54:13.714Z] [QUERY: 233ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-03-05T07:59:34.533Z] ❌ [QUERY ERROR: 22433ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-03-05T08:04:13.057Z] ✅ New MySQL connection established
+[2026-03-05T08:04:13.299Z] ⚠️ [SLOW QUERY: 1206ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-03-05T08:04:13.538Z] [QUERY: 239ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-03-05T08:04:13.777Z] [QUERY: 238ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-03-05T08:09:34.679Z] ❌ [QUERY ERROR: 22470ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-03-05T08:14:14.247Z] ✅ New MySQL connection established
+[2026-03-05T08:14:14.552Z] ⚠️ [SLOW QUERY: 2387ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-03-05T08:14:14.827Z] [QUERY: 274ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-03-05T08:14:15.074Z] [QUERY: 246ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-03-05T08:19:42.417Z] ❌ [QUERY ERROR: 30236ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-03-05T08:24:13.309Z] ✅ New MySQL connection established
+[2026-03-05T08:24:13.575Z] ⚠️ [SLOW QUERY: 1365ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-03-05T08:24:13.816Z] [QUERY: 241ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-03-05T08:24:14.059Z] [QUERY: 239ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-03-05T08:29:35.430Z] ❌ [QUERY ERROR: 23233ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-03-05T08:34:13.150Z] ✅ New MySQL connection established
+[2026-03-05T08:34:13.390Z] ⚠️ [SLOW QUERY: 1189ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-03-05T08:34:13.638Z] [QUERY: 247ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-03-05T08:34:13.879Z] [QUERY: 241ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-03-05T08:39:34.843Z] ❌ [QUERY ERROR: 22637ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-03-05T08:44:13.127Z] ✅ New MySQL connection established
+[2026-03-05T08:44:13.360Z] ⚠️ [SLOW QUERY: 1156ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-03-05T08:44:13.591Z] [QUERY: 231ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-03-05T08:44:13.823Z] [QUERY: 232ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-03-05T08:49:33.769Z] ❌ [QUERY ERROR: 21561ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-03-05T08:54:13.159Z] ✅ New MySQL connection established
+[2026-03-05T08:54:13.395Z] ⚠️ [SLOW QUERY: 1173ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-03-05T08:54:13.628Z] [QUERY: 232ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-03-05T08:54:13.860Z] [QUERY: 231ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-03-05T08:59:34.003Z] ❌ [QUERY ERROR: 21749ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-03-05T09:04:13.186Z] ✅ New MySQL connection established
+[2026-03-05T09:04:13.433Z] ⚠️ [SLOW QUERY: 1195ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-03-05T09:04:13.669Z] [QUERY: 235ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-03-05T09:04:13.920Z] [QUERY: 251ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-03-05T09:09:35.744Z] ❌ [QUERY ERROR: 23501ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-03-05T09:14:13.177Z] ✅ New MySQL connection established
+[2026-03-05T09:14:13.412Z] ⚠️ [SLOW QUERY: 1162ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-03-05T09:14:13.655Z] [QUERY: 242ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-03-05T09:14:13.887Z] [QUERY: 232ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     

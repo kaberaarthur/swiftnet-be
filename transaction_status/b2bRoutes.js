@@ -129,6 +129,8 @@ router.post('/b2b-result', async (req, res) => {
       return res.status(400).json({ message: 'Invalid payload' });
     }
 
+    console.log('✅ Valid B2B callback received:', JSON.stringify(req.body, null, 2));
+
     // Debug TransactionID + ConversationID
     // console.log(`📦 Enqueuing TransactionID=${result.TransactionID}, ConversationID=${result.ConversationID}`);
 
