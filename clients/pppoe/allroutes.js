@@ -461,8 +461,8 @@ router.get('/pppoe-clients/:id', async (req, res) => {
 });
 
 
-  // Update PPPoE client details (PATCH) with plan change and MikroTik update
-  router.patch('/edit-pppoe-client/:id', verifyToken, async (req, res) => {
+// Update PPPoE client details (PATCH) with plan change and MikroTik update
+router.patch('/edit-pppoe-client/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
     const company_id = req.companyId;
@@ -473,82 +473,105 @@ router.get('/pppoe-clients/:id', async (req, res) => {
     console.log("Subscription Status: ", subStatus);
     if (!subStatus.success) {
         return res.status(subStatus.status).json({
-        success: false,
-        message: subStatus.message,
+            success: false,
+            message: subStatus.message,
         });
     }
-  
-    // Step 3: Generate dynamic SQL query for updating allowed fields only
-    const allowedFields = ["sms_group", "end_date", "plan_fee", "brand", "full_name", "location", "plan_name", "plan_id", "active", "installation_fee", "comments", "phone_number"]; // <-- add only what you want to allow
-    let query = "UPDATE pppoe_clients SET ";
-    const params = [];
 
-    for (const key of allowedFields) {
-        if (updates[key] !== undefined) {
-            query += `${key} = ?, `;
-            params.push(updates[key]);
-        }
-    }
-
-    // If nothing allowed is being updated
-    if (params.length === 0) {
-        return res.status(400).json({ message: "No valid fields provided for update" });
-    }
-  
-    // Add timestamp and id to the query
-    query = query.slice(0, -2) + ', updated_at = CURRENT_TIMESTAMP() WHERE id = ?';
-    params.push(id);
-
-    // console.log("Update Query: ", query, params);
-  
     try {
-      // Step 4: Execute the update query in the database
-      const result = await db.execute(query, params);
+        // Step 1: Fetch the existing client to compare router_id
+        const [clientResult] = await db.execute('SELECT * FROM pppoe_clients WHERE id = ?', [id]);
 
-      // Get Router Details
-      const routerDetails = await getRouterDetails(updates.router_id);
-      if (!routerDetails || !routerDetails.ip_address) {
+        if (!clientResult.length) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+
+        const client = clientResult[0];
+
+        const planNameChanged = updates.plan_name && updates.plan_name !== client.plan_name;
+        const routerChanged = updates.router_id && Number(updates.router_id) !== Number(client.router_id);
+
+        console.log("Plan name changed:", planNameChanged);
+        console.log("Router changed:", routerChanged);
+
+        // Step 2: Build dynamic SQL query for allowed fields only
+        const allowedFields = [
+            "sms_group", "end_date", "plan_fee", "brand", "full_name",
+            "location", "plan_name", "plan_id", "active", "installation_fee",
+            "comments", "phone_number", "router_id"  // router_id allowed so it persists to DB
+        ];
+
+        let query = "UPDATE pppoe_clients SET ";
+        const params = [];
+
+        for (const key of allowedFields) {
+            if (updates[key] !== undefined) {
+                query += `${key} = ?, `;
+                params.push(updates[key]);
+            }
+        }
+
+        if (params.length === 0) {
+            return res.status(400).json({ message: "No valid fields provided for update" });
+        }
+
+        query = query.slice(0, -2) + ', updated_at = CURRENT_TIMESTAMP() WHERE id = ?';
+        params.push(id);
+
+        // Step 3: Execute the DB update first
+        const result = await db.execute(query, params);
+
+        // Step 4: Resolve which router to use for SSH operations.
+        // - If only the plan changed (same router) → SSH on the current/original router.
+        // - If the router also changed → skip plan SSH entirely (admin handled MikroTik manually).
+        // - For active/enable/disable → use the router that now owns the client (new router if changed).
+        const sshRouterId = routerChanged ? updates.router_id : client.router_id;
+        const routerDetails = await getRouterDetails(sshRouterId);
+
+        if (!routerDetails || !routerDetails.ip_address) {
             console.error("Error: Router Connection Impaired");
             return res.status(404).json({ error: "Router Connection Impaired" });
         }
-  
-      // If plan_name is being updated, call changePppoePlan
-      // We no longer need to change pppoe plan since we are already changing it in the patch /pppoe-clients/:id
-      if (updates.plan_name) {
-            // Call changePppoePlan function and handle success/failure
-            // console.log("Change Plan Requested to: ", updates.plan_name)
+
+        // Step 5: Handle plan change SSH — only when router has NOT changed.
+        // If the router changed, the admin already migrated the PPP secret on MikroTik manually.
+        if (planNameChanged && !routerChanged) {
+            console.log("Plan-only change — running SSH on current router to update MikroTik profile.");
+            console.log("Switching to plan:", updates.plan_name, "| Client secret:", updates.secret);
+
             const change_result = await changePppoePlan(
-                routerDetails.ip_address, 
-                routerDetails.username, 
-                routerDetails.router_secret, 
-                updates.secret, 
+                routerDetails.ip_address,
+                routerDetails.username,
+                routerDetails.router_secret,
+                updates.secret,
                 updates.plan_name,
                 routerDetails.port
             );
 
             if (change_result.status !== 'success') {
                 return res.status(500).json({
-                message: 'Client updated, but failed to change PPPoE plan.',
-                affectedRows: result.affectedRows,
-                error: change_result.message
+                    message: 'Client updated in DB, but failed to change PPPoE plan on MikroTik.',
+                    affectedRows: result.affectedRows,
+                    error: change_result.message
                 });
             }
+
+            console.log("MikroTik profile updated successfully via SSH.");
+
+        } else if (planNameChanged && routerChanged) {
+            // Router moved — admin already handled the PPP secret migration on MikroTik.
+            // Only the DB update (above) is needed here.
+            console.log("*****################################################*****");
+            console.log("Router change detected alongside plan change. Skipping plan SSH — admin has handled MikroTik manually.");
+            console.log("*****################################################*****");
         }
 
-        // Update Client Status on MikroTik
-        // This should only happen if we are extending the date or activating the client
-        try {
-            if (updates.active) {
-                // Do away with the call to the microservice
-                // Just run execute ssh command right here
-
-                // Check if the client needs to be activated/deactivated on MikroTik
+        // Step 6: Handle active/inactive toggle on MikroTik.
+        // Uses the new router if router changed, otherwise the original one.
+        // Note: sshRouterId and routerDetails are already resolved above to the correct router.
+        if (updates.active !== undefined) {
+            try {
                 const command = updates.active == 1 ? "enable" : "disable";
-                /*console.log(
-                    command === "enable"
-                        ? "Activating Client on MikroTik as well"
-                        : "Deactivating Client on MikroTik as well"
-                );*/
 
                 const mikrotikResult = await executeSSHCommand(
                     routerDetails.ip_address,
@@ -560,37 +583,38 @@ router.get('/pppoe-clients/:id', async (req, res) => {
                 );
 
                 if (mikrotikResult.status !== 'success') {
-                    console.error("Failed to enable client:", mikrotikResult.message);
+                    console.error(`Failed to ${command} client on MikroTik:`, mikrotikResult.message);
                     return res.status(500).json({
-                        message: "Client updated, but enabling client failed."
+                        message: `Client updated in DB, but ${command} on MikroTik failed.`,
+                        error: mikrotikResult.message
                     });
-                } else {
-                    console.log("Client successfully enabled:", mikrotikResult);
                 }
-            }
-        } catch (error) {
-            console.error("Error enabling client:", error);
-            return res.status(500).json({
-                message: "Client updated, but an error occurred while enabling client.",
-                error: error.message
-            });
-        } 
 
-      // Successful response
-      return res.json({
-        message: 'Client updated successfully.',
-        affectedRows: result.affectedRows,
-      });
-  
+                console.log(`Client successfully ${command}d on MikroTik:`, mikrotikResult);
+
+            } catch (error) {
+                console.error("Error toggling client active state on MikroTik:", error);
+                return res.status(500).json({
+                    message: "Client updated in DB, but an error occurred while toggling active state on MikroTik.",
+                    error: error.message
+                });
+            }
+        }
+
+        // Successful response
+        return res.json({
+            message: 'Client updated successfully.',
+            affectedRows: result.affectedRows,
+        });
+
     } catch (err) {
-      // Handle database errors or other unexpected errors
-      console.error('Database update failed:', err);
-      return res.status(500).json({
-        message: 'Failed to update client in the database.',
-        error: err.message
-      });
+        console.error('Database update failed:', err);
+        return res.status(500).json({
+            message: 'Failed to update client in the database.',
+            error: err.message
+        });
     }
-  });
+});
 
 // Update PPPoE client details (PATCH)
 router.patch('/pppoe-clients/:id', async (req, res) => {

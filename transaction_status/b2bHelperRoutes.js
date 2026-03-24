@@ -1,3 +1,5 @@
+const redisClient = require("../services/redis");
+
 function logBasicAmount(payload) {
   try {
     const valueString =
@@ -23,3 +25,5 @@ function logBasicAmount(payload) {
 }
 
 module.exports = { logBasicAmount };
+
+// Code Link - https://gemini.google.com/share/c3a689504768
