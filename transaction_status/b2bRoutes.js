@@ -30,7 +30,7 @@ router.post('/b2b-payment', async (req, res) => {
     // Use the Swiftnet Company ID, To avoid changing for each company
     // const password = await getDarajaInitiatorPassword(2);
 
-    const password = "oDNQK4ZhUebtq17h*";
+    const password = getDarajaInitiatorPassword(2); // Get password for Swiftnet (company_id=2)
 
     console.log('Received B2B payment request using Initiator Password:', password);
 
