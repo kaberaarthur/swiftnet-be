@@ -8133,3 +8133,130 @@
       SELECT id, allowed_users, company_plan_name, company_plan_id, active
       FROM companies
       - read ECONNRESET
+[2026-05-17T21:30:06.324Z] ✅ New MySQL connection established
+[2026-05-17T21:30:06.640Z] ⚠️ [SLOW QUERY: 2613ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-05-17T21:30:06.903Z] [QUERY: 262ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-05-17T21:30:07.149Z] [QUERY: 246ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-05-17T21:33:14.162Z] [EXECUTE: 568ms] SELECT COUNT(*) as total FROM hotspot_clients WHERE company_id = ? [params: [2]]
+[2026-05-17T21:33:14.676Z] [EXECUTE: 506ms] SELECT COUNT(*) as total FROM pppoe_clients WHERE company_id = ? [params: [2]]
+[2026-05-17T21:33:14.940Z] ✅ New MySQL connection established
+[2026-05-17T21:33:15.005Z] ✅ New MySQL connection established
+[2026-05-17T21:33:15.317Z] [EXECUTE: 252ms] SELECT COUNT(*) as total FROM hotspot_clients WHERE company_id = ? [params: [2]]
+[2026-05-17T21:33:15.897Z] ⚠️ [SLOW EXECUTE: 1905ms] SELECT IFNULL(SUM(Amount), 0) AS total_today
+       FROM pppoe_payments
+       WHERE company_id = ?
+       AND DATE(created_at) = CURDATE() [params: [2]]
+[2026-05-17T21:33:15.903Z] [EXECUTE: 585ms] SELECT COUNT(*) as total FROM pppoe_clients WHERE company_id = ? [params: [2]]
+[2026-05-17T21:33:16.443Z] [EXECUTE: 545ms] SELECT IFNULL(SUM(Amount), 0) AS total_month
+       FROM pppoe_payments
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [2]]
+[2026-05-17T21:33:16.768Z] ⚠️ [SLOW QUERY: 3060ms] SELECT * FROM pppoe_payments WHERE 1=1 AND company_id = ? [params: [2]]
+[2026-05-17T21:33:17.003Z] [EXECUTE: 560ms] SELECT IFNULL(SUM(amount), 0) AS total_day_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND DATE(created_at) = CURDATE() [params: [2]]
+[2026-05-17T21:33:17.527Z] [EXECUTE: 523ms] SELECT IFNULL(SUM(amount), 0) AS total_month_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [2]]
+[2026-05-17T21:33:17.799Z] [QUERY: 624ms] SELECT * FROM pppoe_payments WHERE 1=1 AND company_id = ? [params: [2]]
+[2026-05-17T21:33:18.919Z] [EXECUTE: 534ms] SELECT IFNULL(SUM(Amount), 0) AS total_today
+       FROM pppoe_payments
+       WHERE company_id = ?
+       AND DATE(created_at) = CURDATE() [params: [2]]
+[2026-05-17T21:33:19.446Z] [EXECUTE: 527ms] SELECT IFNULL(SUM(Amount), 0) AS total_month
+       FROM pppoe_payments
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [2]]
+[2026-05-17T21:33:19.956Z] [EXECUTE: 509ms] SELECT IFNULL(SUM(amount), 0) AS total_day_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND DATE(created_at) = CURDATE() [params: [2]]
+[2026-05-17T21:33:20.464Z] [EXECUTE: 507ms] SELECT IFNULL(SUM(amount), 0) AS total_month_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [2]]
+[2026-05-17T21:35:04.248Z] [QUERY: 255ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-05-17T21:35:04.502Z] [QUERY: 253ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-05-17T21:35:04.755Z] [QUERY: 253ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-05-17T21:40:25.691Z] ❌ [QUERY ERROR: 21696ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-05-17T21:45:23.277Z] ❌ [QUERY ERROR: 19281ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-05-17T21:50:23.249Z] ❌ [QUERY ERROR: 19241ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-05-17T21:55:05.173Z] ✅ New MySQL connection established
+[2026-05-17T21:55:05.446Z] ⚠️ [SLOW QUERY: 1429ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-05-17T21:55:05.711Z] [QUERY: 263ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-05-17T21:55:05.973Z] [QUERY: 262ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-05-17T22:00:30.324Z] ❌ [QUERY ERROR: 26291ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-05-17T22:05:05.089Z] ✅ New MySQL connection established
+[2026-05-17T22:05:05.346Z] ⚠️ [SLOW QUERY: 1300ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-05-17T22:05:05.603Z] [QUERY: 256ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-05-17T22:05:05.860Z] [QUERY: 256ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-05-17T22:10:29.093Z] ❌ [QUERY ERROR: 25034ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
