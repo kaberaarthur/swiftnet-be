@@ -32,7 +32,7 @@ router.post('/b2b-payment', async (req, res) => {
 
     const password = getDarajaInitiatorPassword(2); // Get password for Swiftnet (company_id=2)
 
-    console.log('Received B2B payment request using Initiator Password:', password);
+    console.log('Received B2B payment request using the Initiator Password:', password);
 
     if (!password) {
       return res.status(404).json({ error: 'Initiator password not found for company_id' });
