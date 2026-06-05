@@ -64,7 +64,7 @@ router.post('/', async (req, res) => {
 
   // Add null check before accessing company_id
   if (!user) {
-    console.error('User not found for customer_id:', customer_id);
+    console.error('User not found for the customer_id:', customer_id);
     return res.status(404).json({ 
       success: false, 
       message: 'Customer not found' 
