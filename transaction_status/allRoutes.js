@@ -53,6 +53,8 @@ router.post('/', async (req, res) => {
   const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
   console.log("Processing Transaction with Mpesa Code: ", transaction_code);
   console.log("Request IP: ", clientIp);
+  console.log("User-Agent: ", req.headers['user-agent']);
+  console.log("Referer: ", req.headers['referer'] || 'none');
 
   // Step 1: Check if both parameters have been attached
   if (!transaction_code || !customer_id) {
