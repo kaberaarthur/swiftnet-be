@@ -1,39 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../dbPromise'); // Change to use `db` instead of `dbPromise`
+const db = require('../../dbPromise');
 const { Client } = require('ssh2');
 const e = require('express');
-const jwt = require('jsonwebtoken');
-
-const jwtSecret = process.env.JWT_SECRET;
-
-// Middleware to verify token
-function verifyToken(req, res, next) {
-    // Extract the token from the Authorization header
-    const token = req.headers['authorization'];
-
-    if (!token) {
-        return res.status(403).json({ message: 'No token provided' });
-    }
-
-    // Extract the token from the 'Authorization' header
-    const bearerToken = token.split(' ')[1];
-
-    
-    // Verify the token
-    jwt.verify(bearerToken, jwtSecret, (err, decoded) => {
-        if (err) {
-            return res.status(500).json({ message: 'Failed to authenticate token' });
-        }
-
-        // Attach the user ID to the request object
-        req.userId = decoded.id;
-        req.userType = decoded.user_type;
-        req.companyId = decoded.company_id;
-        next();
-    });
-    
-}
+const { verifyToken } = require('../../systemFunctions');
 
 
 // Create/Update a captive portal for a single Router

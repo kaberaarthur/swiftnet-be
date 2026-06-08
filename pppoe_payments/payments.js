@@ -3,30 +3,9 @@ const router = express.Router();
 const axios = require('axios');
 const db = require('../dbPromise');
 const fs = require('fs');
-const jwt = require('jsonwebtoken');
+const { verifyToken } = require('../systemFunctions');
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-// Middleware to verify token
-function verifyToken(req, res, next) {
-    const token = req.headers['authorization'];
-
-    if (!token) {
-        return res.status(403).json({ message: 'No token provided' });
-    }
-
-    const bearerToken = token.split(' ')[1];
-    
-    jwt.verify(bearerToken, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(500).json({ message: 'Failed to authenticate token' });
-        }
-        req.userId = decoded.id;
-        req.userType = decoded.user_type;
-        req.company_id = decoded.company_id;
-        next();
-    });
-}
 
 
 // Function to check if the payment in pppoe_payments has been entered

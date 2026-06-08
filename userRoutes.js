@@ -3,36 +3,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('./dbPromise');
 const axios = require("axios");
+const { verifyToken } = require('./systemFunctions');
 
 const router = express.Router();
-
-// Middleware to verify token
-function verifyToken(req, res, next) {
-    // Extract the token from the Authorization header
-    const token = req.headers['authorization'];
-
-    if (!token) {
-        return res.status(403).json({ message: 'No token provided' });
-    }
-
-    // Extract the token from the 'Authorization' header
-    const bearerToken = token.split(' ')[1];
-
-    
-    // Verify the token
-    jwt.verify(bearerToken, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(500).json({ message: 'Failed to authenticate token' });
-        }
-
-        // Attach the user ID to the request object
-        req.userId = decoded.id;
-        req.userType = decoded.user_type;
-        req.companyId = decoded.company_id;
-        next();
-    });
-    
-}
 
 // Route to verify token and check expiration
 router.get('/verify-token', (req, res) => {
@@ -165,9 +138,9 @@ router.post('/signup', async (req, res) => {
 
         const newUserId = userResult.insertId;
 
-        // Create a token with user_type included
+        // Create a token with user_type and token_version included
         const token = jwt.sign(
-            { id: newUserId, user_type: defaultUserType, company_id: companyId },
+            { id: newUserId, user_type: defaultUserType, company_id: companyId, token_version: 1 },
             process.env.JWT_SECRET,
             { expiresIn: '365d' }
         );
@@ -208,8 +181,8 @@ router.post('/signin', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Check if user exists
-        const [results] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
+        // Check if user exists and is not deleted
+        const [results] = await db.execute('SELECT * FROM users WHERE email = ? AND deleted_at IS NULL', [email]);
         
         if (results.length === 0) {
             return res.status(400).json({ message: 'User not found' });
@@ -218,7 +191,7 @@ router.post('/signin', async (req, res) => {
         const user = results[0];
 
         if (user.active === 0) {
-            return res.status(400).json({ message: 'You account is inactive, contact your Admin.' });
+            return res.status(400).json({ message: 'Your account is inactive, contact your Admin.' });
         }
 
         console.log("User Data: ", user);
@@ -231,9 +204,9 @@ router.post('/signin', async (req, res) => {
 
         console.log("JWT Secret Used: ", process.env.JWT_SECRET);
 
-        // Create and return a token with user_type included
+        // Create and return a token with user_type and token_version included
         const token = jwt.sign(
-            { id: user.id, user_type: user.user_type, company_id: user.company_id }, // Include user_type
+            { id: user.id, user_type: user.user_type, company_id: user.company_id, token_version: user.token_version },
             process.env.JWT_SECRET,
             { expiresIn: '365d' }
         );
@@ -300,18 +273,18 @@ router.get('/users/:id?', verifyToken, async (req, res) => {
     try {
         if (userId) {
             const [result] = await db.execute(
-                'SELECT id, name, email, phone, user_type, company_id, company_username, active FROM users WHERE id = ? AND company_id = ?',
+                'SELECT id, name, email, phone, user_type, company_id, company_username, active FROM users WHERE id = ? AND company_id = ? AND deleted_at IS NULL',
                 [userId, companyId]
             );
-            
+
             if (result.length === 0) {
                 return res.status(404).json({ message: 'User not found or does not belong to your company' });
             }
-            
+
             res.json(result[0]);
         } else {
             const [result] = await db.execute(
-                'SELECT id, name, email, phone, user_type, company_id, company_username, active FROM users WHERE company_id = ?',
+                'SELECT id, name, email, phone, user_type, company_id, company_username, active FROM users WHERE company_id = ? AND deleted_at IS NULL',
                 [companyId]
             );
             
@@ -362,9 +335,9 @@ router.patch('/users/:id/toggle-active', verifyToken, async (req, res) => {
         // Step 3: Toggle the active status
         const newActiveStatus = user.active === 1 ? 0 : 1;
 
-        // Step 4: Update the user's active status
+        // Step 4: Update the user's active status and invalidate existing tokens
         await db.execute(
-            'UPDATE users SET active = ? WHERE id = ?',
+            'UPDATE users SET active = ?, token_version = token_version + 1 WHERE id = ?',
             [newActiveStatus, userId]
         );
 
@@ -384,6 +357,195 @@ router.patch('/users/:id/toggle-active', verifyToken, async (req, res) => {
             message: 'Database query error', 
             error: err.message 
         });
+    }
+});
+
+// Route to edit a user's details
+router.patch('/users/:id', verifyToken, async (req, res) => {
+    const userId = req.params.id;
+    const companyId = req.companyId;
+
+    if (req.userType !== 'admin' && req.userType !== 'superadmin') {
+        return res.status(403).json({ message: 'Access denied: Admin privileges required' });
+    }
+
+    const { name, email, phone, user_type } = req.body;
+    const allowedTypes = ['manager', 'editor', 'admin'];
+    if (user_type && !allowedTypes.includes(user_type)) {
+        return res.status(400).json({ message: 'Invalid user type' });
+    }
+
+    try {
+        const [userResult] = await db.execute(
+            'SELECT company_id FROM users WHERE id = ? AND deleted_at IS NULL',
+            [userId]
+        );
+
+        if (userResult.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (req.userType === 'admin' && userResult[0].company_id !== companyId) {
+            return res.status(403).json({ message: 'User does not belong to your company' });
+        }
+
+        if (email) {
+            const [emailCheck] = await db.execute(
+                'SELECT id FROM users WHERE email = ? AND id != ?',
+                [email, userId]
+            );
+            if (emailCheck.length > 0) {
+                return res.status(400).json({ message: 'Email already in use' });
+            }
+        }
+
+        await db.execute(
+            'UPDATE users SET name = COALESCE(?, name), email = COALESCE(?, email), phone = COALESCE(?, phone), user_type = COALESCE(?, user_type) WHERE id = ?',
+            [name || null, email || null, phone || null, user_type || null, userId]
+        );
+
+        const [updatedUser] = await db.execute(
+            'SELECT id, name, email, phone, user_type, company_id, company_username, active FROM users WHERE id = ?',
+            [userId]
+        );
+
+        res.json({ message: 'User updated successfully', user: updatedUser[0] });
+    } catch (err) {
+        res.status(500).json({ message: 'Database query error', error: err.message });
+    }
+});
+
+// Route to soft delete a user
+router.delete('/users/:id', verifyToken, async (req, res) => {
+    const userId = req.params.id;
+    const companyId = req.companyId;
+
+    if (req.userType !== 'admin' && req.userType !== 'superadmin') {
+        return res.status(403).json({ message: 'Access denied: Admin privileges required' });
+    }
+
+    if (parseInt(userId) === req.userId) {
+        return res.status(400).json({ message: 'You cannot delete your own account' });
+    }
+
+    try {
+        const [userResult] = await db.execute(
+            'SELECT company_id, deleted_at FROM users WHERE id = ?',
+            [userId]
+        );
+
+        if (userResult.length === 0 || userResult[0].deleted_at !== null) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (req.userType === 'admin' && userResult[0].company_id !== companyId) {
+            return res.status(403).json({ message: 'User does not belong to your company' });
+        }
+
+        await db.execute(
+            'UPDATE users SET deleted_at = NOW(), active = 0, token_version = token_version + 1 WHERE id = ?',
+            [userId]
+        );
+
+        res.json({ message: 'User deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Database query error', error: err.message });
+    }
+});
+
+// Route to list soft-deleted users in the company
+router.get('/users-deleted', verifyToken, async (req, res) => {
+    const companyId = req.companyId;
+
+    if (req.userType !== 'admin' && req.userType !== 'superadmin') {
+        return res.status(403).json({ message: 'Access denied: Admin privileges required' });
+    }
+
+    try {
+        const query = req.userType === 'superadmin'
+            ? 'SELECT id, name, email, phone, user_type, company_id, company_username, deleted_at FROM users WHERE deleted_at IS NOT NULL'
+            : 'SELECT id, name, email, phone, user_type, company_id, company_username, deleted_at FROM users WHERE deleted_at IS NOT NULL AND company_id = ?';
+        const params = req.userType === 'superadmin' ? [] : [companyId];
+        const [result] = await db.execute(query, params);
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ message: 'Database query error', error: err.message });
+    }
+});
+
+// Route to restore a soft-deleted user
+router.post('/users/:id/restore', verifyToken, async (req, res) => {
+    const userId = req.params.id;
+    const companyId = req.companyId;
+
+    if (req.userType !== 'admin' && req.userType !== 'superadmin') {
+        return res.status(403).json({ message: 'Access denied: Admin privileges required' });
+    }
+
+    try {
+        const [userResult] = await db.execute(
+            'SELECT company_id, deleted_at FROM users WHERE id = ?',
+            [userId]
+        );
+
+        if (userResult.length === 0 || userResult[0].deleted_at === null) {
+            return res.status(404).json({ message: 'Deleted user not found' });
+        }
+
+        if (req.userType === 'admin' && userResult[0].company_id !== companyId) {
+            return res.status(403).json({ message: 'User does not belong to your company' });
+        }
+
+        await db.execute(
+            'UPDATE users SET deleted_at = NULL, active = 1, token_version = token_version + 1 WHERE id = ?',
+            [userId]
+        );
+
+        const [restoredUser] = await db.execute(
+            'SELECT id, name, email, phone, user_type, company_id, company_username, active FROM users WHERE id = ?',
+            [userId]
+        );
+
+        res.json({ message: 'User restored successfully', user: restoredUser[0] });
+    } catch (err) {
+        res.status(500).json({ message: 'Database query error', error: err.message });
+    }
+});
+
+// Route for admin to reset a user's password
+router.post('/users/:id/reset-password', verifyToken, async (req, res) => {
+    const userId = req.params.id;
+    const companyId = req.companyId;
+    const { newPassword } = req.body;
+
+    if (req.userType !== 'admin' && req.userType !== 'superadmin') {
+        return res.status(403).json({ message: 'Access denied: Admin privileges required' });
+    }
+
+    if (!newPassword || newPassword.length < 8) {
+        return res.status(400).json({ message: 'New password must be at least 8 characters long' });
+    }
+
+    try {
+        const [userResult] = await db.execute(
+            'SELECT company_id FROM users WHERE id = ? AND deleted_at IS NULL',
+            [userId]
+        );
+
+        if (userResult.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (req.userType === 'admin' && userResult[0].company_id !== companyId) {
+            return res.status(403).json({ message: 'User does not belong to your company' });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 8);
+        await db.execute('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, userId]);
+
+        res.json({ message: 'Password reset successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Database query error', error: err.message });
     }
 });
 

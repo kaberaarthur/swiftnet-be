@@ -5,7 +5,8 @@ const { Client } = require('ssh2');
 const e = require('express');
 const moment = require('moment-timezone');
 
-const { generatePassword, generateUniqueVoucher, createVoucher, verifyToken, deleteOldRedeemedVouchers } = require('./actionFunctions');
+const { generatePassword, generateUniqueVoucher, createVoucher, deleteOldRedeemedVouchers } = require('./actionFunctions');
+const { verifyToken } = require('../systemFunctions');
 const userFunctions = require('./userFunctions');
 const fetchUser = userFunctions.fetchUser;
 const createOrUpdateUser = userFunctions.createOrUpdateUser;

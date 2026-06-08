@@ -1,28 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../dbPromise');
-const jwt = require('jsonwebtoken');
-
-// Middleware to verify token
-function verifyToken(req, res, next) {
-    const token = req.headers['authorization'];
-
-    if (!token) {
-        return res.status(403).json({ message: 'No token provided' });
-    }
-
-    const bearerToken = token.split(' ')[1];
-    
-    jwt.verify(bearerToken, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(500).json({ message: 'Failed to authenticate token' });
-        }
-        req.userId = decoded.id;
-        req.userType = decoded.user_type;
-        req.company_id = decoded.company_id;
-        next();
-    });
-}
+const { verifyToken } = require('../systemFunctions');
 
 // CREATE a new brand
 router.post('/brands', verifyToken, async (req, res) => {

@@ -1,6 +1,4 @@
 const db = require('../dbPromise');
-const jwt = require('jsonwebtoken');
-const jwtSecret = process.env.JWT_SECRET;
 const moment = require('moment-timezone');
 
 
@@ -40,33 +38,6 @@ async function deleteOldRedeemedVouchers() {
   }
 }
 
-// Middleware to verify token
-function verifyToken(req, res, next) {
-    // Extract the token from the Authorization header
-    const token = req.headers['authorization'];
-
-    if (!token) {
-        return res.status(403).json({ message: 'No token provided' });
-    }
-
-    // Extract the token from the 'Authorization' header
-    const bearerToken = token.split(' ')[1];
-
-    
-    // Verify the token
-    jwt.verify(bearerToken, jwtSecret, (err, decoded) => {
-        if (err) {
-            return res.status(500).json({ message: 'Failed to authenticate token' });
-        }
-
-        // Attach the user ID to the request object
-        req.userId = decoded.id;
-        req.userType = decoded.user_type;
-        req.companyId = decoded.company_id;
-        next();
-    });
-    
-};
 
 
 // Character set for passwords and vouchers
@@ -426,7 +397,6 @@ async function finalizeVoucherCodeById(id) {
 module.exports = {
     getPlanDetails,
     deleteOldRedeemedVouchers,
-    verifyToken,
     generatePassword,
     generateUniqueVoucher,
     createVoucher,
