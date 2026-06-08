@@ -301,7 +301,7 @@ router.post('/pppoe-clients', verifyToken, async (req, res) => {
     console.error("❌ Error in /pppoe-clients:", error);
     res.status(500).json({
       success: false,
-      message: error.message || "Internal Server Error"
+      message: error.message || "Internal Server Error Occurred"
     });
   }
 });
