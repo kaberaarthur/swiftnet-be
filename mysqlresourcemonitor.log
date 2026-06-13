@@ -9034,3 +9034,157 @@
 [2026-06-08T08:32:41.132Z] [EXECUTE: 493ms] SELECT id, name, email, phone, user_type, company_id, company_username, active FROM users WHERE company_id = ? AND deleted_at IS NULL [params: [2]]
 [2026-06-08T08:32:41.455Z] [EXECUTE: 240ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
 [2026-06-08T08:32:41.794Z] [EXECUTE: 248ms] SELECT id, name, email, phone, user_type, company_id, company_username, active FROM users WHERE company_id = ? AND deleted_at IS NULL [params: [2]]
+[2026-06-13T04:40:37.547Z] ✅ New MySQL connection established
+[2026-06-13T04:40:37.811Z] ⚠️ [SLOW QUERY: 1769ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-06-13T04:40:38.061Z] [QUERY: 249ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-06-13T04:40:38.311Z] [QUERY: 249ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-06-13T04:40:41.025Z] [EXECUTE: 503ms] SELECT * FROM routers WHERE id = ? [params: [32]]
+[2026-06-13T04:40:56.886Z] [EXECUTE: 257ms] SELECT * FROM routers WHERE id = ? [params: [32]]
+[2026-06-13T04:42:27.051Z] [EXECUTE: 255ms] SELECT * FROM routers WHERE id = ? [params: [32]]
+[2026-06-13T04:44:54.139Z] ✅ New MySQL connection established
+[2026-06-13T04:44:54.407Z] ⚠️ [SLOW QUERY: 2729ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-06-13T04:44:54.650Z] [QUERY: 242ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-06-13T04:44:54.893Z] [QUERY: 242ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-06-13T04:50:17.290Z] ❌ [QUERY ERROR: 25597ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-06-13T04:54:52.687Z] ✅ New MySQL connection established
+[2026-06-13T04:54:52.936Z] ⚠️ [SLOW QUERY: 1243ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-06-13T04:54:53.187Z] [QUERY: 250ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-06-13T04:54:53.436Z] [QUERY: 247ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-06-13T04:55:53.792Z] ✅ New MySQL connection established
+[2026-06-13T04:55:54.051Z] ⚠️ [SLOW QUERY: 1700ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-06-13T04:55:54.304Z] [QUERY: 252ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-06-13T04:55:54.555Z] [QUERY: 251ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-06-13T04:57:26.286Z] [EXECUTE: 513ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:57:27.487Z] [EXECUTE: 255ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:58:17.523Z] [EXECUTE: 256ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:58:17.818Z] [EXECUTE: 262ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:58:18.338Z] ✅ New MySQL connection established
+[2026-06-13T04:58:18.855Z] ⚠️ [SLOW EXECUTE: 1582ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:58:19.164Z] [EXECUTE: 262ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:58:23.180Z] [EXECUTE: 258ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:58:23.464Z] [EXECUTE: 257ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:58:50.724Z] [EXECUTE: 254ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:58:50.728Z] [EXECUTE: 267ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:58:51.034Z] [EXECUTE: 260ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:58:51.036Z] [EXECUTE: 254ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:58:59.537Z] [EXECUTE: 257ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:58:59.543Z] [EXECUTE: 260ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:58:59.847Z] [EXECUTE: 257ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:59:00.154Z] [EXECUTE: 560ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:59:00.169Z] [EXECUTE: 256ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:59:00.438Z] [EXECUTE: 260ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:59:00.448Z] [EXECUTE: 252ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:59:00.765Z] [EXECUTE: 277ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9006]]
+[2026-06-13T04:59:39.782Z] [EXECUTE: 505ms] SELECT * FROM users WHERE email = ? AND deleted_at IS NULL [params: [arthurkabera@gmail.com]]
+[2026-06-13T04:59:43.457Z] [EXECUTE: 250ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-06-13T04:59:43.473Z] [EXECUTE: 261ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-06-13T04:59:43.963Z] [EXECUTE: 505ms] SELECT COUNT(*) as total FROM hotspot_clients WHERE company_id = ? [params: [2]]
+[2026-06-13T04:59:44.187Z] ✅ New MySQL connection established
+[2026-06-13T04:59:44.465Z] [EXECUTE: 501ms] SELECT COUNT(*) as total FROM pppoe_clients WHERE company_id = ? [params: [2]]
+[2026-06-13T04:59:44.676Z] ⚠️ [SLOW EXECUTE: 1462ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-06-13T04:59:44.744Z] [EXECUTE: 252ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-06-13T04:59:44.995Z] [EXECUTE: 250ms] SELECT COUNT(*) as total FROM hotspot_clients WHERE company_id = ? [params: [2]]
+[2026-06-13T04:59:45.177Z] [EXECUTE: 499ms] SELECT IFNULL(SUM(Amount), 0) AS total_today
+       FROM pppoe_payments
+       WHERE company_id = ?
+       AND DATE(created_at) = CURDATE() [params: [2]]
+[2026-06-13T04:59:45.251Z] [EXECUTE: 256ms] SELECT COUNT(*) as total FROM pppoe_clients WHERE company_id = ? [params: [2]]
+[2026-06-13T04:59:45.340Z] ⚠️ [SLOW QUERY: 1866ms] SELECT * FROM pppoe_payments WHERE 1=1 AND company_id = ? [params: [2]]
+[2026-06-13T04:59:45.707Z] [EXECUTE: 529ms] SELECT IFNULL(SUM(Amount), 0) AS total_month
+       FROM pppoe_payments
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [2]]
+[2026-06-13T04:59:45.776Z] [EXECUTE: 260ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-06-13T04:59:46.228Z] [EXECUTE: 521ms] SELECT IFNULL(SUM(amount), 0) AS total_day_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND DATE(created_at) = CURDATE() [params: [2]]
+[2026-06-13T04:59:46.316Z] [QUERY: 540ms] SELECT * FROM pppoe_payments WHERE 1=1 AND company_id = ? [params: [2]]
+[2026-06-13T04:59:46.717Z] [EXECUTE: 488ms] SELECT IFNULL(SUM(amount), 0) AS total_month_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [2]]
+[2026-06-13T04:59:46.985Z] [EXECUTE: 241ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-06-13T04:59:47.247Z] [EXECUTE: 258ms] SELECT IFNULL(SUM(Amount), 0) AS total_today
+       FROM pppoe_payments
+       WHERE company_id = ?
+       AND DATE(created_at) = CURDATE() [params: [2]]
+[2026-06-13T04:59:47.504Z] [EXECUTE: 256ms] SELECT IFNULL(SUM(Amount), 0) AS total_month
+       FROM pppoe_payments
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [2]]
+[2026-06-13T04:59:47.748Z] [EXECUTE: 244ms] SELECT IFNULL(SUM(amount), 0) AS total_day_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND DATE(created_at) = CURDATE() [params: [2]]
+[2026-06-13T04:59:47.991Z] [EXECUTE: 243ms] SELECT IFNULL(SUM(amount), 0) AS total_month_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [2]]
+[2026-06-13T04:59:58.519Z] [QUERY: 253ms] SELECT * FROM routers WHERE company_id = ? [params: [2]]
+[2026-06-13T04:59:58.527Z] [EXECUTE: 258ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-06-13T04:59:58.806Z] [QUERY: 245ms] SELECT * FROM routers WHERE company_id = ? [params: [2]]
+[2026-06-13T04:59:58.860Z] [QUERY: 260ms] SELECT * FROM pppoe_plans WHERE 1=1 AND company_id = ? AND router_id = ? AND type = ? [params: [2, 6, pppoe]]
+[2026-06-13T04:59:59.041Z] [EXECUTE: 513ms] SELECT * FROM brands WHERE company_id = ? [params: [2]]
+[2026-06-13T04:59:59.321Z] [EXECUTE: 256ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-06-13T04:59:59.577Z] ✅ New MySQL connection established
+[2026-06-13T04:59:59.580Z] [EXECUTE: 258ms] SELECT * FROM brands WHERE company_id = ? [params: [2]]
+[2026-06-13T05:00:00.064Z] ⚠️ [SLOW EXECUTE: 1462ms] SELECT * FROM routers WHERE id = ? [params: [6]]
+[2026-06-13T05:00:03.706Z] [EXECUTE: 243ms] SELECT * FROM routers WHERE id = ? [params: [6]]
+[2026-06-13T05:00:07.882Z] [QUERY: 247ms] SELECT * FROM pppoe_plans WHERE 1=1 AND company_id = ? AND router_id = ? AND type = ? [params: [2, 32, pppoe]]
+[2026-06-13T05:00:08.167Z] [EXECUTE: 515ms] SELECT * FROM routers WHERE id = ? [params: [32]]

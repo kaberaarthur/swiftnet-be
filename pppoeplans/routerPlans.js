@@ -91,13 +91,19 @@ function parseRscToJson(localFile) {
       rate_limit: null,   // ensure consistency
     };
 
-    // 3. Extract key=value pairs (quoted and unquoted)
-    const regex = /([\w-]+)=(".*?"|\S+)/g;
+    // 3. Extract key=value pairs (quoted and unquoted).
+    // \s* after = handles RouterOS line-continuation splits that leave a space
+    // between the key and its value (e.g. name= "5M/8M").
+    // The quoted alternative handles escaped characters inside quoted values.
+    const regex = /([\w-]+)=\s*("(?:[^"\\]|\\.)*"|[^\s"=]+)/g;
     let match;
 
     while ((match = regex.exec(cmd)) !== null) {
       const key = match[1].replace(/-/g, "_");
-      const value = match[2].replace(/^"|"$/g, "").trim();
+      const value = match[2]
+        .replace(/^"|"$/g, "")   // strip surrounding quotes
+        .replace(/\\(.)/g, "$1") // unescape backslash sequences
+        .trim();
 
       entry[key] = value;
     }
