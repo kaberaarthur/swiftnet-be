@@ -30,7 +30,7 @@ router.post('/b2b-payment', async (req, res) => {
     // Use the Swiftnet Company ID, To avoid changing for each company
     // const password = await getDarajaInitiatorPassword(2);
 
-    const password = getDarajaInitiatorPassword(2); // Get password for Swiftnet (company_id=2)
+    const password = await getDarajaInitiatorPassword(2); // Get password for Swiftnet (company_id=2)
 
     console.log('Received B2B payment request using the Initiator Password:', password);
 
@@ -148,6 +148,28 @@ router.post('/b2b-result', async (req, res) => {
   } catch (err) {
     console.error('Error queuing B2B result:', err);
     res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// GET endpoint to fetch the last recorded Working Account balance
+router.get('/last-working-balance', async (req, res) => {
+  try {
+    const [rows] = await db.execute(
+      'SELECT debit_party_account_balance FROM pppoe_b2b_payments WHERE debit_party_account_balance IS NOT NULL ORDER BY id DESC LIMIT 1'
+    );
+
+    if (rows.length === 0 || !rows[0].debit_party_account_balance) {
+      return res.status(404).json({ error: 'No balance record found' });
+    }
+
+    // Format: "Working Account|KES|91.00|91.00|0.00|0.00"
+    const parts = rows[0].debit_party_account_balance.split('|');
+    const balance = Math.round(parseFloat(parts[2]));
+
+    res.status(200).json({ balance });
+  } catch (error) {
+    console.error('Error fetching last working account balance:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
