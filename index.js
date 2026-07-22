@@ -106,6 +106,9 @@ const dashboardRoutes = require("./dashboardData.js");
 // Company Plans
 const companyPlansRoutes = require("./company_plans/allRoutes.js");
 
+// Hotspot Management (sites + payments)
+const hotspotManagementRoutes = require("./hotspot_management/allRoutes.js");
+
 
 const app = express();
 const port = 8000;
@@ -201,6 +204,9 @@ app.use('/dashboard', dashboardRoutes);
 
 // Dashboard Data
 app.use('/company-plans', companyPlansRoutes);
+
+// Hotspot Management (sites + payments)
+app.use(hotspotManagementRoutes);
 
 // Home route
 app.get('/', (req, res) => {
