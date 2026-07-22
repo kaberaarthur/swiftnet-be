@@ -324,7 +324,15 @@ router.delete('/hotspot-management/transactions/:id', verifyToken, async (req, r
 // ==============================
 // IMPORT sites from an Excel/CSV file (Site Name, Owner Number, Status columns)
 // ==============================
-router.post('/hotspot-management/sites/import', verifyToken, upload.single('file'), async (req, res) => {
+router.post('/hotspot-management/sites/import', verifyToken, (req, res, next) => {
+  upload.single('file')(req, res, (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(400).json({ error: 'Could not process the uploaded file. Please re-select the file and try again.' });
+    }
+    next();
+  });
+}, async (req, res) => {
   if (!requireHotspotAccess(req, res)) return;
 
   const companyId = req.company_id;
