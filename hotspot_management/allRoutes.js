@@ -1,10 +1,16 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const XLSX = require('xlsx');
 const db = require('../dbPromise');
 const { verifyToken } = require('../systemFunctions');
 
-function requireSuperAdmin(req, res) {
-  if (req.userType !== 'superadmin') {
+const upload = multer({ storage: multer.memoryStorage() });
+
+const PAYMENT_TYPES = ['power_tokens', 'amount', 'free_voucher'];
+
+function requireHotspotAccess(req, res) {
+  if (req.userType !== 'superadmin' && req.userType !== 'manager') {
     res.status(403).json({ error: 'You are not authorized to make this request' });
     return false;
   }
@@ -20,7 +26,7 @@ function firstOfMonth(value) {
 // CREATE a new site (optionally with houses[])
 // ==============================
 router.post('/hotspot-management/sites', verifyToken, async (req, res) => {
-  if (!requireSuperAdmin(req, res)) return;
+  if (!requireHotspotAccess(req, res)) return;
 
   const companyId = req.company_id;
   const {
@@ -29,8 +35,8 @@ router.post('/hotspot-management/sites', verifyToken, async (req, res) => {
     status, houses
   } = req.body;
 
-  if (!site_name || !phone_number || !location || !agreement_type) {
-    return res.status(400).json({ error: 'site_name, phone_number, location and agreement_type are required' });
+  if (!site_name || !phone_number) {
+    return res.status(400).json({ error: 'site_name and phone_number are required' });
   }
 
   try {
@@ -38,7 +44,7 @@ router.post('/hotspot-management/sites', verifyToken, async (req, res) => {
       `INSERT INTO hotspot_sites
         (company_id, site_name, phone_number, location, agreement_type, agreement_value, agreement_notes, status, created_by)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [companyId, site_name, phone_number, location, agreement_type, agreement_value ?? null, agreement_notes ?? null, status || 'pending', req.userId]
+      [companyId, site_name, phone_number, location ?? null, agreement_type ?? null, agreement_value ?? null, agreement_notes ?? null, status || 'pending', req.userId]
     );
 
     const siteId = result.insertId;
@@ -64,7 +70,7 @@ router.post('/hotspot-management/sites', verifyToken, async (req, res) => {
 // READ - list sites for the company, with houses_count + settled_this_month
 // ==============================
 router.get('/hotspot-management/sites', verifyToken, async (req, res) => {
-  if (!requireSuperAdmin(req, res)) return;
+  if (!requireHotspotAccess(req, res)) return;
 
   const companyId = req.company_id;
   const currentMonth = firstOfMonth(new Date());
@@ -91,7 +97,7 @@ router.get('/hotspot-management/sites', verifyToken, async (req, res) => {
 // READ - single site detail with houses[] and transactions[]
 // ==============================
 router.get('/hotspot-management/sites/:id', verifyToken, async (req, res) => {
-  if (!requireSuperAdmin(req, res)) return;
+  if (!requireHotspotAccess(req, res)) return;
 
   const companyId = req.company_id;
 
@@ -124,7 +130,7 @@ router.get('/hotspot-management/sites/:id', verifyToken, async (req, res) => {
 // UPDATE (PATCH) a site
 // ==============================
 router.patch('/hotspot-management/sites/:id', verifyToken, async (req, res) => {
-  if (!requireSuperAdmin(req, res)) return;
+  if (!requireHotspotAccess(req, res)) return;
 
   const companyId = req.company_id;
 
@@ -169,7 +175,7 @@ router.patch('/hotspot-management/sites/:id', verifyToken, async (req, res) => {
 // DELETE a site
 // ==============================
 router.delete('/hotspot-management/sites/:id', verifyToken, async (req, res) => {
-  if (!requireSuperAdmin(req, res)) return;
+  if (!requireHotspotAccess(req, res)) return;
 
   const companyId = req.company_id;
 
@@ -198,7 +204,7 @@ router.delete('/hotspot-management/sites/:id', verifyToken, async (req, res) => 
 // CREATE a house under a site
 // ==============================
 router.post('/hotspot-management/sites/:id/houses', verifyToken, async (req, res) => {
-  if (!requireSuperAdmin(req, res)) return;
+  if (!requireHotspotAccess(req, res)) return;
 
   const companyId = req.company_id;
   const { house_label, notes } = req.body;
@@ -228,7 +234,7 @@ router.post('/hotspot-management/sites/:id/houses', verifyToken, async (req, res
 // DELETE a house
 // ==============================
 router.delete('/hotspot-management/houses/:id', verifyToken, async (req, res) => {
-  if (!requireSuperAdmin(req, res)) return;
+  if (!requireHotspotAccess(req, res)) return;
 
   const companyId = req.company_id;
 
@@ -254,13 +260,17 @@ router.delete('/hotspot-management/houses/:id', verifyToken, async (req, res) =>
 // CREATE a transaction (record a monthly payment) for a site
 // ==============================
 router.post('/hotspot-management/sites/:id/transactions', verifyToken, async (req, res) => {
-  if (!requireSuperAdmin(req, res)) return;
+  if (!requireHotspotAccess(req, res)) return;
 
   const companyId = req.company_id;
-  const { amount, for_month, paid_on, notes } = req.body;
+  const { amount, payment_type, for_month, paid_on, meter_reading, notes } = req.body;
 
   if (!amount || !for_month || !paid_on) {
     return res.status(400).json({ error: 'amount, for_month and paid_on are required' });
+  }
+
+  if (!payment_type || !PAYMENT_TYPES.includes(payment_type)) {
+    return res.status(400).json({ error: 'payment_type must be one of: power_tokens, amount, free_voucher' });
   }
 
   try {
@@ -271,8 +281,8 @@ router.post('/hotspot-management/sites/:id/transactions', verifyToken, async (re
     if (site.length === 0) return res.status(404).json({ error: 'Site not found' });
 
     const [result] = await db.execute(
-      'INSERT INTO hotspot_site_transactions (site_id, amount, for_month, paid_on, notes, created_by) VALUES (?, ?, ?, ?, ?, ?)',
-      [req.params.id, amount, firstOfMonth(for_month), paid_on, notes ?? null, req.userId]
+      'INSERT INTO hotspot_site_transactions (site_id, amount, payment_type, for_month, paid_on, meter_reading, notes, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [req.params.id, amount, payment_type, firstOfMonth(for_month), paid_on, meter_reading ?? null, notes ?? null, req.userId]
     );
 
     res.status(201).json({ message: 'Payment recorded successfully', id: result.insertId });
@@ -289,7 +299,7 @@ router.post('/hotspot-management/sites/:id/transactions', verifyToken, async (re
 // DELETE a transaction
 // ==============================
 router.delete('/hotspot-management/transactions/:id', verifyToken, async (req, res) => {
-  if (!requireSuperAdmin(req, res)) return;
+  if (!requireHotspotAccess(req, res)) return;
 
   const companyId = req.company_id;
 
@@ -309,6 +319,73 @@ router.delete('/hotspot-management/transactions/:id', verifyToken, async (req, r
     console.error(err);
     res.status(500).json({ error: 'Error removing transaction' });
   }
+});
+
+// ==============================
+// IMPORT sites from an Excel/CSV file (Site Name, Owner Number, Status columns)
+// ==============================
+router.post('/hotspot-management/sites/import', verifyToken, upload.single('file'), async (req, res) => {
+  if (!requireHotspotAccess(req, res)) return;
+
+  const companyId = req.company_id;
+
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  let rows;
+  try {
+    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    rows = XLSX.utils.sheet_to_json(sheet, { defval: null });
+  } catch (err) {
+    console.error(err);
+    return res.status(400).json({ error: 'Could not parse the uploaded file' });
+  }
+
+  const findValue = (row, targetName) => {
+    const key = Object.keys(row).find((k) => k.trim().toLowerCase() === targetName);
+    return key ? row[key] : null;
+  };
+
+  let imported = 0;
+  let updated = 0;
+  const errors = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const rowNumber = i + 2; // account for header row
+
+    const site_name = findValue(row, 'site name');
+    const phone_number = findValue(row, 'owner number');
+    const status = findValue(row, 'status');
+
+    if (!site_name || !phone_number) {
+      errors.push({ row: rowNumber, reason: 'Missing Site Name or Owner Number' });
+      continue;
+    }
+
+    try {
+      const [result] = await db.execute(
+        `INSERT INTO hotspot_sites (company_id, site_name, phone_number, status, agreement_type, location, created_by)
+         VALUES (?, ?, ?, ?, NULL, NULL, ?)
+         ON DUPLICATE KEY UPDATE phone_number = VALUES(phone_number), status = VALUES(status)`,
+        [companyId, String(site_name).trim(), String(phone_number).trim(), status ? String(status).trim() : 'pending', req.userId]
+      );
+
+      // MySQL reports affectedRows as 1 for a plain insert, 2 for an upsert that updated an existing row
+      if (result.affectedRows === 2) {
+        updated += 1;
+      } else {
+        imported += 1;
+      }
+    } catch (err) {
+      console.error(err);
+      errors.push({ row: rowNumber, reason: 'Database error saving this row' });
+    }
+  }
+
+  res.status(200).json({ message: 'Import complete', imported, updated, errors });
 });
 
 module.exports = router;
