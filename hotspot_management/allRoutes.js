@@ -373,11 +373,12 @@ router.post('/hotspot-management/sites/import', verifyToken, upload.single('file
         [companyId, String(site_name).trim(), String(phone_number).trim(), status ? String(status).trim() : 'pending', req.userId]
       );
 
-      // MySQL reports affectedRows as 1 for a plain insert, 2 for an upsert that updated an existing row
-      if (result.affectedRows === 2) {
-        updated += 1;
-      } else {
+      // MySQL reports affectedRows as 1 for a plain insert; for an upsert that matched an
+      // existing row it reports 2 if a value actually changed, or 0 if the row was already identical
+      if (result.affectedRows === 1) {
         imported += 1;
+      } else {
+        updated += 1;
       }
     } catch (err) {
       console.error(err);
