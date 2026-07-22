@@ -9404,3 +9404,516 @@
         status = VALUES(status),
         raw_payload = VALUES(raw_payload)
      [params: [2add-4a40-b5cb-8993c691d21e59851,AG_20260630_010020730fi3qw7enhy4,UFUTT10UE6,,The service request is processed successfully.,1,KES,success,1003761913,20260630071359,,Working Account|KES|90.00|90.00|0.00|0.00,,880100 - NCBA BANK KENYA PLC.,{Amount={CurrencyCode=KES, MinimumAmount=9000, BasicAmount=90.00}},{"BillReferenceNumber":1003761913,"QueueTimeoutURL":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"ResultType":0,"ResultCode":0,"ResultDesc":"The service request is processed successfully.","OriginatorConversationID":"2add-4a40-b5cb-8993c691d21e59851","ConversationID":"AG_20260630_010020730fi3qw7enhy4","TransactionID":"UFUTT10UE6","ResultParameters":{"ResultParameter":[{"Key":"Currency","Value":"KES"},{"Key":"ReceiverPartyPublicName","Value":"880100 - NCBA BANK KENYA PLC."},{"Key":"DebitPartyCharges"},{"Key":"TransCompletedTime","Value":20260630071359},{"Key":"DebitPartyAffectedAccountBalance","Value":"Working Account|KES|90.00|90.00|0.00|0.00"},{"Key":"Amount","Value":1},{"Key":"DebitAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=9000, BasicAmount=90.00}}"},{"Key":"InitiatorAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=9000, BasicAmount=90.00}}"}]},"ReferenceData":{"ReferenceItem":[{"Key":"BillReferenceNumber","Value":1003761913},{"Key":"QueueTimeoutURL","Value":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"Key":"Occassion"}]}}]]
+[2026-06-30T04:15:48.053Z] ⚠️ [SLOW QUERY: 3612ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-06-30T04:15:48.745Z] [QUERY: 690ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-06-30T04:15:48.885Z] [QUERY: 139ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-06-30T04:18:59.527Z] [EXECUTE: 772ms] SELECT debit_party_account_balance FROM pppoe_b2b_payments WHERE debit_party_account_balance IS NOT NULL ORDER BY id DESC LIMIT 1 
+[2026-06-30T04:19:57.291Z] [QUERY: 297ms] 
+      INSERT INTO pppoe_b2b_payments (
+        originator_conversation_id,
+        conversation_id,
+        transaction_id,
+        result_code,
+        result_desc,
+        amount,
+        currency,
+        status,
+        bill_reference_number,
+        trans_completed_time,
+        debit_account_balance,
+        debit_party_account_balance,
+        debit_party_charges,
+        receiver_party_public_name,
+        initiator_account_balance,
+        reference_data,
+        raw_payload
+      ) VALUES ?
+      ON DUPLICATE KEY UPDATE
+        result_code = VALUES(result_code),
+        result_desc = VALUES(result_desc),
+        status = VALUES(status),
+        raw_payload = VALUES(raw_payload)
+     [params: [eed4-4323-86a2-c76e1420adc563709,AG_20260630_010020730fppq5fkzzxr,UFUTT10UEJ,,The service request is processed successfully.,20,KES,success,1003761913,20260630071954,,Working Account|KES|68.00|68.00|0.00|0.00,Business Pay Bill Charge|KES|2.00,880100 - NCBA BANK KENYA PLC.,{Amount={CurrencyCode=KES, MinimumAmount=6800, BasicAmount=68.00}},{"BillReferenceNumber":1003761913,"QueueTimeoutURL":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"ResultType":0,"ResultCode":0,"ResultDesc":"The service request is processed successfully.","OriginatorConversationID":"eed4-4323-86a2-c76e1420adc563709","ConversationID":"AG_20260630_010020730fppq5fkzzxr","TransactionID":"UFUTT10UEJ","ResultParameters":{"ResultParameter":[{"Key":"Currency","Value":"KES"},{"Key":"ReceiverPartyPublicName","Value":"880100 - NCBA BANK KENYA PLC."},{"Key":"DebitPartyCharges","Value":"Business Pay Bill Charge|KES|2.00"},{"Key":"TransCompletedTime","Value":20260630071954},{"Key":"DebitPartyAffectedAccountBalance","Value":"Working Account|KES|68.00|68.00|0.00|0.00"},{"Key":"Amount","Value":20},{"Key":"DebitAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=6800, BasicAmount=68.00}}"},{"Key":"InitiatorAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=6800, BasicAmount=68.00}}"}]},"ReferenceData":{"ReferenceItem":[{"Key":"BillReferenceNumber","Value":1003761913},{"Key":"QueueTimeoutURL","Value":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"Key":"Occassion"}]}}]]
+[2026-06-30T04:20:44.968Z] [QUERY: 523ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-06-30T04:20:45.252Z] [QUERY: 283ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-06-30T04:20:45.584Z] [QUERY: 331ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-06-30T04:26:14.704Z] ❌ [QUERY ERROR: 30245ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-06-30T04:30:45.046Z] ✅ New MySQL connection established
+[2026-06-30T04:30:45.184Z] [QUERY: 712ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-06-30T04:30:45.321Z] [QUERY: 137ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-06-30T04:30:45.457Z] [QUERY: 136ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-06-30T04:32:37.318Z] ⚠️ [SLOW EXECUTE: 1779ms] SELECT mpesa_initiator_password FROM companies WHERE id = ? [params: [2]]
+[2026-06-30T04:32:46.412Z] ⚠️ [SLOW QUERY: 2678ms] 
+      INSERT INTO pppoe_b2b_payments (
+        originator_conversation_id,
+        conversation_id,
+        transaction_id,
+        result_code,
+        result_desc,
+        amount,
+        currency,
+        status,
+        bill_reference_number,
+        trans_completed_time,
+        debit_account_balance,
+        debit_party_account_balance,
+        debit_party_charges,
+        receiver_party_public_name,
+        initiator_account_balance,
+        reference_data,
+        raw_payload
+      ) VALUES ?
+      ON DUPLICATE KEY UPDATE
+        result_code = VALUES(result_code),
+        result_desc = VALUES(result_desc),
+        status = VALUES(status),
+        raw_payload = VALUES(raw_payload)
+     [params: [868c-4c57-90c8-a47cf47a3bb685260,AG_20260630_010020730g64nx3cazli,UFUTT10ZZN,,The service request is processed successfully.,2,KES,success,1003761913,20260630073240,,Working Account|KES|2194.00|2194.00|0.00|0.00,Business Pay Bill Charge|KES|2.00,880100 - NCBA BANK KENYA PLC.,{Amount={CurrencyCode=KES, MinimumAmount=219400, BasicAmount=2194.00}},{"BillReferenceNumber":1003761913,"QueueTimeoutURL":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"ResultType":0,"ResultCode":0,"ResultDesc":"The service request is processed successfully.","OriginatorConversationID":"868c-4c57-90c8-a47cf47a3bb685260","ConversationID":"AG_20260630_010020730g64nx3cazli","TransactionID":"UFUTT10ZZN","ResultParameters":{"ResultParameter":[{"Key":"Currency","Value":"KES"},{"Key":"ReceiverPartyPublicName","Value":"880100 - NCBA BANK KENYA PLC."},{"Key":"DebitPartyCharges","Value":"Business Pay Bill Charge|KES|2.00"},{"Key":"TransCompletedTime","Value":20260630073240},{"Key":"DebitPartyAffectedAccountBalance","Value":"Working Account|KES|2194.00|2194.00|0.00|0.00"},{"Key":"Amount","Value":2},{"Key":"DebitAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=219400, BasicAmount=2194.00}}"},{"Key":"InitiatorAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=219400, BasicAmount=2194.00}}"}]},"ReferenceData":{"ReferenceItem":[{"Key":"BillReferenceNumber","Value":1003761913},{"Key":"QueueTimeoutURL","Value":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"Key":"Occassion"}]}}]]
+[2026-06-30T04:33:27.752Z] [QUERY: 140ms] 
+      INSERT INTO pppoe_b2b_payments (
+        originator_conversation_id,
+        conversation_id,
+        transaction_id,
+        result_code,
+        result_desc,
+        amount,
+        currency,
+        status,
+        bill_reference_number,
+        trans_completed_time,
+        debit_account_balance,
+        debit_party_account_balance,
+        debit_party_charges,
+        receiver_party_public_name,
+        initiator_account_balance,
+        reference_data,
+        raw_payload
+      ) VALUES ?
+      ON DUPLICATE KEY UPDATE
+        result_code = VALUES(result_code),
+        result_desc = VALUES(result_desc),
+        status = VALUES(status),
+        raw_payload = VALUES(raw_payload)
+     [params: [68f1-4f59-8c7e-b8294c78557a3355,AG_20260630_010020730g72l15kk9qr,UFUTT10VNQ,,The service request is processed successfully.,20,KES,success,1003761913,20260630073324,,Working Account|KES|2172.00|2172.00|0.00|0.00,Business Pay Bill Charge|KES|2.00,880100 - NCBA BANK KENYA PLC.,{Amount={CurrencyCode=KES, MinimumAmount=217200, BasicAmount=2172.00}},{"BillReferenceNumber":1003761913,"QueueTimeoutURL":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"ResultType":0,"ResultCode":0,"ResultDesc":"The service request is processed successfully.","OriginatorConversationID":"68f1-4f59-8c7e-b8294c78557a3355","ConversationID":"AG_20260630_010020730g72l15kk9qr","TransactionID":"UFUTT10VNQ","ResultParameters":{"ResultParameter":[{"Key":"Currency","Value":"KES"},{"Key":"ReceiverPartyPublicName","Value":"880100 - NCBA BANK KENYA PLC."},{"Key":"DebitPartyCharges","Value":"Business Pay Bill Charge|KES|2.00"},{"Key":"TransCompletedTime","Value":20260630073324},{"Key":"DebitPartyAffectedAccountBalance","Value":"Working Account|KES|2172.00|2172.00|0.00|0.00"},{"Key":"Amount","Value":20},{"Key":"DebitAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=217200, BasicAmount=2172.00}}"},{"Key":"InitiatorAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=217200, BasicAmount=2172.00}}"}]},"ReferenceData":{"ReferenceItem":[{"Key":"BillReferenceNumber","Value":1003761913},{"Key":"QueueTimeoutURL","Value":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"Key":"Occassion"}]}}]]
+[2026-06-30T04:35:44.623Z] [QUERY: 138ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-06-30T04:35:44.764Z] [QUERY: 140ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-06-30T04:35:44.899Z] [QUERY: 135ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-22T06:51:03.769Z] ✅ New MySQL connection established
+[2026-07-22T06:51:04.014Z] ⚠️ [SLOW QUERY: 2679ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-22T06:51:04.252Z] [QUERY: 237ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-22T06:51:04.496Z] [QUERY: 244ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-22T06:52:12.122Z] [QUERY: 248ms] 
+      INSERT INTO pppoe_b2b_payments (
+        originator_conversation_id,
+        conversation_id,
+        transaction_id,
+        result_code,
+        result_desc,
+        amount,
+        currency,
+        status,
+        bill_reference_number,
+        trans_completed_time,
+        debit_account_balance,
+        debit_party_account_balance,
+        debit_party_charges,
+        receiver_party_public_name,
+        initiator_account_balance,
+        reference_data,
+        raw_payload
+      ) VALUES ?
+      ON DUPLICATE KEY UPDATE
+        result_code = VALUES(result_code),
+        result_desc = VALUES(result_desc),
+        status = VALUES(status),
+        raw_payload = VALUES(raw_payload)
+     [params: [36bb-4bbc-95d6-3a8029636f709833,AG_20260722_010020730l5h34xpei7r,UGMTT25N9N,,The service request is processed successfully.,20,KES,success,1003761913,20260722095207,,Working Account|KES|297.00|297.00|0.00|0.00,Business Pay Bill Charge|KES|2.00,880100 - NCBA BANK KENYA PLC.,{Amount={CurrencyCode=KES, MinimumAmount=29700, BasicAmount=297.00}},{"BillReferenceNumber":1003761913,"QueueTimeoutURL":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"ResultType":0,"ResultCode":0,"ResultDesc":"The service request is processed successfully.","OriginatorConversationID":"36bb-4bbc-95d6-3a8029636f709833","ConversationID":"AG_20260722_010020730l5h34xpei7r","TransactionID":"UGMTT25N9N","ResultParameters":{"ResultParameter":[{"Key":"Currency","Value":"KES"},{"Key":"ReceiverPartyPublicName","Value":"880100 - NCBA BANK KENYA PLC."},{"Key":"DebitPartyCharges","Value":"Business Pay Bill Charge|KES|2.00"},{"Key":"TransCompletedTime","Value":20260722095207},{"Key":"DebitPartyAffectedAccountBalance","Value":"Working Account|KES|297.00|297.00|0.00|0.00"},{"Key":"Amount","Value":20},{"Key":"DebitAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=29700, BasicAmount=297.00}}"},{"Key":"InitiatorAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=29700, BasicAmount=297.00}}"}]},"ReferenceData":{"ReferenceItem":[{"Key":"BillReferenceNumber","Value":1003761913},{"Key":"QueueTimeoutURL","Value":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"Key":"Occassion"}]}}]]
+[2026-07-22T06:53:08.558Z] [EXECUTE: 488ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-22T06:53:09.027Z] [EXECUTE: 466ms] SELECT COUNT(*) as total FROM hotspot_clients WHERE company_id = ? [params: [2]]
+[2026-07-22T06:53:09.031Z] ✅ New MySQL connection established
+[2026-07-22T06:53:09.100Z] ✅ New MySQL connection established
+[2026-07-22T06:53:09.497Z] ⚠️ [SLOW EXECUTE: 1408ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-22T06:53:09.500Z] [EXECUTE: 473ms] SELECT COUNT(*) as total FROM pppoe_clients WHERE company_id = ? [params: [2]]
+[2026-07-22T06:53:09.581Z] ⚠️ [SLOW EXECUTE: 1475ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-22T06:53:09.780Z] [EXECUTE: 233ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-22T06:53:09.975Z] [EXECUTE: 476ms] SELECT IFNULL(SUM(Amount), 0) AS total_today
+       FROM pppoe_payments
+       WHERE company_id = ?
+       AND DATE(created_at) = CURDATE() [params: [2]]
+[2026-07-22T06:53:10.013Z] [EXECUTE: 233ms] SELECT COUNT(*) as total FROM hotspot_clients WHERE company_id = ? [params: [2]]
+[2026-07-22T06:53:10.261Z] [EXECUTE: 247ms] SELECT COUNT(*) as total FROM pppoe_clients WHERE company_id = ? [params: [2]]
+[2026-07-22T06:53:10.452Z] [EXECUTE: 476ms] SELECT IFNULL(SUM(Amount), 0) AS total_month
+       FROM pppoe_payments
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [2]]
+[2026-07-22T06:53:10.913Z] [EXECUTE: 461ms] SELECT IFNULL(SUM(amount), 0) AS total_day_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND DATE(created_at) = CURDATE() [params: [2]]
+[2026-07-22T06:53:11.379Z] [EXECUTE: 465ms] SELECT IFNULL(SUM(amount), 0) AS total_month_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [2]]
+[2026-07-22T06:53:11.531Z] ⚠️ [SLOW QUERY: 1947ms] SELECT * FROM pppoe_payments WHERE 1=1 AND company_id = ? [params: [2]]
+[2026-07-22T06:53:11.707Z] [EXECUTE: 285ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-22T06:53:11.960Z] [EXECUTE: 249ms] SELECT IFNULL(SUM(Amount), 0) AS total_today
+       FROM pppoe_payments
+       WHERE company_id = ?
+       AND DATE(created_at) = CURDATE() [params: [2]]
+[2026-07-22T06:53:11.986Z] [EXECUTE: 243ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-22T06:53:12.209Z] [EXECUTE: 248ms] SELECT IFNULL(SUM(Amount), 0) AS total_month
+       FROM pppoe_payments
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [2]]
+[2026-07-22T06:53:12.440Z] [EXECUTE: 231ms] SELECT IFNULL(SUM(amount), 0) AS total_day_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND DATE(created_at) = CURDATE() [params: [2]]
+[2026-07-22T06:53:12.671Z] [EXECUTE: 231ms] SELECT IFNULL(SUM(amount), 0) AS total_month_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [2]]
+[2026-07-22T06:53:12.782Z] [QUERY: 783ms] SELECT * FROM pppoe_payments WHERE 1=1 AND company_id = ? [params: [2]]
+[2026-07-22T06:56:01.581Z] [QUERY: 243ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-22T06:56:01.824Z] [QUERY: 242ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-22T06:56:02.065Z] [QUERY: 241ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-22T07:01:21.112Z] ❌ [QUERY ERROR: 19770ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-07-22T07:06:20.598Z] ❌ [QUERY ERROR: 19242ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-07-22T07:11:05.319Z] ✅ New MySQL connection established
+[2026-07-22T07:11:05.780Z] ⚠️ [SLOW QUERY: 1734ms] 
+      INSERT INTO pppoe_b2b_payments (
+        originator_conversation_id,
+        conversation_id,
+        transaction_id,
+        result_code,
+        result_desc,
+        amount,
+        currency,
+        status,
+        bill_reference_number,
+        trans_completed_time,
+        debit_account_balance,
+        debit_party_account_balance,
+        debit_party_charges,
+        receiver_party_public_name,
+        initiator_account_balance,
+        reference_data,
+        raw_payload
+      ) VALUES ?
+      ON DUPLICATE KEY UPDATE
+        result_code = VALUES(result_code),
+        result_desc = VALUES(result_desc),
+        status = VALUES(status),
+        raw_payload = VALUES(raw_payload)
+     [params: [9d3a-4f98-8c96-8e408a65ff3f17249,AG_20260722_010020730ltrm554mht9,UGMTT25RI0,,The service request is processed successfully.,20,KES,success,1003761913,20260722101101,,Working Account|KES|275.00|275.00|0.00|0.00,Business Pay Bill Charge|KES|2.00,880100 - NCBA BANK KENYA PLC.,{Amount={CurrencyCode=KES, MinimumAmount=27500, BasicAmount=275.00}},{"BillReferenceNumber":1003761913,"QueueTimeoutURL":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"ResultType":0,"ResultCode":0,"ResultDesc":"The service request is processed successfully.","OriginatorConversationID":"9d3a-4f98-8c96-8e408a65ff3f17249","ConversationID":"AG_20260722_010020730ltrm554mht9","TransactionID":"UGMTT25RI0","ResultParameters":{"ResultParameter":[{"Key":"Currency","Value":"KES"},{"Key":"ReceiverPartyPublicName","Value":"880100 - NCBA BANK KENYA PLC."},{"Key":"DebitPartyCharges","Value":"Business Pay Bill Charge|KES|2.00"},{"Key":"TransCompletedTime","Value":20260722101101},{"Key":"DebitPartyAffectedAccountBalance","Value":"Working Account|KES|275.00|275.00|0.00|0.00"},{"Key":"Amount","Value":20},{"Key":"DebitAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=27500, BasicAmount=275.00}}"},{"Key":"InitiatorAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=27500, BasicAmount=275.00}}"}]},"ReferenceData":{"ReferenceItem":[{"Key":"BillReferenceNumber","Value":1003761913},{"Key":"QueueTimeoutURL","Value":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"Key":"Occassion"}]}}]]
+[2026-07-22T07:11:20.821Z] ❌ [QUERY ERROR: 19450ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-07-22T07:16:54.146Z] ❌ [QUERY ERROR: 52768ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-07-22T07:21:02.324Z] ✅ New MySQL connection established
+[2026-07-22T07:21:02.555Z] ⚠️ [SLOW QUERY: 1173ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-22T07:21:02.784Z] [QUERY: 229ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-22T07:21:03.012Z] [QUERY: 227ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-22T07:26:23.178Z] ❌ [QUERY ERROR: 21790ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-07-22T07:31:02.328Z] ✅ New MySQL connection established
+[2026-07-22T07:31:02.554Z] ⚠️ [SLOW QUERY: 1164ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-22T07:31:02.782Z] [QUERY: 227ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-22T07:31:03.010Z] [QUERY: 228ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-22T07:36:02.379Z] ✅ New MySQL connection established
+[2026-07-22T07:36:02.619Z] ⚠️ [SLOW QUERY: 1214ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-22T07:36:02.848Z] [QUERY: 229ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-22T07:36:03.081Z] [QUERY: 233ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-22T07:36:08.934Z] ❌ [QUERY ERROR: 22419ms] 
+      INSERT INTO pppoe_b2b_payments (
+        originator_conversation_id,
+        conversation_id,
+        transaction_id,
+        result_code,
+        result_desc,
+        amount,
+        currency,
+        status,
+        bill_reference_number,
+        trans_completed_time,
+        debit_account_balance,
+        debit_party_account_balance,
+        debit_party_charges,
+        receiver_party_public_name,
+        initiator_account_balance,
+        reference_data,
+        raw_payload
+      ) VALUES ?
+      ON DUPLICATE KEY UPDATE
+        result_code = VALUES(result_code),
+        result_desc = VALUES(result_desc),
+        status = VALUES(status),
+        raw_payload = VALUES(raw_payload)
+     [params: [ace8-4a84-97ca-e4effdf426742930,AG_20260722_010020730mpi33e5d8gn,UGMTT25T9V,,The service request is processed successfully.,20,KES,success,1003761913,20260722103542,,Working Account|KES|253.00|253.00|0.00|0.00,Business Pay Bill Charge|KES|2.00,880100 - NCBA BANK KENYA PLC.,{Amount={CurrencyCode=KES, MinimumAmount=25300, BasicAmount=253.00}},{"BillReferenceNumber":1003761913,"QueueTimeoutURL":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"ResultType":0,"ResultCode":0,"ResultDesc":"The service request is processed successfully.","OriginatorConversationID":"ace8-4a84-97ca-e4effdf426742930","ConversationID":"AG_20260722_010020730mpi33e5d8gn","TransactionID":"UGMTT25T9V","ResultParameters":{"ResultParameter":[{"Key":"Currency","Value":"KES"},{"Key":"ReceiverPartyPublicName","Value":"880100 - NCBA BANK KENYA PLC."},{"Key":"DebitPartyCharges","Value":"Business Pay Bill Charge|KES|2.00"},{"Key":"TransCompletedTime","Value":20260722103542},{"Key":"DebitPartyAffectedAccountBalance","Value":"Working Account|KES|253.00|253.00|0.00|0.00"},{"Key":"Amount","Value":20},{"Key":"DebitAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=25300, BasicAmount=253.00}}"},{"Key":"InitiatorAccountCurrentBalance","Value":"{Amount={CurrencyCode=KES, MinimumAmount=25300, BasicAmount=253.00}}"}]},"ReferenceData":{"ReferenceItem":[{"Key":"BillReferenceNumber","Value":1003761913},{"Key":"QueueTimeoutURL","Value":"https://internalapi.safaricom.net/mpesa/b2bresults/v1/submit"},{"Key":"Occassion"}]}}]] - read ECONNRESET
+[2026-07-22T07:41:24.625Z] ❌ [QUERY ERROR: 23221ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-07-22T07:43:50.648Z] ✅ New MySQL connection established
+[2026-07-22T07:43:50.922Z] ⚠️ [SLOW QUERY: 1969ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-22T07:43:51.232Z] [QUERY: 310ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-22T07:43:51.473Z] [QUERY: 241ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-22T07:44:08.549Z] ✅ New MySQL connection established
+[2026-07-22T07:44:08.775Z] ⚠️ [SLOW QUERY: 1834ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-22T07:44:08.995Z] [QUERY: 220ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-22T07:44:09.220Z] [QUERY: 224ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-22T07:49:30.595Z] ❌ [QUERY ERROR: 23564ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-07-22T07:54:08.025Z] ✅ New MySQL connection established
+[2026-07-22T07:54:08.282Z] ⚠️ [SLOW QUERY: 1247ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-22T07:54:08.512Z] [QUERY: 230ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-22T07:54:08.740Z] [QUERY: 228ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-22T07:59:28.512Z] ❌ [QUERY ERROR: 21501ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-07-22T08:04:07.963Z] ✅ New MySQL connection established
+[2026-07-22T08:04:08.194Z] ⚠️ [SLOW QUERY: 1181ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-22T08:04:08.420Z] [QUERY: 226ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-22T08:04:08.645Z] [QUERY: 223ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-22T08:09:28.025Z] ❌ [QUERY ERROR: 21001ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-07-22T08:14:07.957Z] ✅ New MySQL connection established
+[2026-07-22T08:14:08.190Z] ⚠️ [SLOW QUERY: 1153ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-22T08:14:08.419Z] [QUERY: 228ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-22T08:14:08.653Z] [QUERY: 233ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-22T08:19:28.622Z] ❌ [QUERY ERROR: 21512ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-07-22T08:19:51.890Z] ✅ New MySQL connection established
+[2026-07-22T08:19:52.121Z] ⚠️ [SLOW QUERY: 1808ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-22T08:19:52.345Z] [QUERY: 223ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-22T08:19:52.570Z] [QUERY: 225ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-22T08:25:12.183Z] ❌ [QUERY ERROR: 21824ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
+[2026-07-22T08:29:51.339Z] ✅ New MySQL connection established
+[2026-07-22T08:29:51.573Z] ⚠️ [SLOW QUERY: 1228ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-22T08:29:51.799Z] [QUERY: 225ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-22T08:29:52.023Z] [QUERY: 223ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-22T08:35:11.412Z] ❌ [QUERY ERROR: 21043ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - read ECONNRESET
