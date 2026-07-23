@@ -7,7 +7,7 @@ const { verifyToken } = require('../systemFunctions');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-const PAYMENT_TYPES = ['power_tokens', 'amount', 'free_voucher'];
+const PAYMENT_TYPES = ['power_tokens', 'amount', 'free_voucher', 'free_wifi'];
 
 function requireHotspotAccess(req, res) {
   if (req.userType !== 'superadmin' && req.userType !== 'manager') {
