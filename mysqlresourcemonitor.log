@@ -11777,3 +11777,346 @@
 [2026-07-23T05:30:32.956Z] [EXECUTE: 234ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
 [2026-07-23T05:30:33.188Z] [EXECUTE: 232ms] SELECT * FROM hotspot_sites WHERE id = ? AND company_id = ? [params: [1, 2]]
 [2026-07-23T05:30:33.426Z] [EXECUTE: 238ms] DELETE FROM hotspot_sites WHERE id = ? [params: [1]]
+[2026-07-24T09:48:07.380Z] ✅ New MySQL connection established
+[2026-07-24T09:48:07.671Z] ⚠️ [SLOW QUERY: 4194ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-24T09:48:08.071Z] [QUERY: 399ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-24T09:48:08.388Z] [QUERY: 316ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-24T09:55:30.572Z] ❌ [QUERY ERROR: 147078ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - Connection lost: The server closed the connection.
+[2026-07-24T09:58:04.802Z] ✅ New MySQL connection established
+[2026-07-24T09:58:05.126Z] ⚠️ [SLOW QUERY: 1617ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-24T09:58:05.524Z] [QUERY: 398ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-24T09:58:05.811Z] [QUERY: 285ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-24T10:00:21.504Z] ✅ New MySQL connection established
+[2026-07-24T10:00:21.791Z] ⚠️ [SLOW QUERY: 2455ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-24T10:00:22.069Z] [QUERY: 277ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-24T10:00:22.347Z] [QUERY: 277ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-24T10:00:39.632Z] ✅ New MySQL connection established
+[2026-07-24T10:00:44.215Z] ✅ New MySQL connection established
+[2026-07-24T10:00:44.501Z] ⚠️ [SLOW QUERY: 2341ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-24T10:00:44.781Z] [QUERY: 279ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-24T10:00:45.070Z] [QUERY: 289ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-24T10:00:59.623Z] ✅ New MySQL connection established
+[2026-07-24T10:00:59.899Z] ⚠️ [SLOW QUERY: 2183ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-24T10:01:00.176Z] [QUERY: 277ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-24T10:01:00.450Z] [QUERY: 273ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-24T10:01:35.722Z] ✅ New MySQL connection established
+[2026-07-24T10:01:35.997Z] ⚠️ [SLOW QUERY: 2316ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-24T10:01:36.266Z] [QUERY: 268ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-24T10:01:36.728Z] [QUERY: 461ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-24T10:08:53.254Z] ❌ [QUERY ERROR: 139558ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+      - Connection lost: The server closed the connection.
+[2026-07-24T10:11:21.039Z] ✅ New MySQL connection established
+[2026-07-24T10:11:21.379Z] ⚠️ [SLOW QUERY: 3179ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-24T10:11:21.678Z] [QUERY: 299ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-24T10:11:21.998Z] [QUERY: 319ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-24T10:14:17.225Z] [EXECUTE: 713ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:14:17.765Z] [EXECUTE: 539ms] SELECT COUNT(*) as total FROM hotspot_clients WHERE company_id = ? [params: [2]]
+[2026-07-24T10:14:17.773Z] ✅ New MySQL connection established
+[2026-07-24T10:14:17.776Z] ✅ New MySQL connection established
+[2026-07-24T10:14:18.301Z] ⚠️ [SLOW EXECUTE: 1764ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:14:18.311Z] [EXECUTE: 546ms] SELECT COUNT(*) as total FROM pppoe_clients WHERE company_id = ? [params: [2]]
+[2026-07-24T10:14:18.372Z] ⚠️ [SLOW EXECUTE: 1801ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:14:18.661Z] [EXECUTE: 273ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:14:18.849Z] [EXECUTE: 539ms] SELECT IFNULL(SUM(Amount), 0) AS total_today
+       FROM pppoe_payments
+       WHERE company_id = ?
+       AND DATE(created_at) = CURDATE() [params: [2]]
+[2026-07-24T10:14:18.927Z] [EXECUTE: 266ms] SELECT COUNT(*) as total FROM hotspot_clients WHERE company_id = ? [params: [2]]
+[2026-07-24T10:14:21.305Z] ⚠️ [SLOW EXECUTE: 2376ms] SELECT COUNT(*) as total FROM pppoe_clients WHERE company_id = ? [params: [2]]
+[2026-07-24T10:14:21.655Z] ⚠️ [SLOW QUERY: 3232ms] SELECT * FROM pppoe_payments WHERE 1=1 AND company_id = ? [params: [2]]
+[2026-07-24T10:14:21.950Z] ⚠️ [SLOW EXECUTE: 3088ms] SELECT IFNULL(SUM(Amount), 0) AS total_month
+       FROM pppoe_payments
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [2]]
+[2026-07-24T10:14:22.236Z] [EXECUTE: 277ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:14:22.524Z] [EXECUTE: 573ms] SELECT IFNULL(SUM(amount), 0) AS total_day_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND DATE(created_at) = CURDATE() [params: [2]]
+[2026-07-24T10:14:23.080Z] [EXECUTE: 554ms] SELECT IFNULL(SUM(amount), 0) AS total_month_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [2]]
+[2026-07-24T10:14:23.442Z] [EXECUTE: 261ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:14:23.534Z] ⚠️ [SLOW QUERY: 1297ms] SELECT * FROM pppoe_payments WHERE 1=1 AND company_id = ? [params: [2]]
+[2026-07-24T10:14:23.739Z] [EXECUTE: 295ms] SELECT IFNULL(SUM(Amount), 0) AS total_today
+       FROM pppoe_payments
+       WHERE company_id = ?
+       AND DATE(created_at) = CURDATE() [params: [2]]
+[2026-07-24T10:14:24.417Z] [EXECUTE: 677ms] SELECT IFNULL(SUM(Amount), 0) AS total_month
+       FROM pppoe_payments
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [2]]
+[2026-07-24T10:14:24.678Z] [EXECUTE: 260ms] SELECT IFNULL(SUM(amount), 0) AS total_day_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND DATE(created_at) = CURDATE() [params: [2]]
+[2026-07-24T10:14:24.938Z] [EXECUTE: 260ms] SELECT IFNULL(SUM(amount), 0) AS total_month_hotspot
+       FROM vouchers
+       WHERE company_id = ?
+       AND YEAR(created_at) = YEAR(CURDATE())
+       AND MONTH(created_at) = MONTH(CURDATE()) [params: [2]]
+[2026-07-24T10:14:48.870Z] [EXECUTE: 264ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:14:48.896Z] [EXECUTE: 285ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:14:49.416Z] [EXECUTE: 545ms] SELECT r.*, (SELECT COUNT(*) FROM hotspot_sites s WHERE s.region_id = r.id) AS site_count
+       FROM hotspot_regions r
+       WHERE r.company_id = ?
+       ORDER BY r.name ASC [params: [2]]
+[2026-07-24T10:14:49.496Z] [EXECUTE: 599ms] SELECT s.*, r.name AS region_name,
+        (SELECT COUNT(*) FROM hotspot_site_houses h WHERE h.site_id = s.id) AS houses_count,
+        (SELECT COUNT(*) FROM hotspot_site_transactions t WHERE t.site_id = s.id AND t.for_month = ?) AS settled_this_month
+       FROM hotspot_sites s
+       LEFT JOIN hotspot_regions r ON r.id = s.region_id
+       WHERE s.company_id = ?
+       ORDER BY s.id DESC [params: [2026-07-01, 2]]
+[2026-07-24T10:15:03.759Z] [EXECUTE: 285ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:15:04.438Z] [EXECUTE: 678ms] SELECT r.*, (SELECT COUNT(*) FROM hotspot_sites s WHERE s.region_id = r.id) AS site_count
+       FROM hotspot_regions r
+       WHERE r.company_id = ?
+       ORDER BY r.name ASC [params: [2]]
+[2026-07-24T10:15:22.456Z] [EXECUTE: 425ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:15:22.734Z] [EXECUTE: 277ms] SELECT r.*, (SELECT COUNT(*) FROM hotspot_sites s WHERE s.region_id = r.id) AS site_count
+       FROM hotspot_regions r
+       WHERE r.company_id = ?
+       ORDER BY r.name ASC [params: [2]]
+[2026-07-24T10:15:23.562Z] [EXECUTE: 301ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:15:23.864Z] [EXECUTE: 301ms] SELECT r.*, (SELECT COUNT(*) FROM hotspot_sites s WHERE s.region_id = r.id) AS site_count
+       FROM hotspot_regions r
+       WHERE r.company_id = ?
+       ORDER BY r.name ASC [params: [2]]
+[2026-07-24T10:15:26.337Z] [EXECUTE: 278ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:15:26.909Z] [EXECUTE: 571ms] INSERT INTO hotspot_regions (company_id, name, created_by) VALUES (?, ?, ?) [params: [2, Ruiru, 9014]]
+[2026-07-24T10:15:28.328Z] [EXECUTE: 273ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:15:28.601Z] [EXECUTE: 272ms] SELECT r.*, (SELECT COUNT(*) FROM hotspot_sites s WHERE s.region_id = r.id) AS site_count
+       FROM hotspot_regions r
+       WHERE r.company_id = ?
+       ORDER BY r.name ASC [params: [2]]
+[2026-07-24T10:15:28.947Z] [EXECUTE: 275ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:15:29.224Z] [EXECUTE: 277ms] SELECT r.*, (SELECT COUNT(*) FROM hotspot_sites s WHERE s.region_id = r.id) AS site_count
+       FROM hotspot_regions r
+       WHERE r.company_id = ?
+       ORDER BY r.name ASC [params: [2]]
+[2026-07-24T10:15:34.813Z] [EXECUTE: 284ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:15:35.365Z] [EXECUTE: 551ms] SELECT * FROM hotspot_regions WHERE id = ? AND company_id = ? [params: [1, 2]]
+[2026-07-24T10:15:35.939Z] [EXECUTE: 573ms] SELECT s.*,
+        (SELECT COUNT(*) FROM hotspot_site_houses h WHERE h.site_id = s.id) AS houses_count
+       FROM hotspot_sites s
+       WHERE s.region_id = ? AND s.company_id = ?
+       ORDER BY s.site_name ASC [params: [1, 2]]
+[2026-07-24T10:15:36.257Z] [EXECUTE: 272ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:15:36.531Z] [EXECUTE: 273ms] SELECT * FROM hotspot_regions WHERE id = ? AND company_id = ? [params: [1, 2]]
+[2026-07-24T10:15:36.806Z] [EXECUTE: 275ms] SELECT s.*,
+        (SELECT COUNT(*) FROM hotspot_site_houses h WHERE h.site_id = s.id) AS houses_count
+       FROM hotspot_sites s
+       WHERE s.region_id = ? AND s.company_id = ?
+       ORDER BY s.site_name ASC [params: [1, 2]]
+[2026-07-24T10:15:47.159Z] [EXECUTE: 266ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:15:47.170Z] [EXECUTE: 281ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:15:47.446Z] [EXECUTE: 286ms] SELECT r.*, (SELECT COUNT(*) FROM hotspot_sites s WHERE s.region_id = r.id) AS site_count
+       FROM hotspot_regions r
+       WHERE r.company_id = ?
+       ORDER BY r.name ASC [params: [2]]
+[2026-07-24T10:15:47.450Z] [EXECUTE: 280ms] SELECT s.*, r.name AS region_name,
+        (SELECT COUNT(*) FROM hotspot_site_houses h WHERE h.site_id = s.id) AS houses_count,
+        (SELECT COUNT(*) FROM hotspot_site_transactions t WHERE t.site_id = s.id AND t.for_month = ?) AS settled_this_month
+       FROM hotspot_sites s
+       LEFT JOIN hotspot_regions r ON r.id = s.region_id
+       WHERE s.company_id = ?
+       ORDER BY s.id DESC [params: [2026-07-01, 2]]
+[2026-07-24T10:16:07.719Z] [EXECUTE: 274ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:16:08.296Z] [EXECUTE: 575ms] SELECT s.*, r.name AS region_name
+       FROM hotspot_sites s
+       LEFT JOIN hotspot_regions r ON r.id = s.region_id
+       WHERE s.id = ? AND s.company_id = ? [params: [2, 2]]
+[2026-07-24T10:16:08.853Z] [EXECUTE: 557ms] SELECT * FROM hotspot_site_houses WHERE site_id = ? ORDER BY id ASC [params: [2]]
+[2026-07-24T10:16:09.663Z] [EXECUTE: 809ms] SELECT * FROM hotspot_site_transactions WHERE site_id = ? ORDER BY for_month DESC [params: [2]]
+[2026-07-24T10:16:09.991Z] [EXECUTE: 273ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:16:10.263Z] [EXECUTE: 272ms] SELECT s.*, r.name AS region_name
+       FROM hotspot_sites s
+       LEFT JOIN hotspot_regions r ON r.id = s.region_id
+       WHERE s.id = ? AND s.company_id = ? [params: [2, 2]]
+[2026-07-24T10:16:10.550Z] [EXECUTE: 286ms] SELECT * FROM hotspot_site_houses WHERE site_id = ? ORDER BY id ASC [params: [2]]
+[2026-07-24T10:16:10.825Z] [EXECUTE: 275ms] SELECT * FROM hotspot_site_transactions WHERE site_id = ? ORDER BY for_month DESC [params: [2]]
+[2026-07-24T10:16:18.581Z] [QUERY: 297ms] 
+      SELECT id, allowed_users, company_plan_name, company_plan_id, active
+      FROM companies
+     
+[2026-07-24T10:16:18.865Z] [QUERY: 284ms] 
+      SELECT company_id, COUNT(*) AS total_pppoe_users
+      FROM pppoe_clients
+      GROUP BY company_id
+     
+[2026-07-24T10:16:19.156Z] [QUERY: 290ms] 
+      SELECT v.company_id, COUNT(DISTINCT v.customer) AS active_voucher_customers
+      FROM vouchers v
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY v.company_id
+     
+[2026-07-24T10:16:20.496Z] [EXECUTE: 261ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:16:20.499Z] [EXECUTE: 275ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:16:20.786Z] [EXECUTE: 285ms] SELECT r.*, (SELECT COUNT(*) FROM hotspot_sites s WHERE s.region_id = r.id) AS site_count
+       FROM hotspot_regions r
+       WHERE r.company_id = ?
+       ORDER BY r.name ASC [params: [2]]
+[2026-07-24T10:16:21.024Z] [EXECUTE: 527ms] SELECT s.*, r.name AS region_name
+       FROM hotspot_sites s
+       LEFT JOIN hotspot_regions r ON r.id = s.region_id
+       WHERE s.id = ? AND s.company_id = ? [params: [2, 2]]
+[2026-07-24T10:16:21.196Z] [EXECUTE: 277ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:16:21.480Z] [EXECUTE: 283ms] SELECT r.*, (SELECT COUNT(*) FROM hotspot_sites s WHERE s.region_id = r.id) AS site_count
+       FROM hotspot_regions r
+       WHERE r.company_id = ?
+       ORDER BY r.name ASC [params: [2]]
+[2026-07-24T10:16:21.564Z] [EXECUTE: 539ms] SELECT * FROM hotspot_site_houses WHERE site_id = ? ORDER BY id ASC [params: [2]]
+[2026-07-24T10:16:22.138Z] [EXECUTE: 573ms] SELECT * FROM hotspot_site_transactions WHERE site_id = ? ORDER BY for_month DESC [params: [2]]
+[2026-07-24T10:16:22.441Z] [EXECUTE: 260ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:16:22.705Z] [EXECUTE: 263ms] SELECT s.*, r.name AS region_name
+       FROM hotspot_sites s
+       LEFT JOIN hotspot_regions r ON r.id = s.region_id
+       WHERE s.id = ? AND s.company_id = ? [params: [2, 2]]
+[2026-07-24T10:16:22.968Z] [EXECUTE: 263ms] SELECT * FROM hotspot_site_houses WHERE site_id = ? ORDER BY id ASC [params: [2]]
+[2026-07-24T10:16:23.233Z] [EXECUTE: 264ms] SELECT * FROM hotspot_site_transactions WHERE site_id = ? ORDER BY for_month DESC [params: [2]]
+[2026-07-24T10:16:59.908Z] [EXECUTE: 272ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:17:00.440Z] [EXECUTE: 530ms] SELECT * FROM hotspot_sites WHERE id = ? AND company_id = ? [params: [2, 2]]
+[2026-07-24T10:17:01.007Z] [EXECUTE: 567ms] UPDATE hotspot_sites
+       SET site_name = ?, phone_number = ?, location = ?, region_id = ?, agreement_type = ?, agreement_value = ?, agreement_notes = ?, status = ?
+       WHERE id = ? AND company_id = ? [params: [Kwa Topha Kihuri, 0741931014, Kihuri Kagochi, 1, free_voucher, 0.00, Free wifi, installed, 2, 2]]
+[2026-07-24T10:17:06.477Z] [EXECUTE: 259ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:17:06.508Z] [EXECUTE: 284ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:17:06.780Z] [EXECUTE: 272ms] SELECT r.*, (SELECT COUNT(*) FROM hotspot_sites s WHERE s.region_id = r.id) AS site_count
+       FROM hotspot_regions r
+       WHERE r.company_id = ?
+       ORDER BY r.name ASC [params: [2]]
+[2026-07-24T10:17:07.024Z] [EXECUTE: 546ms] SELECT s.*, r.name AS region_name,
+        (SELECT COUNT(*) FROM hotspot_site_houses h WHERE h.site_id = s.id) AS houses_count,
+        (SELECT COUNT(*) FROM hotspot_site_transactions t WHERE t.site_id = s.id AND t.for_month = ?) AS settled_this_month
+       FROM hotspot_sites s
+       LEFT JOIN hotspot_regions r ON r.id = s.region_id
+       WHERE s.company_id = ?
+       ORDER BY s.id DESC [params: [2026-07-01, 2]]
+[2026-07-24T10:17:07.119Z] [EXECUTE: 274ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:17:07.353Z] [EXECUTE: 269ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:17:07.411Z] [EXECUTE: 291ms] SELECT r.*, (SELECT COUNT(*) FROM hotspot_sites s WHERE s.region_id = r.id) AS site_count
+       FROM hotspot_regions r
+       WHERE r.company_id = ?
+       ORDER BY r.name ASC [params: [2]]
+[2026-07-24T10:17:07.626Z] [EXECUTE: 273ms] SELECT s.*, r.name AS region_name,
+        (SELECT COUNT(*) FROM hotspot_site_houses h WHERE h.site_id = s.id) AS houses_count,
+        (SELECT COUNT(*) FROM hotspot_site_transactions t WHERE t.site_id = s.id AND t.for_month = ?) AS settled_this_month
+       FROM hotspot_sites s
+       LEFT JOIN hotspot_regions r ON r.id = s.region_id
+       WHERE s.company_id = ?
+       ORDER BY s.id DESC [params: [2026-07-01, 2]]
+[2026-07-24T10:17:27.704Z] [EXECUTE: 258ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:17:28.229Z] [EXECUTE: 524ms] SELECT * FROM hotspot_regions WHERE id = ? AND company_id = ? [params: [1, 2]]
+[2026-07-24T10:17:28.769Z] [EXECUTE: 539ms] SELECT s.*,
+        (SELECT COUNT(*) FROM hotspot_site_houses h WHERE h.site_id = s.id) AS houses_count
+       FROM hotspot_sites s
+       WHERE s.region_id = ? AND s.company_id = ?
+       ORDER BY s.site_name ASC [params: [1, 2]]
+[2026-07-24T10:17:35.925Z] [EXECUTE: 262ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:17:36.193Z] [EXECUTE: 268ms] SELECT s.*, r.name AS region_name
+       FROM hotspot_sites s
+       LEFT JOIN hotspot_regions r ON r.id = s.region_id
+       WHERE s.id = ? AND s.company_id = ? [params: [2, 2]]
+[2026-07-24T10:17:36.452Z] [EXECUTE: 259ms] SELECT * FROM hotspot_site_houses WHERE site_id = ? ORDER BY id ASC [params: [2]]
+[2026-07-24T10:17:36.739Z] [EXECUTE: 287ms] SELECT * FROM hotspot_site_transactions WHERE site_id = ? ORDER BY for_month DESC [params: [2]]
+[2026-07-24T10:17:37.338Z] [EXECUTE: 557ms] SELECT active, token_version, deleted_at FROM users WHERE id = ? [params: [9014]]
+[2026-07-24T10:17:37.614Z] [EXECUTE: 275ms] SELECT s.*, r.name AS region_name
+       FROM hotspot_sites s
+       LEFT JOIN hotspot_regions r ON r.id = s.region_id
+       WHERE s.id = ? AND s.company_id = ? [params: [2, 2]]
+[2026-07-24T10:17:37.876Z] [EXECUTE: 262ms] SELECT * FROM hotspot_site_houses WHERE site_id = ? ORDER BY id ASC [params: [2]]
+[2026-07-24T10:17:38.148Z] [EXECUTE: 271ms] SELECT * FROM hotspot_site_transactions WHERE site_id = ? ORDER BY for_month DESC [params: [2]]
