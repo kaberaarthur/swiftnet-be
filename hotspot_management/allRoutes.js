@@ -30,7 +30,7 @@ router.post('/hotspot-management/sites', verifyToken, async (req, res) => {
 
   const companyId = req.company_id;
   const {
-    site_name, phone_number, location,
+    site_name, phone_number, location, region_id,
     agreement_type, agreement_value, agreement_notes,
     status, houses
   } = req.body;
@@ -42,9 +42,9 @@ router.post('/hotspot-management/sites', verifyToken, async (req, res) => {
   try {
     const [result] = await db.execute(
       `INSERT INTO hotspot_sites
-        (company_id, site_name, phone_number, location, agreement_type, agreement_value, agreement_notes, status, created_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [companyId, site_name, phone_number, location ?? null, agreement_type ?? null, agreement_value ?? null, agreement_notes ?? null, status || 'pending', req.userId]
+        (company_id, site_name, phone_number, location, region_id, agreement_type, agreement_value, agreement_notes, status, created_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [companyId, site_name, phone_number, location ?? null, region_id ?? null, agreement_type ?? null, agreement_value ?? null, agreement_notes ?? null, status || 'pending', req.userId]
     );
 
     const siteId = result.insertId;
@@ -77,10 +77,11 @@ router.get('/hotspot-management/sites', verifyToken, async (req, res) => {
 
   try {
     const [sites] = await db.execute(
-      `SELECT s.*,
+      `SELECT s.*, r.name AS region_name,
         (SELECT COUNT(*) FROM hotspot_site_houses h WHERE h.site_id = s.id) AS houses_count,
         (SELECT COUNT(*) FROM hotspot_site_transactions t WHERE t.site_id = s.id AND t.for_month = ?) AS settled_this_month
        FROM hotspot_sites s
+       LEFT JOIN hotspot_regions r ON r.id = s.region_id
        WHERE s.company_id = ?
        ORDER BY s.id DESC`,
       [currentMonth, companyId]
@@ -103,7 +104,10 @@ router.get('/hotspot-management/sites/:id', verifyToken, async (req, res) => {
 
   try {
     const [rows] = await db.execute(
-      'SELECT * FROM hotspot_sites WHERE id = ? AND company_id = ?',
+      `SELECT s.*, r.name AS region_name
+       FROM hotspot_sites s
+       LEFT JOIN hotspot_regions r ON r.id = s.region_id
+       WHERE s.id = ? AND s.company_id = ?`,
       [req.params.id, companyId]
     );
 
@@ -143,7 +147,7 @@ router.patch('/hotspot-management/sites/:id', verifyToken, async (req, res) => {
 
     const current = existing[0];
     const {
-      site_name, phone_number, location,
+      site_name, phone_number, location, region_id,
       agreement_type, agreement_value, agreement_notes, status
     } = req.body;
 
@@ -151,6 +155,7 @@ router.patch('/hotspot-management/sites/:id', verifyToken, async (req, res) => {
       site_name: site_name ?? current.site_name,
       phone_number: phone_number ?? current.phone_number,
       location: location ?? current.location,
+      region_id: region_id ?? current.region_id,
       agreement_type: agreement_type ?? current.agreement_type,
       agreement_value: agreement_value ?? current.agreement_value,
       agreement_notes: agreement_notes ?? current.agreement_notes,
@@ -159,9 +164,9 @@ router.patch('/hotspot-management/sites/:id', verifyToken, async (req, res) => {
 
     await db.execute(
       `UPDATE hotspot_sites
-       SET site_name = ?, phone_number = ?, location = ?, agreement_type = ?, agreement_value = ?, agreement_notes = ?, status = ?
+       SET site_name = ?, phone_number = ?, location = ?, region_id = ?, agreement_type = ?, agreement_value = ?, agreement_notes = ?, status = ?
        WHERE id = ? AND company_id = ?`,
-      [updated.site_name, updated.phone_number, updated.location, updated.agreement_type, updated.agreement_value, updated.agreement_notes, updated.status, req.params.id, companyId]
+      [updated.site_name, updated.phone_number, updated.location, updated.region_id, updated.agreement_type, updated.agreement_value, updated.agreement_notes, updated.status, req.params.id, companyId]
     );
 
     res.json({ message: 'Site updated successfully', updated });
@@ -395,6 +400,90 @@ router.post('/hotspot-management/sites/import', verifyToken, (req, res, next) =>
   }
 
   res.status(200).json({ message: 'Import complete', imported, updated, errors });
+});
+
+// ==============================
+// CREATE a region
+// ==============================
+router.post('/hotspot-management/regions', verifyToken, async (req, res) => {
+  if (!requireHotspotAccess(req, res)) return;
+
+  const companyId = req.company_id;
+  const { name } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'name is required' });
+  }
+
+  try {
+    const [result] = await db.execute(
+      'INSERT INTO hotspot_regions (company_id, name, created_by) VALUES (?, ?, ?)',
+      [companyId, name.trim(), req.userId]
+    );
+    res.status(201).json({ message: 'Region created successfully', id: result.insertId });
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({ error: 'A region with that name already exists' });
+    }
+    console.error(err);
+    res.status(500).json({ error: 'Database error creating region' });
+  }
+});
+
+// ==============================
+// READ - list regions for the company, with site_count
+// ==============================
+router.get('/hotspot-management/regions', verifyToken, async (req, res) => {
+  if (!requireHotspotAccess(req, res)) return;
+
+  const companyId = req.company_id;
+
+  try {
+    const [regions] = await db.execute(
+      `SELECT r.*, (SELECT COUNT(*) FROM hotspot_sites s WHERE s.region_id = r.id) AS site_count
+       FROM hotspot_regions r
+       WHERE r.company_id = ?
+       ORDER BY r.name ASC`,
+      [companyId]
+    );
+
+    res.json(regions);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error fetching regions' });
+  }
+});
+
+// ==============================
+// READ - single region detail with its sites[]
+// ==============================
+router.get('/hotspot-management/regions/:id', verifyToken, async (req, res) => {
+  if (!requireHotspotAccess(req, res)) return;
+
+  const companyId = req.company_id;
+
+  try {
+    const [rows] = await db.execute(
+      'SELECT * FROM hotspot_regions WHERE id = ? AND company_id = ?',
+      [req.params.id, companyId]
+    );
+
+    if (rows.length === 0) return res.status(404).json({ error: 'Region not found' });
+
+    const [sites] = await db.execute(
+      `SELECT s.*,
+        (SELECT COUNT(*) FROM hotspot_site_houses h WHERE h.site_id = s.id) AS houses_count
+       FROM hotspot_sites s
+       WHERE s.region_id = ? AND s.company_id = ?
+       ORDER BY s.site_name ASC`,
+      [req.params.id, companyId]
+    );
+
+    res.json({ ...rows[0], sites });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error fetching region' });
+  }
 });
 
 module.exports = router;
