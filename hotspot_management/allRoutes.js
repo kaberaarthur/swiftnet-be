@@ -486,4 +486,79 @@ router.get('/hotspot-management/regions/:id', verifyToken, async (req, res) => {
   }
 });
 
+// ==============================
+// READ - full export data for a region: sites with their houses[] and payments[]
+// ==============================
+router.get('/hotspot-management/regions/:id/export', verifyToken, async (req, res) => {
+  if (!requireHotspotAccess(req, res)) return;
+
+  const companyId = req.company_id;
+
+  try {
+    const [regionRows] = await db.execute(
+      'SELECT * FROM hotspot_regions WHERE id = ? AND company_id = ?',
+      [req.params.id, companyId]
+    );
+    if (regionRows.length === 0) return res.status(404).json({ error: 'Region not found' });
+
+    const [sites] = await db.execute(
+      'SELECT * FROM hotspot_sites WHERE region_id = ? AND company_id = ? ORDER BY site_name ASC',
+      [req.params.id, companyId]
+    );
+
+    const siteIds = sites.map((s) => s.id);
+    const housesBySite = {};
+    const paymentsBySite = {};
+
+    if (siteIds.length > 0) {
+      const placeholders = siteIds.map(() => '?').join(',');
+
+      const [houses] = await db.execute(
+        `SELECT * FROM hotspot_site_houses WHERE site_id IN (${placeholders}) ORDER BY id ASC`,
+        siteIds
+      );
+      houses.forEach((h) => {
+        if (!housesBySite[h.site_id]) housesBySite[h.site_id] = [];
+        housesBySite[h.site_id].push({ house_label: h.house_label, notes: h.notes });
+      });
+
+      const [transactions] = await db.execute(
+        `SELECT * FROM hotspot_site_transactions WHERE site_id IN (${placeholders}) ORDER BY for_month DESC`,
+        siteIds
+      );
+      transactions.forEach((t) => {
+        if (!paymentsBySite[t.site_id]) paymentsBySite[t.site_id] = [];
+        paymentsBySite[t.site_id].push({
+          amount: t.amount,
+          payment_type: t.payment_type,
+          for_month: t.for_month,
+          paid_on: t.paid_on,
+          meter_reading: t.meter_reading,
+          notes: t.notes,
+        });
+      });
+    }
+
+    res.json({
+      region_name: regionRows[0].name,
+      site_count: sites.length,
+      generated_at: new Date().toISOString(),
+      sites: sites.map((s) => ({
+        site_name: s.site_name,
+        phone_number: s.phone_number,
+        location: s.location,
+        agreement_type: s.agreement_type,
+        agreement_value: s.agreement_value,
+        agreement_notes: s.agreement_notes,
+        status: s.status,
+        houses: housesBySite[s.id] || [],
+        payments: paymentsBySite[s.id] || [],
+      })),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error building region export' });
+  }
+});
+
 module.exports = router;
