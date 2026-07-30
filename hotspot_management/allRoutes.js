@@ -561,4 +561,102 @@ router.get('/hotspot-management/regions/:id/export', verifyToken, async (req, re
   }
 });
 
+// ==============================
+// READ - full export data for ALL regions + unassigned sites for the company
+// ==============================
+router.get('/hotspot-management/export-all', verifyToken, async (req, res) => {
+  if (!requireHotspotAccess(req, res)) return;
+
+  const companyId = req.company_id;
+
+  try {
+    const [regions] = await db.execute(
+      'SELECT * FROM hotspot_regions WHERE company_id = ? ORDER BY name ASC',
+      [companyId]
+    );
+
+    const [sites] = await db.execute(
+      'SELECT * FROM hotspot_sites WHERE company_id = ? ORDER BY site_name ASC',
+      [companyId]
+    );
+
+    const siteIds = sites.map((s) => s.id);
+    const housesBySite = {};
+    const paymentsBySite = {};
+
+    if (siteIds.length > 0) {
+      const placeholders = siteIds.map(() => '?').join(',');
+
+      const [houses] = await db.execute(
+        `SELECT * FROM hotspot_site_houses WHERE site_id IN (${placeholders}) ORDER BY id ASC`,
+        siteIds
+      );
+      houses.forEach((h) => {
+        if (!housesBySite[h.site_id]) housesBySite[h.site_id] = [];
+        housesBySite[h.site_id].push({ house_label: h.house_label, notes: h.notes });
+      });
+
+      const [transactions] = await db.execute(
+        `SELECT * FROM hotspot_site_transactions WHERE site_id IN (${placeholders}) ORDER BY for_month DESC`,
+        siteIds
+      );
+      transactions.forEach((t) => {
+        if (!paymentsBySite[t.site_id]) paymentsBySite[t.site_id] = [];
+        paymentsBySite[t.site_id].push({
+          amount: t.amount,
+          payment_type: t.payment_type,
+          for_month: t.for_month,
+          paid_on: t.paid_on,
+          meter_reading: t.meter_reading,
+          notes: t.notes,
+        });
+      });
+    }
+
+    const toExportSite = (s) => ({
+      site_name: s.site_name,
+      phone_number: s.phone_number,
+      location: s.location,
+      agreement_type: s.agreement_type,
+      agreement_value: s.agreement_value,
+      agreement_notes: s.agreement_notes,
+      status: s.status,
+      houses: housesBySite[s.id] || [],
+      payments: paymentsBySite[s.id] || [],
+    });
+
+    const sitesByRegion = {};
+    const unassignedSites = [];
+
+    sites.forEach((s) => {
+      if (s.region_id) {
+        if (!sitesByRegion[s.region_id]) sitesByRegion[s.region_id] = [];
+        sitesByRegion[s.region_id].push(toExportSite(s));
+      } else {
+        unassignedSites.push(toExportSite(s));
+      }
+    });
+
+    const regionsExport = regions.map((r) => {
+      const regionSites = sitesByRegion[r.id] || [];
+      return {
+        region_name: r.name,
+        site_count: regionSites.length,
+        sites: regionSites,
+      };
+    });
+
+    res.json({
+      generated_at: new Date().toISOString(),
+      region_count: regions.length,
+      total_sites: sites.length,
+      regions: regionsExport,
+      unassigned_sites: unassignedSites,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error building full export' });
+  }
+});
+
 module.exports = router;
