@@ -431,6 +431,41 @@ router.post('/hotspot-management/regions', verifyToken, async (req, res) => {
 });
 
 // ==============================
+// UPDATE (PATCH) a region
+// ==============================
+router.patch('/hotspot-management/regions/:id', verifyToken, async (req, res) => {
+  if (!requireHotspotAccess(req, res)) return;
+
+  const companyId = req.company_id;
+  const { name } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'name is required' });
+  }
+
+  try {
+    const [existing] = await db.execute(
+      'SELECT * FROM hotspot_regions WHERE id = ? AND company_id = ?',
+      [req.params.id, companyId]
+    );
+    if (existing.length === 0) return res.status(404).json({ error: 'Region not found' });
+
+    await db.execute(
+      'UPDATE hotspot_regions SET name = ? WHERE id = ? AND company_id = ?',
+      [name.trim(), req.params.id, companyId]
+    );
+
+    res.json({ message: 'Region updated successfully', name: name.trim() });
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({ error: 'A region with that name already exists' });
+    }
+    console.error(err);
+    res.status(500).json({ error: 'Error updating region' });
+  }
+});
+
+// ==============================
 // READ - list regions for the company, with site_count
 // ==============================
 router.get('/hotspot-management/regions', verifyToken, async (req, res) => {
