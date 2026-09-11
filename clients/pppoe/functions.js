@@ -129,7 +129,12 @@ async function sendSMS(clientId, phoneNumbers, maskedNumber = null, telco = null
 }
 
 // Function to execute the SSH command on MikroTik
-function executeSSHCommand(
+// MikroTik SSH connections to WISP routers over congested/long-haul links are
+// prone to transient failures (handshake timeouts, dropped connections, and
+// occasional "all authentication methods failed" responses that clear up on
+// the very next attempt). Retrying a couple of times before giving up avoids
+// surfacing these as hard errors for what is otherwise a routine operation.
+function executeSSHCommandOnce(
     ip_address,
     username,
     password,
@@ -183,12 +188,34 @@ function executeSSHCommand(
             username,
             password,
             port, // defaults to 22
+            readyTimeout: 25000,
         });
     });
 }
 
+async function executeSSHCommand(
+    ip_address,
+    username,
+    password,
+    secret_name,
+    command,
+    port = 22,
+    attemptsLeft = 2
+) {
+    try {
+        return await executeSSHCommandOnce(ip_address, username, password, secret_name, command, port);
+    } catch (err) {
+        if (attemptsLeft > 0) {
+            console.warn(`SSH command to ${ip_address} failed, retrying (${attemptsLeft} attempt(s) left):`, err);
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            return executeSSHCommand(ip_address, username, password, secret_name, command, port, attemptsLeft - 1);
+        }
+        throw err;
+    }
+}
 
-function changePppoePlan(
+
+function changePppoePlanOnce(
     ip_address,
     username,
     password,
@@ -249,8 +276,31 @@ function changePppoePlan(
             username,
             password,
             port, // defaults to 22 if not supplied
+            readyTimeout: 25000,
         });
     });
+}
+
+// See executeSSHCommand above - same retry rationale applies here.
+async function changePppoePlan(
+    ip_address,
+    username,
+    password,
+    secret_name,
+    new_plan,
+    port = 22,
+    attemptsLeft = 2
+) {
+    try {
+        return await changePppoePlanOnce(ip_address, username, password, secret_name, new_plan, port);
+    } catch (err) {
+        if (attemptsLeft > 0) {
+            console.warn(`SSH plan-change to ${ip_address} failed, retrying (${attemptsLeft} attempt(s) left):`, err);
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            return changePppoePlan(ip_address, username, password, secret_name, new_plan, port, attemptsLeft - 1);
+        }
+        throw err;
+    }
 }
 
 function getRouterDetails(router_id) {
